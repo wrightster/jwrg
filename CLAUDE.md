@@ -4,7 +4,7 @@
 
 Real estate website for a North Carolina full-service brokerage (Triangle / Wake / Franklin / Durham / Granville areas). Astro 5 with SSR (Node.js standalone adapter), Tailwind 4, TypeScript strict mode. Sister site to **JWLC** (`~/code/jwlc`) — both consume the same backend.
 
-> **Read this first when editing:** `SHARED_FRONTEND_GUIDE.md` in this repo. It defines rules that apply to both JWRG and JWLC. This CLAUDE.md only covers JWRG-specific details.
+> **Read this first when editing:** `../SHARED_FRONTEND_GUIDE.md` (one level up). It defines rules that apply to both JWRG and JWLC. This CLAUDE.md only covers JWRG-specific details.
 
 ## Environments
 
@@ -44,7 +44,7 @@ src/
 ├── layouts/
 │   └── BaseLayout.astro   # Main shell: nav + footer
 ├── lib/
-│   ├── api.ts             # Office API client — see SHARED_FRONTEND_GUIDE.md
+│   ├── api.ts             # Office API client — see ../SHARED_FRONTEND_GUIDE.md
 │   └── formFields.ts      # Form field definitions
 ├── pages/
 │   ├── about/             # About, team, triangle-area, business-directory
@@ -67,7 +67,7 @@ src/
 ```
 
 - **SSR mode** via `@astrojs/node` standalone adapter (`output: 'server'` in `astro.config.mjs`). Most pages should set `export const prerender = true` for static output unless they genuinely need request-time rendering.
-- **Listings via API** — fetched from `office.jwrgnc.com/api/v1` filtered by `?site=jwrg`. See `SHARED_FRONTEND_GUIDE.md` for the contract.
+- **Listings via API** — fetched from `office.jwrgnc.com/api/v1` filtered by `?site=jwrg`. See `../SHARED_FRONTEND_GUIDE.md` for the contract.
 - **Static content** (team, neighborhoods, FAQs, etc.) lives in `src/data/*.ts`.
 - **No React/Vue** — pure Astro components.
 
@@ -114,7 +114,7 @@ Listings are managed in the office Filament admin (`office.jwrgnc.com`) — the 
 
 ## Image Handling
 
-Sharp is in `devDependencies` and powers Astro's built-in `<Image>` for **local assets only** (team photos, hero shots in `public/images/`). For listing photos coming from the API, use the URLs from `primary_photo.urls` / `photos[].urls` directly — see `SHARED_FRONTEND_GUIDE.md` §"Image handling" for why.
+Sharp is in `devDependencies` and powers Astro's built-in `<Image>` for **local assets only** (team photos, hero shots in `public/images/`). For listing photos coming from the API, use the URLs from `primary_photo.urls` / `photos[].urls` directly — see `../SHARED_FRONTEND_GUIDE.md` §"Image handling" for why.
 
 ## File Conventions
 
@@ -125,9 +125,9 @@ Sharp is in `devDependencies` and powers Astro's built-in `<Image>` for **local 
 ## Backend Coordination
 
 - The office app's Claude has its own CLAUDE.md at `~/Herd/jwrg_office/CLAUDE.md` (Laravel Boost guidelines).
-- Open requests for the backend live in `OFFICE_MCP_REQUESTS.md` in this repo. Append there rather than asking the office Claude ad-hoc.
+- Open requests for the backend live in `../OFFICE_MCP_REQUESTS.md` (top of `jwrg_all/`). Append there rather than asking the office Claude ad-hoc.
 - The MCP server `office-jwrg` returns a sparser shape than the REST API. Prefer REST (via `src/lib/api.ts`) for anything image- or detail-related until shape parity lands.
 
 ## Sister Site (JWLC)
 
-`~/code/jwlc` is the Julie Wright Land Company site (land brokerage). Same backend, different brand/audience. When changing shared concerns (API client, image handling, status mapping), make the change in both repos and update `SHARED_FRONTEND_GUIDE.md` if the rule itself changes.
+`../jwlc/` is the Julie Wright Land Company site (land brokerage). Same backend, different brand/audience. When changing shared concerns (API client, image handling, status mapping), make the change in both repos and update `../SHARED_FRONTEND_GUIDE.md` if the rule itself changes.
