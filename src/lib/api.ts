@@ -1,17 +1,41 @@
 const BASE_URL = 'https://office.jwrgnc.com/api/v1';
 export const SITE_SLUG = 'jwrg';
 
+export interface ApiPhotoVariant {
+  width: number | null;
+  height: number | null;
+  jpg: string | null;
+  webp: string | null;
+  avif: string | null;
+}
+
 export interface ApiPhoto {
   id: string;
   order: number;
   caption: string | null;
+  alt: string | null;
   is_primary: boolean;
   urls: {
-    thumbnail: string;
-    web: string;
-    full: string;
-    original: string;
+    '400': ApiPhotoVariant;
+    '800': ApiPhotoVariant;
+    '1200': ApiPhotoVariant;
+    '1600': ApiPhotoVariant;
+    original: string | null;
   };
+}
+
+/**
+ * Pick a single jpg URL for a photo at a target width rung.
+ * Falls back to `original` if the requested rung hasn't rendered yet
+ * (conversions queue async on the office side; URLs may briefly be null).
+ */
+export function photoSrc(
+  photo: ApiPhoto | null | undefined,
+  width: 400 | 800 | 1200 | 1600 = 800,
+): string | null {
+  if (!photo) return null;
+  const variant = photo.urls[String(width) as '400' | '800' | '1200' | '1600'];
+  return variant?.jpg ?? photo.urls.original;
 }
 
 export interface ApiDocument {

@@ -1,5 +1,5 @@
 ---
-import { type ApiListing, formatPrice, formatAcres, formatBedsBaths, publicStatus } from '../lib/api';
+import { type ApiListing, formatPrice, formatAcres, formatBedsBaths, publicStatus, photoSrc } from '../lib/api';
 
 interface Props {
   listing: ApiListing;
@@ -7,7 +7,7 @@ interface Props {
 
 const { listing } = Astro.props;
 const status = publicStatus(listing.status);
-const photo = listing.primary_photo?.urls.web ?? listing.primary_photo?.urls.full;
+const photo = photoSrc(listing.primary_photo, 800);
 
 const statusStyles: Record<string, string> = {
   available: 'bg-green-50 text-green-700 border-green-200',

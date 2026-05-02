@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
-import { fetchListing, formatPrice, formatAcres, formatBedsBaths, publicStatus } from '../../lib/api';
+import { fetchListing, formatPrice, formatAcres, formatBedsBaths, publicStatus, photoSrc } from '../../lib/api';
 
 const { slug } = Astro.params;
 const listing = slug ? await fetchListing(slug) : null;
@@ -73,12 +73,12 @@ const statusStyles: Record<string, string> = {
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           {photos.slice(0, 1).map((p) => (
             <div class="md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto rounded-2xl overflow-hidden">
-              <img src={p.urls.full} alt={p.caption ?? title} class="w-full h-full object-cover" />
+              <img src={photoSrc(p, 1600) ?? undefined} alt={p.alt ?? p.caption ?? title} class="w-full h-full object-cover" />
             </div>
           ))}
           {photos.slice(1, 5).map((p) => (
             <div class="aspect-[4/3] rounded-2xl overflow-hidden">
-              <img src={p.urls.web} alt={p.caption ?? title} class="w-full h-full object-cover" />
+              <img src={photoSrc(p, 800) ?? undefined} alt={p.alt ?? p.caption ?? title} class="w-full h-full object-cover" />
             </div>
           ))}
         </div>
