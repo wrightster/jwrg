@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+
+export const prerender = true;
+
+const resources = [
+  {
+    title: 'Staging Tips',
+    description: 'Low-cost, high-impact ways to prepare your home so it shows beautifully and sells faster.',
+    href: '/sellers/staging-tips',
+  },
+  {
+    title: 'Home Value Estimate',
+    description: 'Get a no-obligation comparative market analysis of your property from a local expert.',
+    href: '/sellers/home-value',
+  },
+  {
+    title: 'List Your Property',
+    description: 'Ready to list? Tell us about your home and we\'ll set up an in-person consultation.',
+    href: '/sellers/list-your-property',
+  },
+  {
+    title: 'Neighborhood Sold Report',
+    description: 'See what comparable homes in your neighborhood have recently sold for.',
+    href: '/sellers/neighborhood-sold-report',
+  },
+];
+---
+
+<BaseLayout title="Seller Resources | Julie Wright Realty Group">
+  <PageBanner
+    label="For Sellers"
+    title="Selling Your Home with Confidence"
+    description="In any market, sellers want to know two things: what is my property worth, and how do I get the best result? We answer both with up-to-date data and a tailored strategy."
+  />
+
+  <section class="py-20">
+    <div class="max-w-5xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center mb-16">
+      <div>
+        <h2 class="font-serif text-3xl text-navy-900 font-medium mb-4">The Challenge: Selling Real Estate</h2>
+        <p class="text-navy-700 leading-relaxed">
+          Selling a home is rarely just a transaction. It is timing, pricing, presentation, and negotiation — all at once. Mistakes at any step cost real money.
+        </p>
+      </div>
+      <div>
+        <h2 class="font-serif text-3xl text-navy-900 font-medium mb-4">The Answer: A Tailored Strategy</h2>
+        <p class="text-navy-700 leading-relaxed">
+          We pair four decades of Triangle market knowledge with a marketing plan built specifically for your property. From pricing through closing, we manage every step with you, not for you.
+        </p>
+      </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      {resources.map((r) => (
+        <a
+          href={r.href}
+          class="group bg-white border border-warm-200/50 rounded-2xl p-8 hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1"
+        >
+          <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors mb-2">
+            {r.title}
+          </h3>
+          <p class="text-navy-500 mb-4 leading-relaxed">{r.description}</p>
+          <div class="text-gold-600 text-sm font-medium flex items-center gap-1">
+            Learn More
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

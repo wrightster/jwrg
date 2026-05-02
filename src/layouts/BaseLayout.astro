@@ -11,12 +11,66 @@ const {
   description = 'Four decades specializing in Triangle Area properties. Your comprehensive real estate resource for Wake, Granville, Franklin, Johnston, Harnett, and Durham Counties.',
 } = Astro.props;
 
-const navLinks = [
-  { label: 'Listings', href: '/listings' },
-  { label: 'Buyers', href: '/buyers' },
-  { label: 'Sellers', href: '/sellers' },
-  { label: 'Relocation', href: '/relocation' },
-  { label: 'About', href: '/about' },
+interface NavItem {
+  label: string;
+  href: string;
+  children?: { label: string; href: string }[];
+}
+
+const navLinks: NavItem[] = [
+  {
+    label: 'Listings',
+    href: '/listings',
+    children: [
+      { label: 'Search MLS', href: '/property-search' },
+      { label: 'Our Properties', href: '/listings' },
+      { label: 'Property Organizer', href: '/property-organizer' },
+      { label: 'Neighborhoods', href: '/neighborhoods' },
+      { label: 'Neighborhood Map', href: '/neighborhood-map' },
+    ],
+  },
+  {
+    label: 'Buyers',
+    href: '/buyers',
+    children: [
+      { label: 'Buyer Resources', href: '/buyers' },
+      { label: 'Real Estate 101', href: '/buyers/real-estate-101' },
+      { label: 'Buyer FAQs', href: '/buyers/faq' },
+      { label: 'Mortgage Calculator', href: '/buyers/mortgage-calculator' },
+      { label: 'Free Buying Guide', href: '/buyers/buying-guide' },
+    ],
+  },
+  {
+    label: 'Sellers',
+    href: '/sellers',
+    children: [
+      { label: 'Seller Resources', href: '/sellers' },
+      { label: 'Staging Tips', href: '/sellers/staging-tips' },
+      { label: 'Home Value', href: '/sellers/home-value' },
+      { label: 'List Your Property', href: '/sellers/list-your-property' },
+      { label: 'Neighborhood Sold Report', href: '/sellers/neighborhood-sold-report' },
+    ],
+  },
+  {
+    label: 'Relocation',
+    href: '/relocation',
+    children: [
+      { label: 'Relocation Resources', href: '/relocation' },
+      { label: 'Free Relocation Package', href: '/relocation/relocation-package' },
+      { label: 'Moving Tips', href: '/relocation/moving-tips' },
+    ],
+  },
+  {
+    label: 'About',
+    href: '/about',
+    children: [
+      { label: 'Our History', href: '/about' },
+      { label: 'Our Team', href: '/about/team' },
+      { label: 'Triangle Area', href: '/about/triangle-area' },
+      { label: 'Business Directory', href: '/about/business-directory' },
+      { label: 'Testimonials', href: '/testimonials' },
+    ],
+  },
   { label: 'Contact', href: '/contact' },
 ];
 ---
@@ -85,12 +139,36 @@ const navLinks = [
           <!-- Desktop Nav -->
           <div class="hidden lg:flex items-center gap-1">
             {navLinks.map(link => (
-              <a
-                href={link.href}
-                class="px-4 py-2 text-sm font-medium tracking-wide text-navy-700 hover:text-gold-600 transition-colors relative after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 hover:after:w-6 after:h-0.5 after:bg-gold-500 after:transition-all after:duration-300"
-              >
-                {link.label}
-              </a>
+              link.children ? (
+                <div class="relative group">
+                  <a
+                    href={link.href}
+                    class="px-4 py-2 text-sm font-medium tracking-wide text-navy-700 hover:text-gold-600 transition-colors flex items-center gap-1 relative after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 group-hover:after:w-6 after:h-0.5 after:bg-gold-500 after:transition-all after:duration-300"
+                  >
+                    {link.label}
+                    <svg class="w-3 h-3 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  </a>
+                  <div class="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <div class="bg-white rounded-xl shadow-xl shadow-navy-900/10 border border-warm-200/50 py-2 min-w-[240px]">
+                      {link.children.map(child => (
+                        <a
+                          href={child.href}
+                          class="block px-5 py-2.5 text-sm text-navy-700 hover:text-gold-600 hover:bg-warm-50 transition-colors"
+                        >
+                          {child.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <a
+                  href={link.href}
+                  class="px-4 py-2 text-sm font-medium tracking-wide text-navy-700 hover:text-gold-600 transition-colors relative after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 hover:after:w-6 after:h-0.5 after:bg-gold-500 after:transition-all after:duration-300"
+                >
+                  {link.label}
+                </a>
+              )
             ))}
             <a
               href="/contact"
@@ -116,15 +194,31 @@ const navLinks = [
         </div>
 
         <!-- Mobile Nav -->
-        <div id="mobile-menu" class="lg:hidden hidden bg-white border-t border-warm-200/50">
+        <div id="mobile-menu" class="lg:hidden hidden bg-white border-t border-warm-200/50 max-h-[calc(100vh-5rem)] overflow-y-auto">
           <div class="px-6 py-4 space-y-1">
             {navLinks.map(link => (
-              <a
-                href={link.href}
-                class="block px-4 py-3 text-navy-700 hover:text-gold-600 hover:bg-warm-50 rounded-lg transition-colors font-medium"
-              >
-                {link.label}
-              </a>
+              link.children ? (
+                <details class="group">
+                  <summary class="cursor-pointer flex items-center justify-between px-4 py-3 text-navy-700 hover:text-gold-600 hover:bg-warm-50 rounded-lg transition-colors font-medium list-none">
+                    <span>{link.label}</span>
+                    <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  </summary>
+                  <div class="pl-4 mt-1 space-y-1">
+                    {link.children.map(child => (
+                      <a href={child.href} class="block px-4 py-2 text-sm text-navy-600 hover:text-gold-600 hover:bg-warm-50 rounded-lg transition-colors">
+                        {child.label}
+                      </a>
+                    ))}
+                  </div>
+                </details>
+              ) : (
+                <a
+                  href={link.href}
+                  class="block px-4 py-3 text-navy-700 hover:text-gold-600 hover:bg-warm-50 rounded-lg transition-colors font-medium"
+                >
+                  {link.label}
+                </a>
+              )
             ))}
             <div class="pt-3">
               <a
@@ -174,7 +268,7 @@ const navLinks = [
               <li><a href="/listings" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Featured Listings</a></li>
               <li><a href="/buyers" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Buyer Resources</a></li>
               <li><a href="/sellers" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Seller Resources</a></li>
-              <li><a href="/relocation" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Relocation Guide</a></li>
+              <li><a href="/relocation" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Relocation</a></li>
               <li><a href="/about" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">About Us</a></li>
             </ul>
           </div>
@@ -184,10 +278,10 @@ const navLinks = [
             <h3 class="text-gold-400 font-semibold text-sm tracking-widest uppercase mb-5">Resources</h3>
             <ul class="space-y-3">
               <li><a href="/neighborhoods" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Neighborhoods</a></li>
-              <li><a href="/mortgage-calculator" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Mortgage Calculator</a></li>
-              <li><a href="/home-staging" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Home Staging Tips</a></li>
-              <li><a href="/home-valuation" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Home Valuation</a></li>
-              <li><a href="/faq" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">FAQ</a></li>
+              <li><a href="/buyers/mortgage-calculator" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Mortgage Calculator</a></li>
+              <li><a href="/sellers/staging-tips" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Home Staging Tips</a></li>
+              <li><a href="/sellers/home-value" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">Home Valuation</a></li>
+              <li><a href="/buyers/faq" class="text-navy-300 hover:text-gold-400 transition-colors text-sm">FAQ</a></li>
             </ul>
           </div>
 

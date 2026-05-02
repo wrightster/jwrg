@@ -1,0 +1,57 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+import { keyTermSections } from '../../data/keyTerms';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Real Estate 101 — Key Terms | Julie Wright Realty Group">
+  <PageBanner
+    label="Real Estate 101"
+    title="Key Terms Every Buyer Should Know"
+    description="A plain-language glossary of the financing, valuation, legal, and insurance terms that come up in every transaction."
+  />
+
+  <section class="py-16">
+    <div class="max-w-5xl mx-auto px-6 grid lg:grid-cols-4 gap-12">
+      <aside class="hidden lg:block lg:col-span-1">
+        <nav class="sticky top-32 space-y-2 text-sm">
+          <div class="font-semibold text-navy-900 mb-3">On this page</div>
+          {keyTermSections.map((s) => (
+            <a
+              href={`#${s.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+              class="block text-navy-500 hover:text-gold-600 transition-colors"
+            >
+              {s.title}
+            </a>
+          ))}
+        </nav>
+      </aside>
+
+      <div class="lg:col-span-3 space-y-12">
+        {keyTermSections.map((section) => (
+          <div>
+            <h2
+              id={section.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}
+              class="font-serif text-2xl md:text-3xl text-navy-900 font-medium mb-6 pb-3 border-b border-warm-200"
+            >
+              {section.title}
+            </h2>
+            <dl class="space-y-6">
+              {section.terms.map((t) => (
+                <div>
+                  <dt class="font-semibold text-navy-900 mb-1">{t.term}</dt>
+                  <dd class="text-navy-700 leading-relaxed">{t.definition}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

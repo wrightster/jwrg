@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import Form from '../../components/Form.astro';
+import type { Field } from '../../lib/formFields';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+
+export const prerender = true;
+
+const fields: Field[] = [
+  { type: 'text', name: 'first_name', label: 'First Name', required: true, cols: 1 },
+  { type: 'text', name: 'last_name', label: 'Last Name', required: true, cols: 1 },
+  { type: 'email', name: 'email', label: 'Email', required: true, cols: 1 },
+  { type: 'tel', name: 'phone', label: 'Phone', required: true, cols: 1 },
+  { type: 'text', name: 'address', label: 'Property Address', required: true, cols: 2 },
+  { type: 'text', name: 'city', label: 'City', required: true, cols: 1 },
+  {
+    type: 'select',
+    name: 'property_type',
+    label: 'Property Type',
+    options: ['Single-Family', 'Townhome', 'Condo', 'Multi-Family', 'Land', 'Farm / Estate', 'Commercial'],
+    cols: 1,
+  },
+  { type: 'select', name: 'beds', label: 'Bedrooms', options: ['1', '2', '3', '4', '5', '6', '7+'], cols: 1 },
+  { type: 'select', name: 'baths', label: 'Bathrooms', options: ['1', '2', '3', '4+'], cols: 1 },
+  { type: 'number', name: 'year_built', label: 'Year Built', cols: 1 },
+  { type: 'number', name: 'sqft', label: 'Approximate Square Feet', cols: 1 },
+  { type: 'text', name: 'garage', label: 'Garage Spaces', cols: 1 },
+  {
+    type: 'select',
+    name: 'condition',
+    label: 'Overall Condition',
+    options: ['Excellent', 'Good', 'Fair', 'Needs Work'],
+    cols: 1,
+  },
+  { type: 'textarea', name: 'amenities', label: 'Notable Amenities or Features', cols: 2 },
+];
+---
+
+<BaseLayout title="List Your Property | Julie Wright Realty Group">
+  <PageBanner
+    label="For Sellers"
+    title="List Your Property with Julie Wright Realty"
+    description="Tell us about your property and we'll schedule an in-person consultation to discuss pricing, timing, and a marketing plan tailored to your home."
+  />
+
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-6">
+      <Form
+        formKey="listYourHome"
+        title="Tell Us About Your Property"
+        submitLabel="Schedule a Consultation"
+        fields={fields}
+      />
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

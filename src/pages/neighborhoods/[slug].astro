@@ -1,0 +1,54 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+import { neighborhoods, type Neighborhood } from '../../data/neighborhoods';
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return neighborhoods.map((n) => ({ params: { slug: n.slug }, props: { neighborhood: n } }));
+}
+
+interface Props {
+  neighborhood: Neighborhood;
+}
+
+const { neighborhood: n } = Astro.props;
+---
+
+<BaseLayout title={`${n.name} | Julie Wright Realty Group`} description={n.description}>
+  <PageBanner
+    label={`${n.county}${n.city ? ` · ${n.city}` : ''}`}
+    title={n.name}
+    description={n.description}
+  />
+
+  <section class="py-20">
+    <div class="max-w-4xl mx-auto px-6">
+      {n.priceFrom && (
+        <div class="text-center mb-10">
+          <div class="text-navy-500 text-xs tracking-widest uppercase">From</div>
+          <div class="text-4xl font-serif font-bold text-gold-700 mt-1">{n.priceFrom}</div>
+        </div>
+      )}
+
+      <div class="bg-warm-100/60 border border-warm-200 rounded-2xl p-8 text-center">
+        <h3 class="font-serif text-xl text-navy-900 font-semibold mb-2">Interested in {n.name}?</h3>
+        <p class="text-navy-500 mb-6">
+          Reach out and we'll send detail sheets, available lots and homes, and arrange a tour at your convenience.
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <a href="/contact" class="px-8 py-3.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all">
+            Request Information
+          </a>
+          <a href="/neighborhoods" class="px-8 py-3.5 border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white font-semibold rounded-lg transition-all">
+            View All Neighborhoods
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

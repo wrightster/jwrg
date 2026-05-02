@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import ListingCard from '../../components/ListingCard.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+import { fetchListings } from '../../lib/api';
+
+const listings = await fetchListings();
+const counties = Array.from(new Set(listings.map((l) => l.county))).sort();
+---
+
+<BaseLayout title="Featured Listings | Julie Wright Realty Group">
+  <PageBanner
+    label="Our Listings"
+    title="Four Decades of Triangle Area Properties"
+    description="Browse our curated selection of homes, land, and homesites across Wake, Granville, Franklin, Johnston, Harnett, and Durham Counties."
+  />
+
+  <section class="py-16 lg:py-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-10">
+        <div>
+          <h2 class="font-serif text-2xl text-navy-900 font-medium">
+            {listings.length === 0 ? 'No active listings at the moment' : `${listings.length} ${listings.length === 1 ? 'Property' : 'Properties'} Available`}
+          </h2>
+          <p class="text-navy-500 text-sm mt-1">
+            Listings sourced live from our office. Check back often — new properties added regularly.
+          </p>
+        </div>
+        {counties.length > 0 && (
+          <div class="flex items-center gap-2">
+            <label for="county-filter" class="text-sm text-navy-700 font-medium">Filter by county:</label>
+            <select id="county-filter" class="px-4 py-2 rounded-lg border border-warm-200 text-navy-900 text-sm focus:outline-none focus:ring-2 focus:ring-gold-500/30">
+              <option value="">All</option>
+              {counties.map((c) => <option value={c}>{c}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {listings.length === 0 ? (
+        <div class="bg-warm-100/50 border border-warm-200 rounded-2xl p-12 text-center">
+          <p class="text-navy-700 text-lg font-serif">No listings to display just yet.</p>
+          <p class="text-navy-500 mt-2">
+            Get in touch and we'll send you properties as soon as they hit the market.
+          </p>
+          <a href="/contact" class="inline-block mt-6 px-8 py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all">
+            Contact Us
+          </a>
+          <p class="text-navy-400 text-sm mt-6">
+            Or use our <a href="/property-search" class="text-gold-700 underline">MLS search</a> to explore the broader market.
+          </p>
+        </div>
+      ) : (
+        <div data-listings-grid class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {listings.map((l) => (
+            <div data-county={l.county}><ListingCard listing={l} /></div>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>
+
+<script>
+  const filter = document.getElementById('county-filter') as HTMLSelectElement | null;
+  const grid = document.querySelector<HTMLElement>('[data-listings-grid]');
+  filter?.addEventListener('change', () => {
+    if (!grid) return;
+    const value = filter.value;
+    grid.querySelectorAll<HTMLElement>('[data-county]').forEach((el) => {
+      el.style.display = !value || el.dataset.county === value ? '' : 'none';
+    });
+  });
+</script>

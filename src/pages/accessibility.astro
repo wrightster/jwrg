@@ -1,0 +1,36 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageBanner from '../components/PageBanner.astro';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Accessibility | Julie Wright Realty Group">
+  <PageBanner label="Legal" title="Accessibility Statement" />
+
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-6 prose prose-navy text-navy-700 leading-relaxed space-y-6">
+      <p>
+        Julie Wright Realty Group is committed to providing a website that is accessible to everyone, including people with disabilities.
+      </p>
+
+      <h2 class="font-serif text-2xl text-navy-900 font-medium">Our Commitment</h2>
+      <p>
+        We work to follow widely accepted web accessibility guidelines so that our content can be perceived, navigated, and understood by users with a range of abilities. We design our site to support assistive technology (such as screen readers), to maintain legible color contrast, and to be operable using a keyboard alone.
+      </p>
+
+      <h2 class="font-serif text-2xl text-navy-900 font-medium">Help Us Improve</h2>
+      <p>
+        Accessibility is an ongoing effort. If you experience difficulty using any part of this site, please let us know and we will do our best to resolve the issue and provide the information you need in another format.
+      </p>
+      <p>
+        Contact us at <a href="mailto:info@juliewrightrealtygroup.com" class="text-gold-700 hover:underline">info@juliewrightrealtygroup.com</a> or call <a href="tel:919-847-7140" class="text-gold-700 hover:underline">(919) 847-7140</a>.
+      </p>
+
+      <h2 class="font-serif text-2xl text-navy-900 font-medium">Equal Housing Opportunity</h2>
+      <p>
+        Julie Wright Realty Group is committed to the principles of the Fair Housing Act and provides equal service to all individuals regardless of race, color, religion, sex, handicap, familial status, national origin, or any protected class.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

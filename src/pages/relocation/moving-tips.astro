@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+import { movingSections, donationLinks } from '../../data/movingTips';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Moving Tips | Julie Wright Realty Group">
+  <PageBanner
+    label="Moving Tips"
+    title="Help with Moving to the Triangle"
+    description="Practical advice from forty years of helping families settle into their new Triangle homes."
+  />
+
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-6 space-y-12">
+      {movingSections.map((s) => (
+        <div>
+          <h2 class="font-serif text-2xl md:text-3xl text-navy-900 font-medium mb-4 pb-3 border-b border-warm-200">
+            {s.heading}
+          </h2>
+          <div class="space-y-4 text-navy-700 leading-relaxed">
+            {s.body.map((p) => <p>{p}</p>)}
+          </div>
+        </div>
+      ))}
+
+      <div>
+        <h2 class="font-serif text-2xl md:text-3xl text-navy-900 font-medium mb-6 pb-3 border-b border-warm-200">
+          Taking Care of Those You Love — Donation Resources
+        </h2>
+        <p class="text-navy-700 leading-relaxed mb-6">
+          Don't pay to move what you won't use. These local and national charities accept donations and put your gently used items to good work in the community.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {donationLinks.map((l) => (
+            <a href={l.url} target="_blank" rel="noopener" class="block p-6 bg-warm-100/60 border border-warm-200 rounded-2xl hover:border-gold-500 hover:bg-warm-50 transition-all">
+              <div class="font-semibold text-navy-900">{l.name}</div>
+              <p class="text-navy-500 text-sm mt-1">{l.description}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

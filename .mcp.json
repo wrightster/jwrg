@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "office-jwrg": {
+      "type": "http",
+      "url": "https://office.jwrgnc.com/mcp"
+    }
+  }
+}

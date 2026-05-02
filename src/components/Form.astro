@@ -1,0 +1,160 @@
+---
+// A flexible single-column form runner. Pass a `formKey` from data/forms.ts
+// and a list of `fields` describing each input. The form posts JSON to the
+// office API via lib/api.ts submitForm().
+import { formIds, type FormKey } from '../data/forms';
+import type { Field } from '../lib/formFields';
+
+interface Props {
+  formKey: FormKey;
+  title?: string;
+  description?: string;
+  submitLabel?: string;
+  fields: Field[];
+  legalNote?: string;
+}
+
+const {
+  formKey,
+  title,
+  description,
+  submitLabel = 'Submit',
+  fields,
+  legalNote = 'By submitting this form, you are giving Julie Wright Realty Group permission to contact you via email, phone, or text.',
+} = Astro.props;
+
+const formId = formIds[formKey];
+
+const labelCls = 'block text-sm font-medium text-navy-700 mb-1.5';
+const inputCls =
+  'w-full px-4 py-3 rounded-lg border border-warm-200 focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500 transition-all text-navy-900 placeholder-navy-300';
+---
+
+<div class="bg-white rounded-2xl p-8 md:p-10 shadow-lg shadow-navy-900/5 border border-warm-200/50">
+  {title && <h3 class="font-serif text-2xl text-navy-900 font-semibold mb-2">{title}</h3>}
+  {description && <p class="text-navy-500 mb-6">{description}</p>}
+
+  <form class="space-y-5" data-jwrg-form data-form-id={formId ?? ''}>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {fields.map((field) => {
+        const span = field.cols === 1 ? 'sm:col-span-1' : 'sm:col-span-2';
+        const id = `f-${formKey}-${field.name}`;
+        if (field.type === 'textarea') {
+          return (
+            <div class={span}>
+              <label for={id} class={labelCls}>
+                {field.label}{field.required && ' *'}
+              </label>
+              <textarea
+                id={id}
+                name={field.name}
+                rows={field.rows ?? 4}
+                required={field.required}
+                placeholder={field.placeholder}
+                class={`${inputCls} resize-none`}
+              ></textarea>
+            </div>
+          );
+        }
+        if (field.type === 'select') {
+          return (
+            <div class={span}>
+              <label for={id} class={labelCls}>
+                {field.label}{field.required && ' *'}
+              </label>
+              <select id={id} name={field.name} required={field.required} class={inputCls}>
+                <option value="">Select…</option>
+                {field.options.map((opt) => <option value={opt}>{opt}</option>)}
+              </select>
+            </div>
+          );
+        }
+        if (field.type === 'checkbox') {
+          return (
+            <div class={span}>
+              <label class="flex items-start gap-3 text-sm text-navy-700">
+                <input
+                  id={id}
+                  name={field.name}
+                  type="checkbox"
+                  class="mt-1 w-4 h-4 rounded border-warm-300 text-gold-600 focus:ring-gold-500/30"
+                />
+                <span>{field.label}</span>
+              </label>
+            </div>
+          );
+        }
+        return (
+          <div class={span}>
+            <label for={id} class={labelCls}>
+              {field.label}{field.required && ' *'}
+            </label>
+            <input
+              type={field.type}
+              id={id}
+              name={field.name}
+              required={field.required}
+              placeholder={field.placeholder}
+              class={inputCls}
+            />
+          </div>
+        );
+      })}
+    </div>
+
+    <input type="text" name="website" tabindex="-1" autocomplete="off" class="sr-only" aria-hidden="true" />
+
+    {legalNote && (
+      <p class="text-navy-400 text-xs leading-relaxed">{legalNote}</p>
+    )}
+
+    <button
+      type="submit"
+      class="w-full py-3.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-gold-500/25"
+    >
+      {submitLabel}
+    </button>
+    <p data-form-status class="text-sm hidden"></p>
+  </form>
+</div>
+
+<script>
+  import { submitForm } from '../lib/api';
+
+  document.querySelectorAll<HTMLFormElement>('form[data-jwrg-form]').forEach((form) => {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = form.querySelector<HTMLElement>('[data-form-status]');
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      if (!button || !status) return;
+
+      button.disabled = true;
+      const originalText = button.textContent;
+      button.textContent = 'Sending…';
+      status.classList.add('hidden');
+
+      const formId = form.dataset.formId || null;
+      const data: Record<string, unknown> = {};
+      new FormData(form).forEach((value, key) => {
+        if (data[key] !== undefined) {
+          if (Array.isArray(data[key])) (data[key] as unknown[]).push(value);
+          else data[key] = [data[key], value];
+        } else {
+          data[key] = value;
+        }
+      });
+
+      const result = await submitForm(formId, data);
+
+      status.classList.remove('hidden');
+      status.textContent = result.message;
+      status.className = result.ok
+        ? 'text-sm text-green-700'
+        : 'text-sm text-red-600';
+
+      button.disabled = false;
+      button.textContent = originalText;
+      if (result.ok) form.reset();
+    });
+  });
+</script>

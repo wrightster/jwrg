@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageBanner from '../components/PageBanner.astro';
+import MiniContactForm from '../components/MiniContactForm.astro';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Property Organizer | Julie Wright Realty Group">
+  <PageBanner
+    label="Saved Searches"
+    title="Property Organizer"
+    description="Save searches, favorite properties, and get email alerts when listings matching your criteria hit the market."
+  />
+
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-6 text-center">
+      <p class="text-navy-700 text-lg leading-relaxed mb-8">
+        Create a free Property Organizer account through our MLS search portal to track listings, save favorites, and receive automatic email alerts the moment new properties match your search.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a
+          href="https://search.juliewrightrealtygroup.com"
+          target="_blank"
+          rel="noopener"
+          class="px-8 py-3.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all"
+        >
+          Open Property Organizer
+        </a>
+        <a
+          href="/contact"
+          class="px-8 py-3.5 border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white font-semibold rounded-lg transition-all"
+        >
+          Have a Question?
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

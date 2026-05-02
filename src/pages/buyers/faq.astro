@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+import { buyerFaq } from '../../data/buyerFaq';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Buyer FAQs | Julie Wright Realty Group">
+  <PageBanner
+    label="Frequently Asked"
+    title="Buyer Questions, Answered"
+    description="Honest, plain-language answers to the questions buyers ask us most often."
+  />
+
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-6 space-y-4">
+      {buyerFaq.map((item, idx) => (
+        <details class="group bg-white border border-warm-200/50 rounded-2xl overflow-hidden hover:shadow-md transition-shadow" open={idx === 0}>
+          <summary class="cursor-pointer p-6 font-serif text-lg font-semibold text-navy-900 list-none flex items-start justify-between gap-4">
+            <span>{item.q}</span>
+            <svg class="w-5 h-5 text-gold-600 mt-1 shrink-0 transition-transform group-open:rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          </summary>
+          <div class="px-6 pb-6 text-navy-700 leading-relaxed">{item.a}</div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <MiniContactForm
+    heading="Still have questions?"
+    description="Reach out and we'll get back to you the same business day with a real, considered answer."
+  />
+</BaseLayout>

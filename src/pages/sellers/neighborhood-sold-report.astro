@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import Form from '../../components/Form.astro';
+import type { Field } from '../../lib/formFields';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+
+export const prerender = true;
+
+const fields: Field[] = [
+  { type: 'text', name: 'first_name', label: 'First Name', required: true, cols: 1 },
+  { type: 'text', name: 'last_name', label: 'Last Name', required: true, cols: 1 },
+  { type: 'email', name: 'email', label: 'Email', required: true, cols: 1 },
+  { type: 'tel', name: 'phone', label: 'Phone', cols: 1 },
+  { type: 'text', name: 'address', label: 'Address', cols: 2 },
+  { type: 'text', name: 'city', label: 'City', cols: 1 },
+  { type: 'text', name: 'state', label: 'State', cols: 1 },
+  { type: 'text', name: 'zip', label: 'Zip Code', cols: 1 },
+  { type: 'textarea', name: 'comments', label: 'Comments', cols: 2 },
+  {
+    type: 'checkbox',
+    name: 'opt_in',
+    label: 'I give Julie Wright Realty Group permission to contact me via email, phone, or text.',
+    cols: 2,
+  },
+];
+---
+
+<BaseLayout title="Neighborhood Sold Report | Julie Wright Realty Group">
+  <PageBanner
+    label="For Sellers"
+    title="Neighborhood Sold Report"
+    description="See what comparable homes in your neighborhood have recently sold for. We'll prepare a custom report based on your address and send it within one business day."
+  />
+
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-6">
+      <Form
+        formKey="soldReport"
+        title="Request Your Sold Report"
+        submitLabel="Request Report"
+        fields={fields}
+      />
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageBanner from '../components/PageBanner.astro';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Privacy Policy | Julie Wright Realty Group">
+  <PageBanner label="Legal" title="Privacy Policy" />
+
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-6 prose prose-navy text-navy-700 leading-relaxed space-y-6">
+      <p>
+        Julie Wright Realty Group is the sole owner of the information collected on this site. We do not sell, share, or rent any information collected through this website to others, beyond what is required to provide the service you have requested.
+      </p>
+
+      <h2 class="font-serif text-2xl text-navy-900 font-medium">What We Collect</h2>
+      <p>
+        We collect information you voluntarily provide through forms on this site — for example, your name, email address, phone number, and any details you submit when requesting a property valuation, relocation package, or showing.
+      </p>
+
+      <h2 class="font-serif text-2xl text-navy-900 font-medium">How We Use It</h2>
+      <p>
+        We use this information solely to respond to your inquiry, deliver the requested resource, or follow up on your real estate needs. We may store this information in our office customer-management system to provide consistent service over time.
+      </p>
+
+      <h2 class="font-serif text-2xl text-navy-900 font-medium">How We Share It</h2>
+      <p>
+        We do not sell, share, or trade your information with third parties for marketing purposes. We may share your information only as necessary to facilitate a real estate transaction (for example, with a lender, attorney, or inspector you have specifically requested), or when required by law.
+      </p>
+
+      <h2 class="font-serif text-2xl text-navy-900 font-medium">Cookies and Analytics</h2>
+      <p>
+        Like most websites, we may use cookies and standard analytics tools (such as Google Analytics) to understand how visitors use our site so we can improve it. These tools collect aggregate, anonymous usage information; they do not personally identify you.
+      </p>
+
+      <h2 class="font-serif text-2xl text-navy-900 font-medium">Changes to This Policy</h2>
+      <p>
+        We may update this policy from time to time. Any material changes will be reflected on this page. If you have questions about how we handle your information, contact us at <a href="mailto:info@juliewrightrealtygroup.com" class="text-gold-700 hover:underline">info@juliewrightrealtygroup.com</a> or (919) 847-7140.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

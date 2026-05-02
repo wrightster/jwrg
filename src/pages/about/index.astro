@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+
+export const prerender = true;
+---
+
+<BaseLayout title="Our History | Julie Wright Realty Group">
+  <PageBanner
+    label="About Us"
+    title="Our History"
+    description="Four decades of Triangle real estate, three generations of expertise, and a single commitment: education-driven service for every client."
+  />
+
+  <section class="py-20">
+    <div class="max-w-4xl mx-auto px-6 space-y-8 text-navy-700 leading-relaxed">
+      <p>
+        Julie Wright Realty Group started in the 1970s, when Julie's family began selling rural land in what was then a quiet stretch of farmland north of Raleigh. The first office was, quite literally, a converted playhouse. From those modest beginnings the firm grew alongside the Triangle itself.
+      </p>
+      <p>
+        Today the team works with buyers and sellers across Wake, Granville, Franklin, Johnston, Harnett, Durham, and the surrounding counties. We handle everything from first-time-buyer townhomes to working farms, multi-acre estate sales, new-construction subdivisions, and the kind of complex land transactions that require deep knowledge of zoning, surveys, easements, and tax implications.
+      </p>
+      <p>
+        What hasn't changed is our approach: we educate our clients. The single most reliable way to help someone make a great real estate decision is to make sure they understand the decision they're making. That means real conversations about pricing, market timing, property condition, financing, and what life will actually look like in a given neighborhood.
+      </p>
+      <p>
+        We're proud of the relationships we've built — generations of families who keep coming back, brokers who have spent decades on this team, and a deep network of trusted local lenders, attorneys, builders, inspectors, and contractors. When you work with us, you get the benefit of all of it.
+      </p>
+      <p class="font-serif text-xl text-navy-900 italic mt-12 pt-8 border-t border-warm-200">
+        "We don't just close transactions. We help people build a future in the Triangle."
+      </p>
+    </div>
+  </section>
+
+  <section class="py-20 bg-navy-900 text-white">
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8 text-center">
+      <div>
+        <div class="text-4xl font-serif font-bold text-gold-400">40+</div>
+        <div class="text-navy-300 mt-2">Years of Experience</div>
+      </div>
+      <div>
+        <div class="text-4xl font-serif font-bold text-gold-400">17</div>
+        <div class="text-navy-300 mt-2">Brokers and Agents</div>
+      </div>
+      <div>
+        <div class="text-4xl font-serif font-bold text-gold-400">11</div>
+        <div class="text-navy-300 mt-2">Counties Served</div>
+      </div>
+      <div>
+        <div class="text-4xl font-serif font-bold text-gold-400">1000+</div>
+        <div class="text-navy-300 mt-2">Homes Sold</div>
+      </div>
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+
+export const prerender = true;
+
+const resources = [
+  {
+    title: 'Free Relocation Package',
+    description: 'A complimentary, customized package of Triangle area information sent to your door.',
+    href: '/relocation/relocation-package',
+  },
+  {
+    title: 'Moving Tips',
+    description: 'Practical advice to make moving less stressful for you, your family, and your pets.',
+    href: '/relocation/moving-tips',
+  },
+  {
+    title: 'About the Triangle Area',
+    description: 'Learn about the counties, cities, and communities that make up the Triangle.',
+    href: '/about/triangle-area',
+  },
+];
+---
+
+<BaseLayout title="Relocation Resources | Julie Wright Realty Group">
+  <PageBanner
+    label="Relocating to the Triangle"
+    title="Your Triangle Area Gateway"
+    description="Moving across the country or across the state, we make the transition smooth — from selecting the right neighborhood to handing over the keys."
+  />
+
+  <section class="py-20">
+    <div class="max-w-5xl mx-auto px-6 text-center mb-16">
+      <h2 class="font-serif text-3xl md:text-4xl text-navy-900 font-medium mb-4">
+        Your Triangle Area Information Guide
+      </h2>
+      <p class="text-navy-500 leading-relaxed max-w-3xl mx-auto">
+        We've helped thousands of families relocate to the Triangle. Tell us a little about your timeline and what matters most — schools, commute, lifestyle — and we'll send the information that maps to your needs.
+      </p>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+      {resources.map((r) => (
+        <a
+          href={r.href}
+          class="group bg-white border border-warm-200/50 rounded-2xl p-8 hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1"
+        >
+          <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors mb-2">
+            {r.title}
+          </h3>
+          <p class="text-navy-500 mb-4 leading-relaxed">{r.description}</p>
+          <div class="text-gold-600 text-sm font-medium flex items-center gap-1">
+            Learn More
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <MiniContactForm
+    heading="Have a relocation question?"
+    description="Tell us about your timeline and we'll get back to you with personalized guidance."
+  />
+</BaseLayout>

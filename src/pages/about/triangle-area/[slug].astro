@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageBanner from '../../../components/PageBanner.astro';
+import MiniContactForm from '../../../components/MiniContactForm.astro';
+import { counties, type County } from '../../../data/counties';
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return counties.map((c) => ({ params: { slug: c.slug }, props: { county: c } }));
+}
+
+interface Props {
+  county: County;
+}
+
+const { county } = Astro.props;
+---
+
+<BaseLayout title={`${county.name} | Julie Wright Realty Group`} description={county.description}>
+  <PageBanner
+    label="Triangle Area"
+    title={county.name}
+    description={county.description}
+  />
+
+  <section class="py-20">
+    <div class="max-w-4xl mx-auto px-6">
+      <h2 class="font-serif text-2xl text-navy-900 font-medium mb-6">Cities and Towns</h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        {county.municipalities.map((m) => (
+          <div class="px-4 py-3 bg-white border border-warm-200/60 rounded-lg text-navy-700">{m}</div>
+        ))}
+      </div>
+
+      <div class="mt-12 pt-12 border-t border-warm-200 text-center">
+        <a href="/about/triangle-area" class="text-gold-700 hover:underline">
+          ← Back to all counties
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <MiniContactForm
+    heading={`Looking in ${county.name}?`}
+    description="We know this area well. Tell us what you're looking for and we'll send tailored property alerts."
+  />
+</BaseLayout>

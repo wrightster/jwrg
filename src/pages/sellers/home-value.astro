@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import Form from '../../components/Form.astro';
+import type { Field } from '../../lib/formFields';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+
+export const prerender = true;
+
+const fields: Field[] = [
+  { type: 'text', name: 'first_name', label: 'First Name', required: true, cols: 1 },
+  { type: 'text', name: 'last_name', label: 'Last Name', required: true, cols: 1 },
+  { type: 'email', name: 'email', label: 'Email', required: true, cols: 1 },
+  { type: 'tel', name: 'phone', label: 'Phone', cols: 1 },
+  { type: 'text', name: 'address', label: 'Property Address', required: true, cols: 2 },
+  { type: 'text', name: 'city', label: 'City', required: true, cols: 1 },
+  { type: 'select', name: 'beds', label: 'Bedrooms', options: ['1', '2', '3', '4', '5', '6', '7', '8+'], cols: 1 },
+  { type: 'select', name: 'baths', label: 'Bathrooms', options: ['1', '2', '3', '4+'], cols: 1 },
+  { type: 'number', name: 'year_built', label: 'Year Built', cols: 1 },
+  { type: 'number', name: 'sqft', label: 'Approximate Square Feet', cols: 1 },
+  {
+    type: 'select',
+    name: 'reason',
+    label: 'Reason for Inquiry',
+    options: ['Considering Selling', 'Buying — comparing values', 'Just Curious', 'Refinancing', 'Other'],
+    cols: 1,
+  },
+  { type: 'textarea', name: 'comments', label: 'Comments', cols: 2 },
+];
+---
+
+<BaseLayout title="Learn the Value of Your Home | Julie Wright Realty Group">
+  <PageBanner
+    label="For Sellers"
+    title="What's Your Property Worth?"
+    description="Get a no-obligation, locally informed market valuation. We use comparable sales, current market trends, and 40 years of Triangle insight — not a generic algorithm."
+  />
+
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-6">
+      <Form
+        formKey="cma"
+        title="Request a Free Valuation"
+        description="Tell us about your property and we'll get back to you within one business day."
+        submitLabel="Request Valuation"
+        fields={fields}
+      />
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

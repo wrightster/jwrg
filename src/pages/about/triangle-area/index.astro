@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageBanner from '../../../components/PageBanner.astro';
+import MiniContactForm from '../../../components/MiniContactForm.astro';
+import { counties } from '../../../data/counties';
+
+export const prerender = true;
+---
+
+<BaseLayout title="About the Triangle Area | Julie Wright Realty Group">
+  <PageBanner
+    label="Our Service Area"
+    title="About the Triangle Area"
+    description="From the urban core of Raleigh and Durham to lakefront living on Kerr Lake, our service area spans eleven distinct North Carolina counties — each with its own character."
+  />
+
+  <section class="py-20">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {counties.map((c) => (
+          <a
+            href={`/about/triangle-area/${c.slug}`}
+            class="group bg-white border border-warm-200/50 rounded-2xl p-6 hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1"
+          >
+            <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors mb-2">
+              {c.name}
+            </h3>
+            <p class="text-navy-500 text-sm leading-relaxed line-clamp-3 mb-3">{c.description}</p>
+            <div class="text-navy-400 text-xs">
+              {c.municipalities.slice(0, 4).join(' · ')}
+              {c.municipalities.length > 4 && ` · +${c.municipalities.length - 4} more`}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

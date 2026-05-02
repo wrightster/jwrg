@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageBanner from '../components/PageBanner.astro';
+import Form from '../components/Form.astro';
+import type { Field } from '../lib/formFields';
+import MiniContactForm from '../components/MiniContactForm.astro';
+
+export const prerender = true;
+
+// Seed testimonials live in src/data/testimonials.ts when available.
+// Until then, render the submission form so clients can leave a review.
+
+const fields: Field[] = [
+  { type: 'text', name: 'name', label: 'Your Name', required: true, cols: 1 },
+  { type: 'text', name: 'location', label: 'City / Neighborhood', cols: 1 },
+  { type: 'email', name: 'email', label: 'Email (kept private)', cols: 2 },
+  { type: 'textarea', name: 'message', label: 'Your testimonial', required: true, rows: 5, cols: 2 },
+];
+---
+
+<BaseLayout title="Testimonials | Julie Wright Realty Group">
+  <PageBanner
+    label="Client Stories"
+    title="Testimonials"
+    description="The best measure of our work is what our clients say after the keys are handed over."
+  />
+
+  <section class="py-16">
+    <div class="max-w-3xl mx-auto px-6">
+      <Form
+        formKey="testimonial"
+        title="Share Your Experience"
+        description="If we've helped you buy, sell, or relocate, we'd love to hear from you. Your testimonial may be featured on our website."
+        submitLabel="Submit Testimonial"
+        fields={fields}
+      />
+    </div>
+  </section>
+
+  <MiniContactForm />
+</BaseLayout>

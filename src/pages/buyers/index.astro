@@ -1,0 +1,72 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+
+export const prerender = true;
+
+const resources = [
+  {
+    title: 'Real Estate 101',
+    description: 'Master the vocabulary of buying. Glossary of financing, valuation, legal, and transaction terms.',
+    href: '/buyers/real-estate-101',
+  },
+  {
+    title: 'Buyer FAQs',
+    description: 'Honest answers to the questions every first-time and seasoned buyer asks.',
+    href: '/buyers/faq',
+  },
+  {
+    title: 'Mortgage Calculator',
+    description: 'Estimate monthly payments — principal, interest, taxes, and insurance — in seconds.',
+    href: '/buyers/mortgage-calculator',
+  },
+  {
+    title: 'Free Buying Guide',
+    description: 'Request our complimentary guide for a step-by-step walkthrough of the home-buying process.',
+    href: '/buyers/buying-guide',
+  },
+];
+---
+
+<BaseLayout title="Buyer Resources | Julie Wright Realty Group">
+  <PageBanner
+    label="For Buyers"
+    title="Your Real Estate Buying Resource"
+    description="Buying a home is one of the largest financial decisions you'll make. We give you the tools, knowledge, and support to do it confidently."
+  />
+
+  <section class="py-20">
+    <div class="max-w-5xl mx-auto px-6 text-center mb-12">
+      <h2 class="font-serif text-3xl md:text-4xl text-navy-900 font-medium mb-4">
+        Buying Real Estate in the Triangle Area
+      </h2>
+      <p class="text-navy-500 leading-relaxed max-w-3xl mx-auto">
+        Whether this is your first home or your tenth, the Triangle market rewards preparation. We help you understand financing, evaluate properties, and negotiate with confidence — all without pressure or guesswork.
+      </p>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      {resources.map((r) => (
+        <a
+          href={r.href}
+          class="group bg-white border border-warm-200/50 rounded-2xl p-8 hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1"
+        >
+          <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors mb-2">
+            {r.title}
+          </h3>
+          <p class="text-navy-500 mb-4 leading-relaxed">{r.description}</p>
+          <div class="text-gold-600 text-sm font-medium flex items-center gap-1">
+            Learn More
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <MiniContactForm
+    heading="Ready to start your search?"
+    description="Tell us what you're looking for and we'll set up tailored property alerts at no cost."
+  />
+</BaseLayout>
