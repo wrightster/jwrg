@@ -44,8 +44,39 @@ export interface ApiDocument {
   description: string | null;
   document_type: string;
   sort_order: number;
+  is_public: boolean;
   url: string | null;
   expires_at: string | null;
+}
+
+const DOCUMENT_TYPE_LABELS: Record<string, string> = {
+  contract: 'Contract',
+  addendum: 'Addendum',
+  disclosure: 'Disclosure',
+  inspection_report: 'Inspection Report',
+  appraisal: 'Appraisal',
+  title_report: 'Title Report',
+  survey: 'Survey',
+  plat: 'Plat',
+  hoa_docs: 'HOA Docs',
+  tax_record: 'Tax Record',
+  insurance: 'Insurance',
+  license: 'License',
+  marketing: 'Marketing',
+  photo: 'Photo',
+  correspondence: 'Correspondence',
+  other: 'Other',
+};
+
+export function documentTypeLabel(type: string | null | undefined): string {
+  if (!type) return 'Document';
+  return (
+    DOCUMENT_TYPE_LABELS[type] ??
+    type
+      .split('_')
+      .map((w) => (w ? w[0].toUpperCase() + w.slice(1) : ''))
+      .join(' ')
+  );
 }
 
 export interface ApiListing {
