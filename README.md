@@ -1,43 +1,57 @@
-# Astro Starter Kit: Minimal
+# JWRG — Julie Wright Realty Group
 
-```sh
-npm create astro@latest -- --template minimal
+Public marketing website for **Julie Wright Realty Group**, a full-service residential brokerage in the North Carolina Triangle. Astro 5 SSR with Tailwind 4. Sister site to [`jwlc`](https://github.com/wrightster/jwlc) (Land Company); both consume the same back-office API at `office.jwrgnc.com`.
+
+> 🧭 **First time here?** This repo is one of three siblings in the JWRG platform workspace. Read [wrightster/jwrg-workspace](https://github.com/wrightster/jwrg-workspace) for the full setup — clone the meta repo and run `bootstrap.sh` to get all three projects in place at once.
+
+## Stack
+
+- **Astro 5** with `@astrojs/node` (standalone SSR adapter)
+- **Tailwind CSS 4** (config in `src/styles/global.css` `@theme` block — no `tailwind.config.js`)
+- **TypeScript strict**
+- **Sharp** for local image optimization (Astro `<Image>` for assets in `public/images/` only — listing/neighborhood photos come pre-rendered from the office API)
+
+## Quick start
+
+```bash
+nvm use                  # Node 22 (see .nvmrc)
+npm ci
+npm run dev              # http://localhost:4321
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+| Command | Action |
+|---|---|
+| `npm run dev` | Dev server with HMR |
+| `npm run build` | Production build to `./dist/` |
+| `npm run start` | Run the production Node server (`HOST=127.0.0.1 PORT=4342 node ./dist/server/entry.mjs`) |
+| `npm run preview` | Astro preview |
 
-## 🚀 Project Structure
+## Where things live
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```
+src/
+├── components/   Astro components (ListingCard, MiniContactForm, etc.)
+├── data/         Static site content (team, neighborhoods fallback, FAQ, glossary)
+├── layouts/      BaseLayout shell
+├── lib/api.ts    Office API client + types — keep in sync with jwlc/src/lib/api.ts
+├── pages/        Routes (about, buyers, sellers, listings, neighborhoods, etc.)
+└── styles/       global.css with Tailwind @theme tokens
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## API contract
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Talks to `https://office.jwrgnc.com/api/v1`, filtered by `?site=jwrg`. The shared contract (and rules that apply to **both** JWRG and JWLC) is documented in [`SHARED_FRONTEND_GUIDE.md`](https://github.com/wrightster/jwrg-workspace/blob/main/SHARED_FRONTEND_GUIDE.md). When changing the API client, update **both** sites' `src/lib/api.ts` in the same session.
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Brand
 
-## 🧞 Commands
+Navy + gold + warm neutrals. Inter (sans) + Playfair Display (serif). All tokens live in `src/styles/global.css`.
 
-All commands are run from the root of the project, from a terminal:
+## Deploy
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+Deploys to a DigitalOcean droplet managed by Ploi.io. Push to `main` triggers the deploy webhook. The Node SSR daemon binds to `127.0.0.1:4342` (set in `package.json`'s `start` script — Astro's default 4321 is taken by JWLC on the same host).
 
-## 👀 Want to learn more?
+## Going deeper
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+- [`CLAUDE.md`](./CLAUDE.md) — guidance for Claude Code sessions in this repo
+- [`PLAN.md`](./PLAN.md) — site-rebuild checklist
+- [`../SHARED_FRONTEND_GUIDE.md`](../SHARED_FRONTEND_GUIDE.md) — cross-site rules (lives in the workspace meta repo)
