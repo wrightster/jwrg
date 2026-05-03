@@ -98,8 +98,7 @@ Listings are managed in the office Filament admin (`office.jwrgnc.com`) — the 
 
 ### Adding a Team Member
 
-1. Add entry to `src/data/team.ts`
-2. Add photo to `public/images/team/{firstname-lastname}.jpg` (~300×300px square)
+Team members are managed in the office Filament admin (`office.jwrgnc.com` → Settings → Users) and surfaced via `/api/v1/team`. To publish a user on JWRG, attach a `TeamMemberSiteProfile` for the `jwrg` site under the Public Site Profiles relation manager. Headshots upload through the Photos relation manager (single-primary invariant). Per-site bio overrides go on the site profile itself; otherwise the User's default `bio` is used. No code change needed on the Astro side.
 
 ### Adding a Neighborhood
 
