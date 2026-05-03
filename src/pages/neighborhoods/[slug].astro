@@ -1,54 +1,468 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PageBanner from '../../components/PageBanner.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
-import { neighborhoods, type Neighborhood } from '../../data/neighborhoods';
+import { fetchNeighborhood, photoSrc, formatPrice } from '../../lib/api';
 
-export const prerender = true;
+const { slug } = Astro.params;
+const n = slug ? await fetchNeighborhood(slug) : null;
 
-export function getStaticPaths() {
-  return neighborhoods.map((n) => ({ params: { slug: n.slug }, props: { neighborhood: n } }));
+if (!n) {
+  return Astro.redirect('/neighborhoods');
 }
 
-interface Props {
-  neighborhood: Neighborhood;
-}
+const photos = n.photos ?? (n.primary_photo ? [n.primary_photo] : []);
+const totalImages = photos.length;
+const heroSrcs = photos.slice(0, 5).map((p, i) => photoSrc(p, i === 0 ? 1600 : 800));
+const lightboxSrcs = photos.map((p) => photoSrc(p, 1600));
 
-const { neighborhood: n } = Astro.props;
+const statusLabels: Record<string, string> = {
+  planning: 'Planning',
+  under_development: 'Under Development',
+  active_sales: 'Active Sales',
+  sold_out: 'Sold Out',
+  established: 'Established',
+};
+
+const hoaLine = (() => {
+  if (!n.hoa.fee && !n.hoa.frequency) return null;
+  const fee = n.hoa.fee ? formatPrice(String(n.hoa.fee)) : null;
+  const freq = n.hoa.frequency;
+  if (fee && freq) return `${fee} / ${freq}`;
+  return fee ?? null;
+})();
+
+const location = [n.city, n.county && `${n.county} County`].filter(Boolean).join(' · ');
+const description = n.marketing_description ?? n.description ?? null;
 ---
 
-<BaseLayout title={`${n.name} | Julie Wright Realty Group`} description={n.description}>
-  <PageBanner
-    label={`${n.county}${n.city ? ` · ${n.city}` : ''}`}
-    title={n.name}
-    description={n.description}
-  />
+<BaseLayout
+  title={`${n.name} | Julie Wright Realty Group`}
+  description={description ?? `Explore ${n.name}, a Triangle-area community offered by Julie Wright Realty Group.`}
+>
+  <section class="pt-28 pb-8">
+    <div class="max-w-7xl mx-auto px-6">
+      <a href="/neighborhoods" class="text-sm text-gold-600 hover:text-gold-700 inline-flex items-center gap-1 mb-6">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back to neighborhoods
+      </a>
 
-  <section class="py-20">
-    <div class="max-w-4xl mx-auto px-6">
-      {n.priceFrom && (
-        <div class="text-center mb-10">
-          <div class="text-navy-500 text-xs tracking-widest uppercase">From</div>
-          <div class="text-4xl font-serif font-bold text-gold-700 mt-1">{n.priceFrom}</div>
+      <div class="flex flex-wrap items-end justify-between gap-6">
+        <div>
+          {location && (
+            <div class="text-gold-600 text-xs tracking-widest uppercase mb-2">{location}</div>
+          )}
+          <h1 class="font-serif text-4xl md:text-5xl text-navy-900 font-medium leading-tight">
+            {n.name}
+          </h1>
         </div>
-      )}
-
-      <div class="bg-warm-100/60 border border-warm-200 rounded-2xl p-8 text-center">
-        <h3 class="font-serif text-xl text-navy-900 font-semibold mb-2">Interested in {n.name}?</h3>
-        <p class="text-navy-500 mb-6">
-          Reach out and we'll send detail sheets, available lots and homes, and arrange a tour at your convenience.
-        </p>
-        <div class="flex flex-wrap justify-center gap-4">
-          <a href="/contact" class="px-8 py-3.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all">
-            Request Information
-          </a>
-          <a href="/neighborhoods" class="px-8 py-3.5 border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white font-semibold rounded-lg transition-all">
-            View All Neighborhoods
-          </a>
+        <div class="flex flex-wrap gap-2">
+          {n.status && (
+            <span class="px-3 py-1 rounded-full text-xs font-semibold border bg-warm-100 text-navy-700 border-warm-200">
+              {statusLabels[n.status]}
+            </span>
+          )}
+          {(n.listings_count ?? 0) > 0 && (
+            <span class="px-3 py-1 rounded-full text-xs font-semibold border bg-gold-50 text-gold-800 border-gold-200">
+              {n.listings_count} active listing{n.listings_count === 1 ? '' : 's'}
+            </span>
+          )}
         </div>
       </div>
     </div>
   </section>
 
+  {totalImages > 0 && (
+    <section class="pb-12">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {heroSrcs.slice(0, 1).map((src, i) => (
+            <button
+              type="button"
+              class="gallery-tile md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto rounded-2xl overflow-hidden relative group"
+              data-lb-index={i}
+              aria-label={`View photo ${i + 1} of ${totalImages}`}
+            >
+              <img src={src ?? undefined} alt={photos[i].alt ?? photos[i].caption ?? n.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+            </button>
+          ))}
+          {heroSrcs.slice(1, 5).map((src, i) => (
+            <button
+              type="button"
+              class="gallery-tile aspect-[4/3] rounded-2xl overflow-hidden relative group"
+              data-lb-index={i + 1}
+              aria-label={`View photo ${i + 2} of ${totalImages}`}
+            >
+              <img src={src ?? undefined} alt={photos[i + 1].alt ?? photos[i + 1].caption ?? n.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+              {i === 3 && totalImages > 5 && (
+                <div class="absolute inset-0 bg-navy-950/60 flex flex-col items-center justify-center text-warm-50">
+                  <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+                  <span class="font-semibold">+ {totalImages - 5} more</span>
+                </div>
+              )}
+            </button>
+          ))}
+        </div>
+        {totalImages > 1 && (
+          <div class="flex justify-center mt-6">
+            <button
+              type="button"
+              id="view-all-photos"
+              class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-warm-50 font-semibold transition-all text-sm"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+              View all {totalImages} photos
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+  )}
+
+  <section class="py-12">
+    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12">
+      <div class="lg:col-span-2 space-y-10">
+        {description && (
+          <div>
+            <h2 class="font-serif text-2xl text-navy-900 font-medium mb-4">About {n.name}</h2>
+            <div class="prose prose-navy max-w-none text-navy-700 leading-relaxed whitespace-pre-line">
+              {description}
+            </div>
+          </div>
+        )}
+
+        {n.amenities.length > 0 && (
+          <div>
+            <h2 class="font-serif text-2xl text-navy-900 font-medium mb-4">Community Amenities</h2>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-navy-700">
+              {n.amenities.map((a) => (
+                <li class="flex items-start gap-2">
+                  <svg class="w-5 h-5 text-gold-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>{a}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {(n.school_district || n.utilities.length > 0) && (
+          <div class="grid sm:grid-cols-2 gap-6">
+            {n.school_district && (
+              <div>
+                <h3 class="font-serif text-lg text-navy-900 font-medium mb-2">Schools</h3>
+                <p class="text-navy-700 text-sm">{n.school_district}</p>
+              </div>
+            )}
+            {n.utilities.length > 0 && (
+              <div>
+                <h3 class="font-serif text-lg text-navy-900 font-medium mb-2">Utilities</h3>
+                <ul class="text-navy-700 text-sm space-y-1">
+                  {n.utilities.map((u) => <li>{u}</li>)}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
+        {n.deed_restrictions_summary && (
+          <div>
+            <h2 class="font-serif text-2xl text-navy-900 font-medium mb-2">Deed Restrictions</h2>
+            <p class="text-navy-700 leading-relaxed text-sm">{n.deed_restrictions_summary}</p>
+          </div>
+        )}
+      </div>
+
+      <aside class="space-y-6">
+        <div class="bg-warm-100/60 rounded-2xl p-6 border border-warm-200/60">
+          <h3 class="font-serif text-lg text-navy-900 font-semibold mb-4">Quick facts</h3>
+          <dl class="space-y-3 text-sm">
+            {location && (
+              <div>
+                <dt class="text-navy-400 text-xs uppercase tracking-wider">Location</dt>
+                <dd class="text-navy-900 mt-0.5">{location}</dd>
+              </div>
+            )}
+            {n.total_lots && (
+              <div>
+                <dt class="text-navy-400 text-xs uppercase tracking-wider">Total Lots</dt>
+                <dd class="text-navy-900 mt-0.5">{n.total_lots}</dd>
+              </div>
+            )}
+            {n.total_phases && (
+              <div>
+                <dt class="text-navy-400 text-xs uppercase tracking-wider">Phases</dt>
+                <dd class="text-navy-900 mt-0.5">{n.total_phases}</dd>
+              </div>
+            )}
+            {n.hoa.name && (
+              <div>
+                <dt class="text-navy-400 text-xs uppercase tracking-wider">HOA</dt>
+                <dd class="text-navy-900 mt-0.5">{n.hoa.name}</dd>
+              </div>
+            )}
+            {hoaLine && (
+              <div>
+                <dt class="text-navy-400 text-xs uppercase tracking-wider">HOA Fee</dt>
+                <dd class="text-navy-900 mt-0.5">{hoaLine}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+
+        <div class="bg-warm-100/60 rounded-2xl p-6 border border-warm-200/60">
+          <h3 class="font-serif text-lg text-navy-900 font-semibold mb-2">Interested in {n.name}?</h3>
+          <p class="text-navy-500 text-sm mb-4">
+            Reach out and we'll send detail sheets, available lots and homes, and arrange a tour.
+          </p>
+          <a
+            href="/contact"
+            class="block text-center w-full py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all"
+          >
+            Request Information
+          </a>
+          {n.website_url && (
+            <a
+              href={n.website_url}
+              target="_blank"
+              rel="noopener"
+              class="block text-center w-full mt-3 py-3 border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white font-semibold rounded-lg transition-all"
+            >
+              Visit Community Website
+            </a>
+          )}
+        </div>
+
+        {(n.listings_count ?? 0) > 0 && (
+          <a
+            href={`/listings`}
+            class="block w-full px-6 py-4 rounded-2xl bg-navy-900 text-warm-50 hover:bg-navy-800 transition-all text-center"
+          >
+            <div class="font-serif text-lg">{n.listings_count} active listing{n.listings_count === 1 ? '' : 's'}</div>
+            <div class="text-warm-200 text-xs tracking-widest uppercase mt-1">View available homes →</div>
+          </a>
+        )}
+      </aside>
+    </div>
+  </section>
+
   <MiniContactForm />
+
+  {totalImages > 0 && (
+    <div
+      id="lightbox"
+      class="lightbox"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${n.name} photo gallery`}
+    >
+      <img id="lb-bg" src="" alt="" aria-hidden="true" class="lightbox-bg" />
+      <div class="lightbox-overlay"></div>
+
+      <button id="lb-close" class="lightbox-close" aria-label="Close gallery">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+
+      {totalImages > 1 && (
+        <>
+          <button id="lb-prev" class="lightbox-prev" aria-label="Previous image">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-10 h-10 pointer-events-none"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <button id="lb-next" class="lightbox-next" aria-label="Next image">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-10 h-10 pointer-events-none"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </>
+      )}
+
+      <div class="lightbox-body">
+        <img id="lb-image" src="" alt="" class="lightbox-img" />
+      </div>
+
+      <div class="lightbox-counter" id="lb-counter"></div>
+    </div>
+  )}
+
+  <style>
+    .gallery-tile { cursor: pointer; }
+    .gallery-tile:focus-visible { outline: 2px solid var(--color-gold-500); outline-offset: 4px; }
+
+    .lightbox {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding-top: 5rem;
+      backdrop-filter: blur(12px);
+      opacity: 0; pointer-events: none;
+      transition: opacity 300ms ease;
+    }
+    .lightbox.is-open { opacity: 1; pointer-events: auto; }
+    .lightbox-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; opacity: 0.45; filter: blur(28px);
+      z-index: 0; transition: opacity 200ms ease;
+    }
+    .lightbox-overlay {
+      position: absolute; inset: 0;
+      background-color: oklch(from var(--color-navy-950) l c h / 0.6);
+      z-index: 1;
+    }
+    .lightbox::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 40%, oklch(from var(--color-navy-950) l c h / 0.85) 100%);
+      z-index: 2;
+    }
+    .lightbox-close {
+      position: absolute; top: 1rem; right: 1rem; z-index: 10;
+      width: 3rem; height: 3rem;
+      display: flex; align-items: center; justify-content: center;
+      color: oklch(from var(--color-warm-50) l c h / 0.7);
+      transition: color 200ms ease;
+    }
+    .lightbox-close:hover { color: var(--color-warm-50); }
+    .lightbox-prev, .lightbox-next {
+      position: absolute; top: 50%; transform: translateY(-50%); z-index: 20;
+      width: 4rem; height: 4rem;
+      display: flex; align-items: center; justify-content: center;
+      background-color: oklch(from var(--color-warm-50) l c h / 0.95);
+      color: var(--color-navy-900);
+      border-radius: 9999px;
+      transition: all 200ms ease;
+      cursor: pointer; opacity: 0.6;
+    }
+    .lightbox-prev:hover, .lightbox-next:hover {
+      background-color: var(--color-gold-500);
+      color: var(--color-warm-50);
+      opacity: 1;
+    }
+    .lightbox-prev { left: 1.5rem; }
+    .lightbox-next { right: 1.5rem; }
+    .lightbox-body {
+      position: relative; z-index: 10;
+      max-width: 80rem; max-height: 85vh;
+      margin: 0 auto;
+      padding: 0 6rem;
+    }
+    .lightbox-img {
+      max-width: 100%; max-height: 85vh;
+      object-fit: contain; margin: 0 auto;
+      transition: opacity 250ms ease;
+    }
+    .lightbox-counter {
+      position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+      z-index: 10;
+      color: oklch(from var(--color-warm-50) l c h / 0.7);
+      font-size: 0.875rem;
+      font-variant-numeric: tabular-nums;
+    }
+    @media (max-width: 767px) {
+      .lightbox-body { padding-left: 1rem; padding-right: 1rem; padding-bottom: 8rem; }
+      .lightbox-prev, .lightbox-next { width: 3rem; height: 3rem; top: auto; bottom: 2rem; }
+      .lightbox-prev { left: 50%; transform: translateX(-4.5rem); }
+      .lightbox-next { left: 50%; right: auto; transform: translateX(1.5rem); }
+      .lightbox-counter { bottom: 5.5rem; }
+    }
+  </style>
+
+  {totalImages > 0 && (
+    <script define:vars={{ lightboxSrcs, totalImages }}>
+      let currentIndex = 0;
+      let trigger = null;
+
+      const lightbox = document.getElementById('lightbox');
+      const lbImage = document.getElementById('lb-image');
+      const lbBg = document.getElementById('lb-bg');
+      const lbCounter = document.getElementById('lb-counter');
+      const lbClose = document.getElementById('lb-close');
+      const lbPrev = document.getElementById('lb-prev');
+      const lbNext = document.getElementById('lb-next');
+
+      function setLightboxImage(i) {
+        currentIndex = i;
+        const src = lightboxSrcs[i];
+        if (lbImage) {
+          lbImage.style.opacity = '0';
+          setTimeout(() => {
+            lbImage.src = src;
+            lbImage.alt = `Photo ${i + 1} of ${totalImages}`;
+            lbImage.style.opacity = '1';
+          }, 120);
+        }
+        if (lbBg) {
+          lbBg.style.opacity = '0';
+          setTimeout(() => {
+            lbBg.src = src;
+            lbBg.style.opacity = '0.45';
+          }, 120);
+        }
+        if (lbCounter) lbCounter.textContent = `${i + 1} / ${totalImages}`;
+      }
+
+      function openLightbox(index, source) {
+        trigger = source ?? null;
+        setLightboxImage(index);
+        lightbox?.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+        lbClose?.focus();
+      }
+
+      function closeLightbox() {
+        lightbox?.classList.remove('is-open');
+        document.body.style.overflow = '';
+        trigger?.focus();
+        trigger = null;
+      }
+
+      function next() { setLightboxImage((currentIndex + 1) % totalImages); }
+      function prev() { setLightboxImage((currentIndex - 1 + totalImages) % totalImages); }
+
+      document.querySelectorAll('.gallery-tile').forEach((tile) => {
+        tile.addEventListener('click', () => {
+          const idx = parseInt(tile.getAttribute('data-lb-index') ?? '0', 10);
+          openLightbox(idx, tile);
+        });
+      });
+
+      const viewAll = document.getElementById('view-all-photos');
+      if (viewAll) {
+        viewAll.addEventListener('click', () => openLightbox(0, viewAll));
+      }
+
+      lbClose?.addEventListener('click', closeLightbox);
+      lbPrev?.addEventListener('click', prev);
+      lbNext?.addEventListener('click', next);
+
+      lightbox?.addEventListener('click', (e) => {
+        if (!e.target.closest('button, .lightbox-body, .lightbox-counter')) {
+          closeLightbox();
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (!lightbox?.classList.contains('is-open')) return;
+        if (e.key === 'Escape') { closeLightbox(); return; }
+        if (e.key === 'ArrowRight') { next(); return; }
+        if (e.key === 'ArrowLeft') { prev(); return; }
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const focusable = [lbClose, lbPrev, lbNext].filter(Boolean);
+          const idx = focusable.indexOf(document.activeElement);
+          const nextIdx = e.shiftKey
+            ? (idx - 1 + focusable.length) % focusable.length
+            : (idx + 1) % focusable.length;
+          focusable[nextIdx].focus();
+        }
+      });
+
+      let swipeStartX = 0;
+      let swipeStartY = 0;
+      lightbox?.addEventListener('touchstart', (e) => {
+        swipeStartX = e.touches[0].clientX;
+        swipeStartY = e.touches[0].clientY;
+      }, { passive: true });
+      lightbox?.addEventListener('touchend', (e) => {
+        const dx = e.changedTouches[0].clientX - swipeStartX;
+        const dy = e.changedTouches[0].clientY - swipeStartY;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+          if (dx < 0) next(); else prev();
+        }
+      }, { passive: true });
+    </script>
+  )}
 </BaseLayout>

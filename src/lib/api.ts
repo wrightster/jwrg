@@ -177,6 +177,67 @@ export async function fetchListing(slug: string): Promise<ApiListing | null> {
   }
 }
 
+export interface ApiNeighborhood {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  marketing_description: string | null;
+  status: 'planning' | 'under_development' | 'active_sales' | 'sold_out' | 'established' | null;
+
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  county: string | null;
+  latitude: number | null;
+  longitude: number | null;
+
+  total_lots: number | null;
+  total_phases: number | null;
+
+  hoa: {
+    name: string | null;
+    fee: number | null;
+    frequency: 'monthly' | 'quarterly' | 'annually' | null;
+    contact: string | null;
+  };
+
+  amenities: string[];
+  school_district: string | null;
+  utilities: string[];
+  deed_restrictions_summary: string | null;
+  website_url: string | null;
+
+  primary_photo: ApiPhoto | null;
+  photos?: ApiPhoto[];
+  photo_count?: number;
+  listings_count?: number;
+}
+
+export async function fetchNeighborhoods(): Promise<ApiNeighborhood[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/neighborhoods?per_page=100`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (json.data ?? []) as ApiNeighborhood[];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchNeighborhood(slug: string): Promise<ApiNeighborhood | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/neighborhoods/${slug}`);
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data as ApiNeighborhood;
+  } catch {
+    return null;
+  }
+}
+
 export interface FormSubmitResult {
   ok: boolean;
   message: string;
