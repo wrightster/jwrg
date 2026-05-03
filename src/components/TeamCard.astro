@@ -1,12 +1,16 @@
 ---
-import type { TeamMember } from '../data/team';
+import type { ApiTeamMember } from '../lib/api';
+import { photoSrc } from '../lib/api';
 
 interface Props {
-  member: TeamMember;
+  member: ApiTeamMember;
 }
 
 const { member } = Astro.props;
-const photo = member.photo || member.remotePhoto;
+const photo = photoSrc(member.primary_photo, 800);
+const summary = member.short_bio ?? member.bio ?? '';
+const phone = member.public_phone ?? '';
+const email = member.public_email ?? '';
 ---
 
 <a
@@ -17,7 +21,7 @@ const photo = member.photo || member.remotePhoto;
     {photo ? (
       <img
         src={photo}
-        alt={member.name}
+        alt={member.primary_photo?.alt ?? member.name}
         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
       />
     ) : (
@@ -30,17 +34,21 @@ const photo = member.photo || member.remotePhoto;
     <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors">
       {member.name}
     </h3>
-    <p class="text-gold-600 text-sm font-medium tracking-wide mt-1">{member.role}</p>
-    <p class="text-navy-500 text-sm mt-3 line-clamp-3 flex-1">{member.bio}</p>
-    <div class="mt-4 pt-4 border-t border-warm-200/60 space-y-1 text-sm">
-      <a href={`tel:${member.phone.replace(/[^0-9]/g, '')}`} class="block text-navy-700 hover:text-gold-600 transition-colors">
-        {member.phone}
-      </a>
-      {member.email && (
-        <a href={`mailto:${member.email}`} class="block text-navy-700 hover:text-gold-600 transition-colors truncate">
-          {member.email}
-        </a>
-      )}
-    </div>
+    {member.title && (
+      <p class="text-gold-600 text-sm font-medium tracking-wide mt-1">{member.title}</p>
+    )}
+    {summary && (
+      <p class="text-navy-500 text-sm mt-3 line-clamp-3 flex-1">{summary}</p>
+    )}
+    {(phone || email) && (
+      <div class="mt-4 pt-4 border-t border-warm-200/60 space-y-1 text-sm">
+        {phone && (
+          <span class="block text-navy-700">{phone}</span>
+        )}
+        {email && (
+          <span class="block text-navy-700 truncate">{email}</span>
+        )}
+      </div>
+    )}
   </div>
 </a>

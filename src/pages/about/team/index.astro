@@ -3,23 +3,29 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
 import TeamCard from '../../../components/TeamCard.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
-import { team } from '../../../data/team';
+import { fetchTeam } from '../../../lib/api';
 
-export const prerender = true;
+const team = await fetchTeam();
 ---
 
 <BaseLayout title="Our Team | Julie Wright Realty Group">
   <PageBanner
     label="About Us"
     title="Meet the Team"
-    description="Seventeen brokers and agents with deep roots across the Triangle. Each brings their own specialty — from new construction and equestrian properties to land, relocation, and estate planning."
+    description="Brokers and agents with deep roots across the Triangle. Each brings their own specialty — from new construction and equestrian properties to land, relocation, and estate planning."
   />
 
   <section class="py-20">
     <div class="max-w-7xl mx-auto px-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {team.map((m) => <TeamCard member={m} />)}
-      </div>
+      {team.length === 0 ? (
+        <div class="text-center text-navy-500 py-16">
+          <p>Our team will be listed here shortly. Please check back soon.</p>
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {team.map((m) => <TeamCard member={m} />)}
+        </div>
+      )}
     </div>
   </section>
 

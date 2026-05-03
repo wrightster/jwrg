@@ -238,6 +238,57 @@ export async function fetchNeighborhood(slug: string): Promise<ApiNeighborhood |
   }
 }
 
+export interface ApiTeamMember {
+  id: number;
+  slug: string;
+  name: string;
+  title: string | null;
+  short_bio: string | null;
+  bio: string | null;
+
+  public_email: string | null;
+  public_phone: string | null;
+
+  license_number: string | null;
+  license_state: string | null;
+  license_expiry: string | null;
+
+  specialties: string[];
+  social_links: Record<string, string>;
+  years_experience: number | null;
+
+  sort_order: number | null;
+  published_at: string | null;
+
+  primary_photo: ApiPhoto | null;
+  photos?: ApiPhoto[];
+  photo_count?: number;
+  marketing_sites?: string[];
+}
+
+export async function fetchTeam(): Promise<ApiTeamMember[]> {
+  try {
+    const res = await fetch(`${BASE_URL}/team?site=${SITE_SLUG}&per_page=100`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (json.data ?? []) as ApiTeamMember[];
+  } catch {
+    return [];
+  }
+}
+
+export async function fetchTeamMember(slug: string): Promise<ApiTeamMember | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/team/${slug}?site=${SITE_SLUG}`);
+    if (res.status === 404) return null;
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.data as ApiTeamMember;
+  } catch {
+    return null;
+  }
+}
+
 export interface FormSubmitResult {
   ok: boolean;
   message: string;
