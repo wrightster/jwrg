@@ -538,23 +538,23 @@
   /* ══════════════════════════════════════════════════
      CTA SECTIONS
   ══════════════════════════════════════════════════ */
-  .cta-dark         { @apply py-7 bg-earth-900; --btn-bg: var(--color-earth-900); }
-  .cta-dark-heading { @apply font-display text-3xl text-light-text; }
-  .cta-dark-body    { @apply text-earth-400 mt-4; }
-  /* Above-footer CTA band — inverted scheme: gold bg, dark text, red buttons.
-     Name kept as .cta-red (it now renders gold) to avoid churning every page
-     that references it. The inverted BtnArrows inside render red on the gold. */
-  .cta-red          { @apply py-7 bg-gold-300; --btn-bg: var(--color-gold-300); }
-  .cta-red .cta-dark-heading { @apply text-earth-900; }
-  .cta-red .cta-dark-body    { @apply text-earth-700; }
-  .cta-red .btn-arrow--inverted           { color: var(--color-earth-50); --_btn-arrow-fill: var(--color-red-600); }
-  .cta-red .btn-arrow--inverted svg       { fill: var(--color-red-600); stroke: var(--color-red-600); }
-  .cta-red .btn-arrow--inverted:hover     { color: var(--color-red-600); --_btn-arrow-fill: var(--color-gold-300); }
-  .cta-red .btn-arrow--inverted:hover svg { fill: var(--color-gold-300); }
-  .cta-red .btn-arrow--inverted:hover .btn-arrow__shaft { border-top-color: var(--color-gold-300); border-bottom-color: var(--color-gold-300); }
-  .cta-light         { @apply py-8 border-t border-earth-200; --btn-bg: var(--color-earth-50); }
-  .cta-light-heading { @apply font-display text-3xl text-earth-900; }
-  .cta-light-body    { @apply text-earth-600 mt-4; }
+  .cta-bold         { @apply py-7 bg-earth-900; --btn-bg: var(--color-earth-900); }
+  .cta-bold-heading { @apply font-display text-3xl text-light-text; }
+  .cta-bold-body    { @apply text-earth-400 mt-4; }
+  /* Above-footer feature CTA — gold band, dark text, red buttons (flat, no
+     gradient). Reuses .cta-bold-heading/body in markup; the overrides below
+     flip their text dark and render the inverted BtnArrows red on the gold. */
+  .cta-feature          { @apply py-7 bg-gold-300; --btn-bg: var(--color-gold-300); }
+  .cta-feature .cta-bold-heading { @apply text-earth-900; }
+  .cta-feature .cta-bold-body    { @apply text-earth-700; }
+  .cta-feature .btn-arrow--inverted           { color: var(--color-earth-50); --_btn-arrow-fill: var(--color-red-600); }
+  .cta-feature .btn-arrow--inverted svg       { fill: var(--color-red-600); stroke: var(--color-red-600); }
+  .cta-feature .btn-arrow--inverted:hover     { color: var(--color-red-600); --_btn-arrow-fill: var(--color-gold-300); }
+  .cta-feature .btn-arrow--inverted:hover svg { fill: var(--color-gold-300); }
+  .cta-feature .btn-arrow--inverted:hover .btn-arrow__shaft { border-top-color: var(--color-gold-300); border-bottom-color: var(--color-gold-300); }
+  .cta-subtle         { @apply py-8 border-t border-earth-200; --btn-bg: var(--color-earth-50); }
+  .cta-subtle-heading { @apply font-display text-3xl text-earth-900; }
+  .cta-subtle-body    { @apply text-earth-600 mt-4; }
   .cta-btn-row       { @apply flex flex-wrap justify-center gap-4 mt-8; }
 
   /* ══════════════════════════════════════════════════

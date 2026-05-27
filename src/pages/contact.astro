@@ -96,10 +96,10 @@ const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
   </section>
 
   <!-- Service Area CTA -->
-  <section class="cta-red">
+  <section class="cta-feature">
     <div class="cta-wrap">
-      <h2 class="cta-dark-heading">Serving the Triangle Region</h2>
-      <p class="cta-dark-body">We help families buy and sell across these North Carolina counties.</p>
+      <h2 class="cta-bold-heading">Serving the Triangle Region</h2>
+      <p class="cta-bold-body">We help families buy and sell across these North Carolina counties.</p>
       <div class="flex flex-wrap justify-center gap-2 mt-8">
         {site.counties.map((county) => (
           <a href={`/listings?county=${encodeURIComponent(county)}`} class="sidebar-county-tag">{county}</a>

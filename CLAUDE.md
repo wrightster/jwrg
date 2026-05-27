@@ -111,17 +111,19 @@ Reusable classes are defined in `global.css` (not per-component `<style>`):
 buttons (`.btn-primary`/`.btn-secondary`/`.btn-inverted`/`.btn-nav`, plus the
 `.btn-arrow` used by `BtnArrow.astro`), typography (`.section-label`,
 `.section-heading`, `.page-banner-title`), layout (`.content-wrap`, `.cta-wrap`),
-CTA blocks (`.cta-dark`/`.cta-red`/`.cta-light`), listing card/row, the listings
+CTA blocks (`.cta-bold`/`.cta-feature`/`.cta-subtle`), listing card/row, the listings
 filter bar, the detail-page gallery/lightbox, and the `.topo-bg` overlay.
 Status pills color via `[data-status="available|coming_soon|pending|sold"]`.
 
-Two inverted-scheme gotchas (flat fills, no gradients): the top **`.page-banner`**
-is a solid `bg-red-600` band with gold title/label and light description — not
-the old gold gradient. **`.cta-red`** is the above-footer CTA and now renders
-**gold** (gold bg, dark `earth-900`/`earth-700` text, red `primary` buttons)
-despite the name; its child overrides live under `.cta-red` in `global.css`, and
-the body `<p>`s use a bare `.cta-dark-body` (the old `text-earth-100` utility was
-removed so the dark override wins over Tailwind's utilities layer).
+CTA variants are named by emphasis, not color (flat fills, no gradients):
+`.cta-bold` is the dark `bg-earth-900` band, `.cta-feature` is the gold
+(`bg-gold-300`) above-footer band with dark `earth-900`/`earth-700` text and red
+`primary` buttons, and `.cta-subtle` is the light bordered band. `.cta-feature`
+reuses `.cta-bold-heading`/`.cta-bold-body` in markup with scoped overrides under
+`.cta-feature` in `global.css`; its body `<p>`s use a bare `.cta-bold-body` (the
+old `text-earth-100` utility was removed so the dark override wins over Tailwind's
+utilities layer). Relatedly, the top **`.page-banner`** is a solid `bg-red-600`
+band with gold title/label and light description — not the old gold gradient.
 
 ### Migration alias bridge (temporary)
 
