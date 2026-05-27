@@ -91,8 +91,8 @@
 
 /* Nav accent/menu are runtime-switchable via FontSwitcher; default to brand tokens */
 :root {
-  --color-nav-accent: var(--color-red-600);
-  --color-nav-menu:   var(--color-earth-900);
+  --color-nav-accent: var(--color-gold-300);
+  --color-nav-menu:   var(--color-earth-50);
 }
 
 @layer base {
@@ -360,7 +360,7 @@
   .site-header { @apply fixed top-0 left-0 right-0 z-50 transition-all duration-500; }
   .header-bg {
     @apply absolute inset-0;
-    background: linear-gradient(200deg, var(--color-gold-300) -100%, var(--color-earth-100) 200%);
+    background: var(--color-red-600);
   }
   .site-nav { @apply relative z-10 max-w-7xl mx-auto px-6 lg:px-8 flex items-center h-20; }
 
@@ -397,7 +397,7 @@
     opacity: 0;
   }
   .nav-link-active .nav-link-bg {
-    background-color: var(--color-red-600);
+    background-color: var(--color-gold-300);
     transform: scaleY(1);
     opacity: 1;
   }
@@ -405,11 +405,11 @@
     transform: scaleY(1);
     opacity: 1;
     background-color: var(--color-earth-50);
-    border: 2px solid var(--color-red-600);
+    border: 2px solid var(--color-gold-300);
   }
   .nav-active-bar   {
     @apply absolute bottom-0 left-4 right-4 h-0.5 rounded-full;
-    background-color: var(--color-earth-50);
+    background-color: var(--color-earth-900);
   }
   .nav-desktop-link::after {
     content: '';
@@ -426,12 +426,12 @@
   }
   .nav-link-inactive:hover::after { opacity: 1; transform: translateY(0); }
   .nav-link-active::after { display: none; }
-  .nav-link-active   { color: var(--color-earth-50); }
+  .nav-link-active   { color: var(--color-earth-900); }
   .nav-link-inactive { color: var(--color-nav-menu); }
-  .nav-link-inactive:hover { color: var(--color-nav-accent); }
+  .nav-link-inactive:hover { color: var(--color-earth-900); }
 
   /* Click: text color shift — bg animation is driven by inline styles in JS */
-  .nav-desktop-link.nav-link-clicking { color: var(--color-earth-50); transition-duration: 100ms; }
+  .nav-desktop-link.nav-link-clicking { color: var(--color-earth-900); transition-duration: 100ms; }
 
   /* Deactivate: previously active link fades out */
   .nav-link-active.nav-link-deactivating .nav-link-bg {
@@ -504,22 +504,22 @@
   .mobile-menu-link.nav-link-active { color: var(--color-earth-900); }
 
   /* Footer */
-  .site-footer   { @apply relative z-[1] text-earth-900 mt-auto overflow-hidden; background: linear-gradient(200deg, var(--color-gold-300) -100%, var(--color-earth-100) 200%); }
+  .site-footer   { @apply relative z-[1] text-earth-50 mt-auto overflow-hidden; background: var(--color-red-600); }
   .footer-inner  { @apply relative max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20; }
   .footer-grid   { @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8; }
   .footer-brand  { @apply lg:col-span-1; }
   .footer-logo   { @apply inline-block mb-5; }
   .footer-logo-img { @apply h-12 w-auto; }
-  .footer-tagline  { @apply text-sm leading-relaxed text-earth-800 max-w-xs; }
-  .footer-col-heading { @apply font-display text-lg text-earth-900 mb-5; }
+  .footer-tagline  { @apply text-sm leading-relaxed text-earth-100 max-w-xs; }
+  .footer-col-heading { @apply font-display text-lg text-earth-50 mb-5; }
   .footer-nav-list    { @apply space-y-3; }
-  .footer-nav-link    { @apply text-sm text-earth-700 hover:text-red-600 transition-colors duration-300; }
-  .footer-services-list { @apply space-y-3 text-sm text-earth-700; }
-  .footer-contact      { @apply not-italic space-y-3 text-sm text-earth-700; }
-  .footer-contact-link { @apply hover:text-red-600 transition-colors; }
-  .footer-bottom    { @apply mt-16 pt-8 border-t border-earth-900/20 flex flex-col md:flex-row items-center justify-between gap-4; }
-  .footer-copyright { @apply text-xs text-earth-900/60; }
-  .footer-location  { @apply text-xs text-earth-900/60; }
+  .footer-nav-link    { @apply text-sm text-earth-100 hover:text-gold-300 transition-colors duration-300; }
+  .footer-services-list { @apply space-y-3 text-sm text-earth-100; }
+  .footer-contact      { @apply not-italic space-y-3 text-sm text-earth-100; }
+  .footer-contact-link { @apply hover:text-gold-300 transition-colors; }
+  .footer-bottom    { @apply mt-16 pt-8 border-t border-earth-50/20 flex flex-col md:flex-row items-center justify-between gap-4; }
+  .footer-copyright { @apply text-xs text-earth-50/70; }
+  .footer-location  { @apply text-xs text-earth-50/70; }
 
   /* ══════════════════════════════════════════════════
      PAGE BANNER

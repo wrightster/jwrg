@@ -159,7 +159,7 @@ const footerNav = [
           <!-- Brand -->
           <div class="footer-brand">
             <a href="/" class="footer-logo">
-              <img src="/JWRG_Full.svg" class="footer-logo-img" alt={site.name} />
+              <img src="/JWRG_Full_White.svg" class="footer-logo-img" alt={site.name} />
             </a>
             <p class="footer-tagline">
               Four decades guiding Triangle-area families home — full-service residential real estate
@@ -295,9 +295,9 @@ const footerNav = [
           // Drive click animation via inline styles so hover/CSS specificity can't interfere
           const bg = link.querySelector<HTMLElement>('.nav-link-bg');
           if (bg) {
-            // Snap to start state (scaleY 0, red, no transition)
+            // Snap to start state (scaleY 0, gold, no transition)
             bg.style.transition = 'none';
-            bg.style.backgroundColor = 'var(--color-red-600)';
+            bg.style.backgroundColor = 'var(--color-gold-300)';
             bg.style.transform = 'scaleY(0)';
             bg.style.opacity = '1';
             // Next frame: re-enable transition and animate to full height
