@@ -92,9 +92,9 @@ the reference implementation** for any design pattern.
 
 | Family | Use |
 |---|---|
-| `red-*` (50–950) | Dark accent / red clay — CTAs, links, badges, section labels. `red-600` (`#b52126`) is the primary site color |
-| `gold-*` (50–950) | Light accent / muted gold — selection, pending badge, footer/banner gradient. `gold-300` (`#ffcf7d`) |
-| `earth-*` (50–950) | Neutrals — page bg (`earth-50`), banners/cards (`earth-100`), body text (`earth-700`), dark sections + main text (`earth-900`) |
+| `red-*` (50–950) | Dark accent / red clay — CTAs, links, badges, section labels, footer bg, top page-banner bg. `red-600` (`#b52126`) is the primary site color |
+| `gold-*` (50–950) | Light accent / muted gold — selection, pending badge, page-banner title/label text, above-footer CTA band bg. `gold-300` (`#ffcf7d`) |
+| `earth-*` (50–950) | Neutrals — page bg (`earth-50`), cards (`earth-100`), body text (`earth-700`), dark sections + main text (`earth-900`) |
 
 In Tailwind use `bg-red-600`, `text-earth-900`, etc.; the same tokens are
 available as `var(--color-red-600)` in plain CSS.
@@ -114,6 +114,14 @@ buttons (`.btn-primary`/`.btn-secondary`/`.btn-inverted`/`.btn-nav`, plus the
 CTA blocks (`.cta-dark`/`.cta-red`/`.cta-light`), listing card/row, the listings
 filter bar, the detail-page gallery/lightbox, and the `.topo-bg` overlay.
 Status pills color via `[data-status="available|coming_soon|pending|sold"]`.
+
+Two inverted-scheme gotchas (flat fills, no gradients): the top **`.page-banner`**
+is a solid `bg-red-600` band with gold title/label and light description — not
+the old gold gradient. **`.cta-red`** is the above-footer CTA and now renders
+**gold** (gold bg, dark `earth-900`/`earth-700` text, red `primary` buttons)
+despite the name; its child overrides live under `.cta-red` in `global.css`, and
+the body `<p>`s use a bare `.cta-dark-body` (the old `text-earth-100` utility was
+removed so the dark override wins over Tailwind's utilities layer).
 
 ### Migration alias bridge (temporary)
 

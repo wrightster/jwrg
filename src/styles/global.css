@@ -524,9 +524,10 @@
   /* ══════════════════════════════════════════════════
      PAGE BANNER
   ══════════════════════════════════════════════════ */
-  .page-banner       { @apply relative py-5 overflow-hidden; background: linear-gradient(200deg, var(--color-gold-300) -100%, var(--color-earth-100) 200%); --btn-bg: var(--color-gold-300); }
-  .page-banner-title { @apply font-display italic text-4xl md:text-6xl text-red-600 leading-tight; }
-  .page-banner-desc  { @apply text-earth-700 mt-5 text-lg max-w-[75%] text-balance; }
+  .page-banner       { @apply relative py-5 overflow-hidden bg-red-600; --btn-bg: var(--color-gold-300); }
+  .page-banner .section-label { @apply text-gold-300; }
+  .page-banner-title { @apply font-display italic text-4xl md:text-6xl text-gold-300 leading-tight; }
+  .page-banner-desc  { @apply text-gold-100 mt-5 text-lg max-w-[75%] text-balance; }
 
   /* ══════════════════════════════════════════════════
      LAYOUT WRAPPERS
@@ -540,7 +541,17 @@
   .cta-dark         { @apply py-7 bg-earth-900; --btn-bg: var(--color-earth-900); }
   .cta-dark-heading { @apply font-display text-3xl text-light-text; }
   .cta-dark-body    { @apply text-earth-400 mt-4; }
-  .cta-red          { @apply py-7 bg-red-600; --btn-bg: var(--color-red-600); }
+  /* Above-footer CTA band — inverted scheme: gold bg, dark text, red buttons.
+     Name kept as .cta-red (it now renders gold) to avoid churning every page
+     that references it. The inverted BtnArrows inside render red on the gold. */
+  .cta-red          { @apply py-7 bg-gold-300; --btn-bg: var(--color-gold-300); }
+  .cta-red .cta-dark-heading { @apply text-earth-900; }
+  .cta-red .cta-dark-body    { @apply text-earth-700; }
+  .cta-red .btn-arrow--inverted           { color: var(--color-earth-50); --_btn-arrow-fill: var(--color-red-600); }
+  .cta-red .btn-arrow--inverted svg       { fill: var(--color-red-600); stroke: var(--color-red-600); }
+  .cta-red .btn-arrow--inverted:hover     { color: var(--color-red-600); --_btn-arrow-fill: var(--color-gold-300); }
+  .cta-red .btn-arrow--inverted:hover svg { fill: var(--color-gold-300); }
+  .cta-red .btn-arrow--inverted:hover .btn-arrow__shaft { border-top-color: var(--color-gold-300); border-bottom-color: var(--color-gold-300); }
   .cta-light         { @apply py-8 border-t border-earth-200; --btn-bg: var(--color-earth-50); }
   .cta-light-heading { @apply font-display text-3xl text-earth-900; }
   .cta-light-body    { @apply text-earth-600 mt-4; }
