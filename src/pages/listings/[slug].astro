@@ -1,526 +1,492 @@
 ---
+export const prerender = false;
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import MiniContactForm from '../../components/MiniContactForm.astro';
-import { fetchListing, formatPrice, formatAcres, formatBedsBaths, publicStatus, photoSrc, documentTypeLabel } from '../../lib/api';
+import BtnArrow from '../../components/BtnArrow.astro';
+import ListingCard from '../../components/ListingCard.astro';
+import { fetchListing, fetchListings, fetchTeam, formatPrice, photoSrc, documentTypeLabel } from '../../lib/api';
+import { site } from '../../data/site';
 
 const { slug } = Astro.params;
-const listing = slug ? await fetchListing(slug) : null;
+const listing = await fetchListing(slug!).catch(() => null);
 
 if (!listing) {
-  return Astro.redirect('/404');
+  return Astro.redirect('/listings');
 }
 
-const status = publicStatus(listing.status);
-const photos = listing.photos ?? [];
-const beds = formatBedsBaths(listing);
-const acres = formatAcres(listing.lot_size_acres);
-const title = listing.marketing_title ?? listing.address;
+const photos = listing.photos ?? (listing.primary_photo ? [listing.primary_photo] : []);
+const imageList = photos.map(p => photoSrc(p, 800));
+const fullImageList = photos.map(p => photoSrc(p, 1600));
+const totalImages = photos.length;
+
+const title = listing.marketing_title || listing.address;
+const fullAddress = [listing.address, listing.city, listing.state, listing.zip].filter(Boolean).join(', ');
+
+const baths = (listing.bathrooms_full ?? 0) + (listing.bathrooms_half ?? 0) * 0.5;
+type StatCell = { label: string; value: string; kind: 'value' | 'dark' | 'medium' };
+const keyStats: StatCell[] = [
+  { label: 'Price', value: formatPrice(listing.list_price), kind: 'value' },
+  listing.bedrooms ? { label: 'Bedrooms', value: String(listing.bedrooms), kind: 'dark' as const } : null,
+  baths ? { label: 'Bathrooms', value: String(baths), kind: 'dark' as const } : null,
+  listing.sqft ? { label: 'Square Feet', value: listing.sqft.toLocaleString('en-US'), kind: 'dark' as const } : null,
+  listing.year_built ? { label: 'Year Built', value: String(listing.year_built), kind: 'medium' as const } : null,
+  { label: 'Location', value: `${listing.city}, ${listing.county} County`, kind: 'medium' as const },
+].filter(Boolean) as StatCell[];
+
+const agentName = listing.agent?.name ?? null;
+const coAgentName = listing.co_agent?.name ?? null;
+const team = (agentName || coAgentName) ? await fetchTeam().catch(() => []) : [];
+const brokerMember = agentName ? team.find((t) => t.name === agentName) : undefined;
+const brokerPhoto = photoSrc(brokerMember?.primary_photo, 400);
+const coBrokerMember = coAgentName ? team.find((t) => t.name === coAgentName) : undefined;
+const coBrokerPhoto = photoSrc(coBrokerMember?.primary_photo, 400);
+
+const otherListings = await fetchListings({ perPage: 4 }).catch(() => []);
+const relatedListings = otherListings.filter(l => l.slug !== listing.slug).slice(0, 3);
+
 const documents = (listing.documents ?? [])
   .filter((d) => d.url)
   .sort((a, b) => a.sort_order - b.sort_order);
-const today = new Date();
-function expiryState(iso: string | null): { label: string; tone: 'warn' | 'ok' } | null {
+
+function expiryState(iso: string | null): { label: string; warn: boolean } | null {
   if (!iso) return null;
   const expires = new Date(iso);
-  const days = Math.round((expires.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (days < 0) return { label: `Expired ${expires.toLocaleDateString()}`, tone: 'warn' };
-  if (days <= 30) return { label: `Expires in ${days} days`, tone: 'warn' };
-  return { label: `Valid through ${expires.toLocaleDateString()}`, tone: 'ok' };
+  const days = Math.round((expires.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  if (days < 0) return { label: `Expired ${expires.toLocaleDateString()}`, warn: true };
+  if (days <= 30) return { label: `Expires in ${days} days`, warn: true };
+  return { label: `Valid through ${expires.toLocaleDateString()}`, warn: false };
 }
-
-const totalImages = photos.length;
-const heroSrcs = photos.slice(0, 5).map((p, i) => photoSrc(p, i === 0 ? 1600 : 800));
-const lightboxSrcs = photos.map((p) => photoSrc(p, 1600));
-const thumbSrcs = photos.map((p) => photoSrc(p, 400));
-
-const statusStyles: Record<string, string> = {
-  available: 'bg-green-50 text-green-700 border-green-200',
-  pending: 'bg-gold-50 text-gold-800 border-gold-200',
-  sold: 'bg-navy-100 text-navy-700 border-navy-200',
-};
 ---
 
-<BaseLayout title={`${title} | Julie Wright Realty Group`} description={listing.description}>
-  <section class="pt-28 pb-12">
-    <div class="max-w-7xl mx-auto px-6">
-      <a href="/listings" class="text-sm text-gold-600 hover:text-gold-700 inline-flex items-center gap-1 mb-6">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-        Back to listings
+<BaseLayout
+  title={`${title} — Julie Wright Realty Group`}
+  description={listing.description}
+  image={imageList[0] ?? undefined}
+>
+  <!-- Back Link -->
+  <div class="listing-back-bar">
+    <div class="content-wrap py-2">
+      <a href="/listings" class="listing-back-link">
+        <svg class="listing-back-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to All Listings
       </a>
+    </div>
+  </div>
 
-      <div class="flex flex-wrap items-start justify-between gap-6 mb-6">
-        <div>
-          <div class="flex items-center gap-2 mb-3">
-            <span class={`px-3 py-1 rounded-full text-xs font-semibold border ${statusStyles[status]}`}>
-              {listing.status_label}
-            </span>
-            <span class="text-gold-600 text-xs tracking-widest uppercase">
-              {listing.county} County
-            </span>
+  <!-- Property Details -->
+  <section class="listing-detail-section">
+    <div class="content-wrap">
+      <div class="listing-detail-grid">
+        <!-- Main Content -->
+        <div class="listing-detail-main">
+          <!-- Gallery -->
+          <div class="listing-gallery-inset">
+            <div
+              class="gallery-main-wrap"
+              id="main-image-wrap"
+              role={totalImages > 1 ? "button" : undefined}
+              tabindex={totalImages > 1 ? 0 : undefined}
+              aria-label={totalImages > 1 ? "Open photo gallery" : undefined}
+            >
+              {photos.length > 0 ? (
+                <img src={imageList[0]} alt={title} class="gallery-main-img" id="main-image" loading="eager" />
+              ) : (
+                <div class="gallery-main-img gallery-main-img--placeholder" id="main-image"></div>
+              )}
+              <div class="gallery-gradient" aria-hidden="true"></div>
+              <div class="gallery-counter" aria-hidden="true">
+                <svg class="gallery-counter-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 003.75 21z" />
+                </svg>
+                <span id="image-counter">1 / {totalImages}</span>
+              </div>
+              {totalImages > 1 && (
+                <div class="gallery-hint" aria-hidden="true">Click or press Enter to view gallery</div>
+              )}
+            </div>
+
+            {totalImages > 1 && (
+              <div class="gallery-thumbs">
+                <div class="gallery-thumb-row" id="thumb-strip">
+                  {imageList.map((img, i) => (
+                    <button class:list={['thumb-btn', i === 0 && 'active']} data-index={i} data-src={img}>
+                      <img src={photoSrc(photos[i], 400)} alt={`${title} photo ${i + 1}`} class="thumb-img" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-          <h1 class="font-serif text-3xl md:text-5xl text-navy-900 font-medium leading-tight">
-            {title}
-          </h1>
-          <p class="text-navy-500 text-lg mt-2">{listing.city}, {listing.state}{listing.zip ? ` ${listing.zip}` : ''}</p>
-        </div>
-        <div class="text-right">
-          <div class="text-3xl md:text-4xl font-serif font-bold text-navy-900">
-            {formatPrice(listing.list_price)}
+
+          <!-- Header -->
+          <div class="listing-detail-header">
+            <div class="listing-badges">
+              <span class="listing-status-badge" data-status={listing.status}>{listing.status_label}</span>
+              <span class="listing-county-badge">{listing.county} County</span>
+            </div>
+            <h1 class="listing-title">{title}</h1>
+            {fullAddress && (
+              <p class="listing-address-row">
+                <svg class="listing-address-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                </svg>
+                {fullAddress}
+              </p>
+            )}
           </div>
-          {listing.original_price && listing.original_price !== listing.list_price && (
-            <div class="text-navy-400 text-sm line-through mt-1">{formatPrice(listing.original_price)}</div>
+
+          <!-- Key Stats -->
+          <div class="listing-key-stats">
+            {keyStats.map((stat) => (
+              <div class="listing-stat-cell">
+                <p class="listing-stat-label">{stat.label}</p>
+                <p class:list={[
+                  stat.kind === 'value' && 'listing-stat-value',
+                  stat.kind === 'dark' && 'listing-stat-value--dark',
+                  stat.kind === 'medium' && 'listing-stat-value--medium',
+                ]}>{stat.value}</p>
+              </div>
+            ))}
+          </div>
+
+          <!-- Description -->
+          <h2 class="listing-description-heading">About This Home</h2>
+          <div class="listing-description-body">
+            {(listing.full_description || listing.description).split('. ').reduce((acc: string[][], sentence, i) => {
+              const paragraphIndex = Math.floor(i / 3);
+              if (!acc[paragraphIndex]) acc[paragraphIndex] = [];
+              acc[paragraphIndex].push(sentence);
+              return acc;
+            }, []).map((sentences) => (
+              <p>{sentences.join('. ')}{sentences[sentences.length - 1]?.endsWith('.') ? '' : '.'}</p>
+            ))}
+          </div>
+
+          <!-- Features -->
+          {listing.features.length > 0 && (
+            <div class="listing-directions">
+              <h2 class="listing-description-heading">Features</h2>
+              <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2">
+                {listing.features.map((feature) => (
+                  <li class="flex items-start gap-2 text-earth-700">
+                    <svg class="shrink-0 w-5 h-5 mt-0.5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <!-- Documents -->
+          {documents.length > 0 && (
+            <div class="listing-documents">
+              <h2 class="listing-description-heading">Documents</h2>
+              <p class="listing-documents-intro">Public materials available for this property — disclosures, plats, HOA documents, and more.</p>
+              <ul class="listing-documents-list">
+                {documents.map((doc) => {
+                  const expiry = expiryState(doc.expires_at);
+                  return (
+                    <li>
+                      <a href={doc.url!} target="_blank" rel="noopener noreferrer" class="listing-document-link">
+                        <svg class="listing-document-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                        </svg>
+                        <div class="listing-document-body">
+                          <div class="listing-document-row">
+                            <span class="listing-document-title">{doc.title}</span>
+                            <span class="listing-document-pill">{documentTypeLabel(doc.document_type)}</span>
+                          </div>
+                          {doc.description && <span class="listing-document-desc">{doc.description}</span>}
+                          {expiry && (
+                            <span class={`listing-document-expiry ${expiry.warn ? 'listing-document-expiry--warn' : ''}`}>{expiry.label}</span>
+                          )}
+                        </div>
+                        <svg class="listing-document-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          <!-- Directions -->
+          {listing.directions && (
+            <div class="listing-directions">
+              <h2 class="listing-description-heading">Directions</h2>
+              <div class="listing-directions-body">
+                <svg class="listing-directions-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" />
+                </svg>
+                <p>{listing.directions}</p>
+              </div>
+            </div>
           )}
         </div>
-      </div>
 
-      <div class="flex flex-wrap gap-6 text-navy-700 mb-8 text-sm">
-        {beds && <div><span class="text-navy-400">Beds/Baths: </span>{beds}</div>}
-        {listing.sqft && <div><span class="text-navy-400">Square Feet: </span>{listing.sqft.toLocaleString()}</div>}
-        {acres && <div><span class="text-navy-400">Acreage: </span>{acres}</div>}
-        {listing.year_built && <div><span class="text-navy-400">Year Built: </span>{listing.year_built}</div>}
-        {listing.mls_number && <div><span class="text-navy-400">MLS #: </span>{listing.mls_number}</div>}
+        <!-- Sidebar -->
+        <div class="listing-sidebar">
+          <div class="listing-contact-card">
+            <h3 class="listing-contact-heading">Interested in this home?</h3>
+            <p class="listing-contact-desc">Contact the listing agent for details, showings, or to make an offer.</p>
+
+            {agentName && (
+              <div class="listing-broker-row">
+                {brokerPhoto ? (
+                  <img src={brokerPhoto} alt={brokerMember?.primary_photo?.alt ?? agentName} class="listing-broker-photo" loading="lazy" />
+                ) : (
+                  <div class="listing-broker-avatar">
+                    <span class="listing-broker-initials">{agentName.split(' ').map((n: string) => n[0]).join('')}</span>
+                  </div>
+                )}
+                <div>
+                  <p class="listing-broker-name">{agentName}</p>
+                  <p class="listing-broker-role">Listing Agent</p>
+                </div>
+              </div>
+            )}
+
+            {coAgentName && (
+              <div class="listing-broker-row">
+                {coBrokerPhoto ? (
+                  <img src={coBrokerPhoto} alt={coBrokerMember?.primary_photo?.alt ?? coAgentName} class="listing-broker-photo" loading="lazy" />
+                ) : (
+                  <div class="listing-broker-avatar">
+                    <span class="listing-broker-initials">{coAgentName.split(' ').map((n: string) => n[0]).join('')}</span>
+                  </div>
+                )}
+                <div>
+                  <p class="listing-broker-name">{coAgentName}</p>
+                  <p class="listing-broker-role">Co-Listing Agent</p>
+                </div>
+              </div>
+            )}
+
+            <div class="listing-contact-actions">
+              <BtnArrow href="/contact" class="w-full justify-center">Get in Touch</BtnArrow>
+            </div>
+
+            <div class="listing-contact-meta">
+              <p class="listing-contact-meta-text">
+                Office: <a href={`tel:${site.phoneRaw}`} class="listing-contact-meta-link">{site.phone}</a><br />
+                Fax: {site.fax}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  {totalImages > 0 && (
-    <section class="pb-12">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {heroSrcs.slice(0, 1).map((src, i) => (
-            <button
-              type="button"
-              class="gallery-tile md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto rounded-2xl overflow-hidden relative group"
-              data-lb-index={i}
-              aria-label={`View photo ${i + 1} of ${totalImages}`}
-            >
-              <img src={src ?? undefined} alt={photos[i].alt ?? photos[i].caption ?? title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
-            </button>
-          ))}
-          {heroSrcs.slice(1, 5).map((src, i) => (
-            <button
-              type="button"
-              class="gallery-tile aspect-[4/3] rounded-2xl overflow-hidden relative group"
-              data-lb-index={i + 1}
-              aria-label={`View photo ${i + 2} of ${totalImages}`}
-            >
-              <img src={src ?? undefined} alt={photos[i + 1].alt ?? photos[i + 1].caption ?? title} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
-              {i === 3 && totalImages > 5 && (
-                <div class="absolute inset-0 bg-navy-950/60 flex flex-col items-center justify-center text-warm-50">
-                  <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
-                  <span class="font-semibold">+ {totalImages - 5} more</span>
-                </div>
-              )}
-            </button>
+  <!-- Other Listings -->
+  {relatedListings.length > 0 && (
+    <section class="more-listings-section">
+      <div class="content-wrap">
+        <h2 class="more-listings-heading">More Homes</h2>
+        <div class="more-listings-grid">
+          {relatedListings.map((other, i) => (
+            <ListingCard listing={other} index={i} />
           ))}
         </div>
-        {totalImages > 1 && (
-          <div class="flex justify-center mt-6">
-            <button
-              type="button"
-              id="view-all-photos"
-              class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-warm-50 font-semibold transition-all text-sm"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
-              View all {totalImages} photos
-            </button>
-          </div>
-        )}
+        <div class="more-listings-cta">
+          <a href="/listings" class="btn-secondary text-sm">View All Listings</a>
+        </div>
       </div>
     </section>
   )}
 
-  <section class="py-12">
-    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12">
-      <div class="lg:col-span-2 space-y-8">
-        <div>
-          <h2 class="font-serif text-2xl text-navy-900 font-medium mb-4">About this property</h2>
-          <div class="prose prose-navy max-w-none text-navy-700 leading-relaxed whitespace-pre-line">
-            {listing.full_description ?? listing.description}
-          </div>
-        </div>
-
-        {listing.features.length > 0 && (
-          <div>
-            <h2 class="font-serif text-2xl text-navy-900 font-medium mb-4">Features</h2>
-            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-navy-700">
-              {listing.features.map((f) => (
-                <li class="flex items-start gap-2">
-                  <svg class="w-5 h-5 text-gold-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {listing.directions && (
-          <div>
-            <h2 class="font-serif text-2xl text-navy-900 font-medium mb-2">Directions</h2>
-            <p class="text-navy-700 leading-relaxed">{listing.directions}</p>
-          </div>
-        )}
-
-        {documents.length > 0 && (
-          <div>
-            <h2 class="font-serif text-2xl text-navy-900 font-medium mb-1">Documents</h2>
-            <p class="text-navy-500 text-sm mb-4">Public materials available for this property — surveys, plats, HOA documents, inspection reports, and more.</p>
-            <ul class="space-y-3">
-              {documents.map((d) => {
-                const expiry = expiryState(d.expires_at);
-                return (
-                  <li>
-                    <a href={d.url!} target="_blank" rel="noopener" class="group flex items-start gap-4 p-4 rounded-xl border border-warm-200 hover:border-gold-500 hover:bg-warm-50/60 transition-all">
-                      <svg class="w-6 h-6 text-gold-600 mt-1 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                      </svg>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex flex-wrap items-baseline gap-2">
-                          <span class="font-semibold text-navy-900 group-hover:text-gold-700">{d.title}</span>
-                          <span class="text-[11px] tracking-wider uppercase font-medium text-gold-700 bg-gold-50 border border-gold-100 rounded-full px-2 py-0.5">
-                            {documentTypeLabel(d.document_type)}
-                          </span>
-                        </div>
-                        {d.description && <div class="text-navy-500 text-sm mt-1">{d.description}</div>}
-                        {expiry && (
-                          <div class={`text-xs mt-1.5 ${expiry.tone === 'warn' ? 'text-red-600 font-medium' : 'text-navy-400'}`}>
-                            {expiry.label}
-                          </div>
-                        )}
-                      </div>
-                      <svg class="w-4 h-4 text-navy-400 group-hover:text-gold-600 mt-1.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                      </svg>
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-      </div>
-
-      <aside class="space-y-6">
-        <div class="bg-warm-100/60 rounded-2xl p-6 border border-warm-200/60">
-          <h3 class="font-serif text-lg text-navy-900 font-semibold mb-4">Listing Agent</h3>
-          {listing.agent ? (
-            <>
-              <div class="font-medium text-navy-900">{listing.agent.name}</div>
-              <a href={`tel:${listing.agent.phone.replace(/[^0-9]/g, '')}`} class="block text-gold-700 hover:underline mt-1">
-                {listing.agent.phone}
-              </a>
-            </>
-          ) : (
-            <p class="text-navy-500">Contact our office at <a href="tel:919-847-7140" class="text-gold-700 hover:underline">(919) 847-7140</a></p>
-          )}
-          <a
-            href="/contact"
-            class="block text-center w-full mt-6 py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all"
-          >
-            Request Information
-          </a>
-        </div>
-
-        {listing.virtual_tour_url && (
-          <a
-            href={listing.virtual_tour_url}
-            target="_blank"
-            rel="noopener"
-            class="block w-full px-6 py-3 border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white font-semibold rounded-lg text-center transition-all"
-          >
-            Take Virtual Tour
-          </a>
-        )}
-      </aside>
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image gallery">
+    <img id="lb-bg" src="" alt="" aria-hidden="true" class="lightbox-bg" />
+    <div class="lightbox-overlay"></div>
+    <button id="lb-close" class="lightbox-close" aria-label="Close gallery">
+      <svg class="lightbox-close-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+    <button id="lb-prev" class="lightbox-prev" aria-label="Previous image">
+      <svg class="lightbox-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+    <button id="lb-next" class="lightbox-next" aria-label="Next image">
+      <svg class="lightbox-nav-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+    <div class="lightbox-body">
+      <img id="lb-image" src="" alt="" class="lightbox-img" />
     </div>
-  </section>
+    <div class="lightbox-counter" id="lb-counter"></div>
+  </div>
 
-  <MiniContactForm />
+  <script define:vars={{ imageList, fullImageList, totalImages }}>
+    let currentIndex = 0;
 
-  {totalImages > 0 && (
-    <div
-      id="lightbox"
-      class="lightbox"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Property photo gallery"
-    >
-      <img id="lb-bg" src="" alt="" aria-hidden="true" class="lightbox-bg" />
-      <div class="lightbox-overlay"></div>
+    const mainImage = document.getElementById('main-image');
+    const mainWrap = document.getElementById('main-image-wrap');
+    const counter = document.getElementById('image-counter');
+    const thumbs = document.querySelectorAll('.thumb-btn');
 
-      <button id="lb-close" class="lightbox-close" aria-label="Close gallery">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-      </button>
-
-      {totalImages > 1 && (
-        <>
-          <button id="lb-prev" class="lightbox-prev" aria-label="Previous image">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-10 h-10 pointer-events-none"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
-          </button>
-          <button id="lb-next" class="lightbox-next" aria-label="Next image">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="w-10 h-10 pointer-events-none"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
-          </button>
-        </>
-      )}
-
-      <div class="lightbox-body">
-        <img id="lb-image" src="" alt="" class="lightbox-img" />
-      </div>
-
-      <div class="lightbox-counter" id="lb-counter"></div>
-    </div>
-  )}
-
-  <style>
-    .gallery-tile {
-      cursor: pointer;
-    }
-    .gallery-tile:focus-visible {
-      outline: 2px solid var(--color-gold-500);
-      outline-offset: 4px;
-    }
-
-    .lightbox {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding-top: 5rem;
-      backdrop-filter: blur(12px);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 300ms ease;
-    }
-    .lightbox.is-open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .lightbox-bg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.45;
-      filter: blur(28px);
-      z-index: 0;
-      transition: opacity 200ms ease;
-    }
-    .lightbox-overlay {
-      position: absolute;
-      inset: 0;
-      background-color: oklch(from var(--color-navy-950) l c h / 0.6);
-      z-index: 1;
-    }
-    .lightbox::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: radial-gradient(ellipse at center, transparent 40%, oklch(from var(--color-navy-950) l c h / 0.85) 100%);
-      z-index: 2;
-    }
-    .lightbox-close {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      z-index: 10;
-      width: 3rem;
-      height: 3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: oklch(from var(--color-warm-50) l c h / 0.7);
-      transition: color 200ms ease;
-    }
-    .lightbox-close:hover {
-      color: var(--color-warm-50);
-    }
-    .lightbox-prev,
-    .lightbox-next {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 20;
-      width: 4rem;
-      height: 4rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: oklch(from var(--color-warm-50) l c h / 0.95);
-      color: var(--color-navy-900);
-      border-radius: 9999px;
-      transition: all 200ms ease;
-      cursor: pointer;
-      opacity: 0.6;
-    }
-    .lightbox-prev:hover,
-    .lightbox-next:hover {
-      background-color: var(--color-gold-500);
-      color: var(--color-warm-50);
-      opacity: 1;
-    }
-    .lightbox-prev { left: 1.5rem; }
-    .lightbox-next { right: 1.5rem; }
-    .lightbox-body {
-      position: relative;
-      z-index: 10;
-      max-width: 80rem;
-      max-height: 85vh;
-      margin: 0 auto;
-      padding: 0 6rem;
-    }
-    .lightbox-img {
-      max-width: 100%;
-      max-height: 85vh;
-      object-fit: contain;
-      margin: 0 auto;
-      transition: opacity 250ms ease;
-    }
-    .lightbox-counter {
-      position: absolute;
-      bottom: 1.5rem;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-      color: oklch(from var(--color-warm-50) l c h / 0.7);
-      font-size: 0.875rem;
-      font-variant-numeric: tabular-nums;
-    }
-
-    @media (max-width: 767px) {
-      .lightbox-body {
-        padding-left: 1rem;
-        padding-right: 1rem;
-        padding-bottom: 8rem;
+    function setMainImage(index) {
+      currentIndex = index;
+      if (mainImage) {
+        mainImage.style.opacity = '0';
+        setTimeout(() => {
+          mainImage.src = imageList[index];
+          mainImage.style.opacity = '1';
+        }, 150);
       }
-      .lightbox-prev,
-      .lightbox-next {
-        width: 3rem;
-        height: 3rem;
-        top: auto;
-        bottom: 2rem;
-      }
-      .lightbox-prev {
-        left: 50%;
-        transform: translateX(-4.5rem);
-      }
-      .lightbox-next {
-        left: 50%;
-        right: auto;
-        transform: translateX(1.5rem);
-      }
-      .lightbox-counter {
-        bottom: 5.5rem;
+      if (counter) counter.textContent = `${index + 1} / ${totalImages}`;
+      thumbs.forEach((t, i) => {
+        t.classList.toggle('active', i === index);
+      });
+    }
+
+    thumbs.forEach((btn) => {
+      btn.addEventListener('click', () => setMainImage(parseInt(btn.dataset.index)));
+    });
+
+    const lightbox = document.getElementById('lightbox');
+    const lbImage = document.getElementById('lb-image');
+    const lbBg = document.getElementById('lb-bg');
+    const lbCounter = document.getElementById('lb-counter');
+    const lbClose = document.getElementById('lb-close');
+    const lbPrev = document.getElementById('lb-prev');
+    const lbNext = document.getElementById('lb-next');
+
+    let lightboxTrigger = null;
+
+    function applyImageCrop() {
+      if (!lbImage || !lbImage.naturalWidth) return;
+      var ratio = lbImage.naturalWidth / lbImage.naturalHeight;
+      lbImage.classList.remove('crop-landscape', 'crop-portrait');
+      if (ratio > 16 / 9) {
+        lbImage.classList.add('crop-landscape');
+      } else if (ratio < 9 / 16) {
+        lbImage.classList.add('crop-portrait');
       }
     }
-  </style>
 
-  {totalImages > 0 && (
-    <script define:vars={{ lightboxSrcs, totalImages }}>
-      let currentIndex = 0;
-      let trigger = null;
+    if (lbImage) lbImage.addEventListener('load', applyImageCrop);
 
-      const lightbox = document.getElementById('lightbox');
-      const lbImage = document.getElementById('lb-image');
-      const lbBg = document.getElementById('lb-bg');
-      const lbCounter = document.getElementById('lb-counter');
-      const lbClose = document.getElementById('lb-close');
-      const lbPrev = document.getElementById('lb-prev');
-      const lbNext = document.getElementById('lb-next');
+    function openLightbox(index, trigger) {
+      currentIndex = index;
+      lightboxTrigger = trigger ?? null;
+      if (lbBg) { lbBg.src = fullImageList[currentIndex]; lbBg.style.opacity = '0.50'; }
+      if (lbImage) { lbImage.src = fullImageList[currentIndex]; lbImage.alt = `Photo ${currentIndex + 1} of ${totalImages}`; lbImage.style.opacity = '1'; }
+      if (lbCounter) lbCounter.textContent = `${currentIndex + 1} / ${totalImages}`;
+      setMainImage(currentIndex);
+      lightbox?.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      lbClose?.focus();
+    }
 
-      function setLightboxImage(i) {
-        currentIndex = i;
-        const src = lightboxSrcs[i];
-        if (lbImage) {
-          lbImage.style.opacity = '0';
-          setTimeout(() => {
-            lbImage.src = src;
-            lbImage.alt = `Photo ${i + 1} of ${totalImages}`;
-            lbImage.style.opacity = '1';
-          }, 120);
-        }
-        if (lbBg) {
-          lbBg.style.opacity = '0';
-          setTimeout(() => {
-            lbBg.src = src;
-            lbBg.style.opacity = '0.45';
-          }, 120);
-        }
-        if (lbCounter) lbCounter.textContent = `${i + 1} / ${totalImages}`;
-      }
-
-      function openLightbox(index, source) {
-        trigger = source ?? null;
-        setLightboxImage(index);
-        lightbox?.classList.add('is-open');
-        document.body.style.overflow = 'hidden';
-        lbClose?.focus();
-      }
-
-      function closeLightbox() {
-        lightbox?.classList.remove('is-open');
+    function closeLightbox() {
+      lightbox?.classList.remove('is-open');
+      lightbox?.addEventListener('transitionend', () => {
         document.body.style.overflow = '';
-        trigger?.focus();
-        trigger = null;
+        lightboxTrigger?.focus();
+        lightboxTrigger = null;
+      }, { once: true });
+    }
+
+    function updateLightbox() {
+      const src = fullImageList[currentIndex];
+      if (lbImage) {
+        lbImage.style.opacity = '0';
+        setTimeout(() => {
+          lbImage.src = src;
+          lbImage.alt = `Photo ${currentIndex + 1}`;
+          lbImage.style.opacity = '1';
+        }, 150);
       }
-
-      function next() { setLightboxImage((currentIndex + 1) % totalImages); }
-      function prev() { setLightboxImage((currentIndex - 1 + totalImages) % totalImages); }
-
-      document.querySelectorAll('.gallery-tile').forEach((tile) => {
-        tile.addEventListener('click', () => {
-          const idx = parseInt(tile.getAttribute('data-lb-index') ?? '0', 10);
-          openLightbox(idx, tile);
-        });
-      });
-
-      const viewAll = document.getElementById('view-all-photos');
-      if (viewAll) {
-        viewAll.addEventListener('click', () => openLightbox(0, viewAll));
+      if (lbBg) {
+        lbBg.style.opacity = '0';
+        setTimeout(() => {
+          lbBg.src = src;
+          lbBg.style.opacity = '0.50';
+        }, 150);
       }
+      if (lbCounter) lbCounter.textContent = `${currentIndex + 1} / ${totalImages}`;
+      setMainImage(currentIndex);
+    }
 
-      lbClose?.addEventListener('click', closeLightbox);
-      lbPrev?.addEventListener('click', prev);
-      lbNext?.addEventListener('click', next);
+    function nextImage() {
+      currentIndex = (currentIndex + 1) % totalImages;
+      updateLightbox();
+    }
 
-      lightbox?.addEventListener('click', (e) => {
-        if (!e.target.closest('button, .lightbox-body, .lightbox-counter')) {
-          closeLightbox();
-        }
-      });
+    function prevImage() {
+      currentIndex = (currentIndex - 1 + totalImages) % totalImages;
+      updateLightbox();
+    }
 
-      document.addEventListener('keydown', (e) => {
-        if (!lightbox?.classList.contains('is-open')) return;
-        if (e.key === 'Escape') { closeLightbox(); return; }
-        if (e.key === 'ArrowRight') { next(); return; }
-        if (e.key === 'ArrowLeft') { prev(); return; }
-        if (e.key === 'Tab') {
-          e.preventDefault();
-          const focusable = [lbClose, lbPrev, lbNext].filter(Boolean);
-          const idx = focusable.indexOf(document.activeElement);
-          const nextIdx = e.shiftKey
-            ? (idx - 1 + focusable.length) % focusable.length
-            : (idx + 1) % focusable.length;
-          focusable[nextIdx].focus();
-        }
-      });
+    mainWrap?.addEventListener('click', () => openLightbox(currentIndex, mainWrap));
+    mainWrap?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openLightbox(currentIndex, mainWrap);
+      }
+    });
+    lbClose?.addEventListener('click', closeLightbox);
+    lbPrev?.addEventListener('click', prevImage);
+    lbNext?.addEventListener('click', nextImage);
 
-      let swipeStartX = 0;
-      let swipeStartY = 0;
-      lightbox?.addEventListener('touchstart', (e) => {
-        swipeStartX = e.touches[0].clientX;
-        swipeStartY = e.touches[0].clientY;
-      }, { passive: true });
-      lightbox?.addEventListener('touchend', (e) => {
-        const dx = e.changedTouches[0].clientX - swipeStartX;
-        const dy = e.changedTouches[0].clientY - swipeStartY;
-        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
-          if (dx < 0) next(); else prev();
-        }
-      }, { passive: true });
-    </script>
-  )}
+    lightbox?.addEventListener('click', (e) => {
+      if (!e.target.closest('button, .lightbox-body, .lightbox-counter')) {
+        closeLightbox();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox?.classList.contains('is-open')) return;
+      if (e.key === 'Escape') { closeLightbox(); return; }
+      if (e.key === 'ArrowRight') { nextImage(); return; }
+      if (e.key === 'ArrowLeft') { prevImage(); return; }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const focusable = [lbClose, lbPrev, lbNext].filter(Boolean);
+        const idx = focusable.indexOf(document.activeElement);
+        const next = e.shiftKey
+          ? (idx - 1 + focusable.length) % focusable.length
+          : (idx + 1) % focusable.length;
+        focusable[next].focus();
+      }
+    });
+
+    var wheelAccumX = 0;
+    var wheelCooldown = false;
+    lightbox?.addEventListener('wheel', function(e) {
+      if (!lightbox.classList.contains('is-open')) return;
+      e.preventDefault();
+      if (wheelCooldown) return;
+      wheelAccumX += e.deltaX;
+      if (Math.abs(wheelAccumX) > 60) {
+        if (wheelAccumX > 0) nextImage(); else prevImage();
+        wheelAccumX = 0;
+        wheelCooldown = true;
+        setTimeout(function() { wheelCooldown = false; wheelAccumX = 0; }, 500);
+      }
+    }, { passive: false });
+
+    var swipeStartX = 0;
+    var swipeStartY = 0;
+    lightbox?.addEventListener('touchstart', function(e) {
+      swipeStartX = e.touches[0].clientX;
+      swipeStartY = e.touches[0].clientY;
+    }, { passive: true });
+    lightbox?.addEventListener('touchend', function(e) {
+      var dx = e.changedTouches[0].clientX - swipeStartX;
+      var dy = e.changedTouches[0].clientY - swipeStartY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+        if (dx < 0) nextImage(); else prevImage();
+      }
+    }, { passive: true });
+  </script>
 </BaseLayout>

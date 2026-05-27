@@ -4,6 +4,29 @@ Rebuilding **juliewrightrealtygroup.com** in Astro 5. This file is the
 checklist — keep it updated as you go so a fresh Claude session can resume
 from where the last one stopped.
 
+## ⮕ 2026 rebrand to the shared JWLC design system (in progress)
+
+JWRG has been moved onto the unified 2026 brand — the same red·earth·gold +
+Gabarito/Anek-Latin system JWLC uses — keeping JWRG's own logo (from the
+`wrightster/JWRG-JWLC-Design` repo) and all residential content. Nav is now a
+flat top-level bar (deeper pages reached from section landing pages).
+
+**Done**
+- `src/styles/global.css` — full JWLC design system (ported). Nav logo mask → `/JWRG_Icon_Red.svg`.
+  Includes a **migration-alias block** mapping legacy `navy-*`/`warm-*`/`font-sans`/`font-serif`
+  onto the new earth/brand tokens so not-yet-rewritten pages stay coherent. **Remove once every
+  page uses the new tokens directly.**
+- `src/layouts/BaseLayout.astro` — JWLC shell (topo parallax bg, fixed nav, footer), flat JWRG nav, JWRG logos, residential footer.
+- Assets in `public/`: `FallTopo_v2.svg`, `JWRG_Full.svg`, `JWRG_Full_Gold.svg`, `JWRG_Full_White.svg`, `JWRG_Icon.svg`, `JWRG_Icon_Red.svg`, `JWRG_Icon_Horizontal.svg`.
+- Components fully restyled: `BtnArrow`, `FontSwitcher` (ported), `PageBanner`, `Section`, `ListingCard`, `ListingRow`, `TeamCard`, `Form`, `MiniContactForm`.
+- Pages fully rebuilt on new system: `index`, `listings/index` (price + sqft filters), `listings/[slug]` (gallery + lightbox + residential stats), `contact`, `about/index`.
+- Border radii normalized to `rounded-sm` across all pages.
+
+**Remaining (coherent via alias bridge, not yet structurally rebuilt)**
+- Section/content pages still using old inline layout (new colors/fonts already applied): `buyers/*`, `sellers/*`, `relocation/*`, `neighborhoods/*`, `about/team` (index + `[slug]`), `about/triangle-area/*`, `about/business-directory`, `testimonials`, `property-search`, `property-organizer`, `neighborhood-map`, `404`, `privacy`, `accessibility`.
+- After those are rebuilt: delete the migration-alias block from `global.css`.
+- Tailwind v4 gotcha: do **not** use `@apply` in Astro scoped `<style>` blocks (needs `@reference`); use inline utilities or add classes to `global.css`.
+
 ## Status legend
 - `[ ]` not started
 - `[~]` in progress
