@@ -81,12 +81,15 @@ overlay is `public/FallTopo_v2.svg`. Masters: `wrightster/JWRG-JWLC-Design`.
 
 ## Design System
 
-As of the **2026 rebrand**, JWRG uses the same unified visual system as JWLC —
+As of the **2026 rebrand**, JWRG shares brand tokens + fonts with JWLC —
 red·earth·gold with Gabarito (display) and Anek Latin (body) — keeping JWRG's
 own logo and residential content. The full system (tokens + every component
-class) lives in `src/styles/global.css` and is intentionally kept identical to
-`../jwlc/src/styles/global.css` apart from the nav-logo mask. **Treat JWLC as
-the reference implementation** for any design pattern.
+class) lives in `src/styles/global.css`. Class names (e.g. `.cta-bold`/
+`.cta-feature`/`.cta-subtle`) and brand tokens are kept in sync with
+`../jwlc/src/styles/global.css`, but JWRG's chrome (nav, footer, top page banner)
+uses an **inverted** red/gold treatment — solid red bands with gold accents —
+while JWLC keeps the original light gold→sand gradient. So: share tokens and
+class structure across both; do *not* assume visual treatments mirror.
 
 ### Colors (defined in `src/styles/global.css` `@theme`)
 
@@ -181,4 +184,4 @@ Sharp is in `devDependencies` and powers Astro's built-in `<Image>` for **local 
 
 ## Sister Site (JWLC)
 
-`../jwlc/` is the Julie Wright Land Company site (land brokerage). Same backend and — since the 2026 rebrand — the **same design system**, differing only in logo, content, and audience (residential vs. land). JWLC is the reference implementation for shared design patterns and the listings index/detail. When changing shared concerns (API client, image handling, status mapping, design tokens/component classes), make the change in both repos and update `../SHARED_FRONTEND_GUIDE.md` if the rule itself changes.
+`../jwlc/` is the Julie Wright Land Company site (land brokerage). Same backend and **shared brand tokens + class names** from the 2026 rebrand, but chrome treatment now diverges: JWRG uses an inverted red/gold scheme on nav, footer, and the top page banner; JWLC keeps the original light gold→sand gradient. Audience also differs (residential vs. land). JWLC is still a useful reference for shared design patterns and the listings index/detail. When changing shared concerns (API client, image handling, status mapping, brand tokens, class names), make the change in both repos and update `../SHARED_FRONTEND_GUIDE.md` if the rule itself changes — but treat per-site chrome (nav/footer/banner color treatment) as site-specific.
