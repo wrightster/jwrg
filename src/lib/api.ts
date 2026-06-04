@@ -45,6 +45,9 @@ export interface ApiDocument {
   document_type: string;
   sort_order: number;
   is_public: boolean;
+  /** Entity the doc is attached to. Listing detail merges in neighborhood docs
+   *  flagged share_with_listings — those arrive with source 'neighborhood'. */
+  source: 'listing' | 'neighborhood' | 'contact' | 'transaction' | 'campaign' | null;
   url: string | null;
   expires_at: string | null;
 }
@@ -243,6 +246,8 @@ export interface ApiNeighborhood {
 
   primary_photo: ApiPhoto | null;
   photos?: ApiPhoto[];
+  /** Detail only — public neighborhood docs (plats, covenants, HOA packages). */
+  documents?: ApiDocument[];
   photo_count?: number;
   listings_count?: number;
 }
