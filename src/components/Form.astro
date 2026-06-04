@@ -12,6 +12,10 @@ interface Props {
   submitLabel?: string;
   fields: Field[];
   legalNote?: string;
+  /** Office neighborhood UUID — records contact interest + routes the lead to the neighborhood team. */
+  neighborhoodId?: string | null;
+  /** Office listing UUID — records contact interest + routes the lead to the listing agent. */
+  listingId?: string | null;
 }
 
 const {
@@ -21,6 +25,8 @@ const {
   submitLabel = 'Submit',
   fields,
   legalNote = 'By submitting this form, you are giving Julie Wright Realty Group permission to contact you via email, phone, or text.',
+  neighborhoodId = null,
+  listingId = null,
 } = Astro.props;
 
 const formId = formIds[formKey];
@@ -103,6 +109,8 @@ const inputCls =
     </div>
 
     <input type="text" name="website" tabindex="-1" autocomplete="off" class="sr-only" aria-hidden="true" />
+    {neighborhoodId && <input type="hidden" name="neighborhood_id" value={neighborhoodId} />}
+    {listingId && <input type="hidden" name="listing_id" value={listingId} />}
 
     {legalNote && (
       <p class="text-navy-400 text-xs leading-relaxed">{legalNote}</p>

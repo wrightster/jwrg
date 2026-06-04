@@ -5,12 +5,18 @@ interface Props {
   heading?: string;
   description?: string;
   variant?: 'light' | 'dark';
+  /** Office neighborhood UUID — records contact interest + routes the lead to the neighborhood team. */
+  neighborhoodId?: string | null;
+  /** Office listing UUID — records contact interest + routes the lead to the listing agent. */
+  listingId?: string | null;
 }
 
 const {
   heading = "Questions? We'd Love to Hear from You",
   description = 'Whether you\'re buying, selling, or just exploring your options, our team is here to help. Reach out and let us put our decades of experience to work for you.',
   variant = 'light',
+  neighborhoodId = null,
+  listingId = null,
 } = Astro.props;
 
 const formId = formIds.contact;
@@ -117,6 +123,8 @@ const formId = formIds.contact;
             ></textarea>
           </div>
           <input type="text" name="website" tabindex="-1" autocomplete="off" class="sr-only" aria-hidden="true" />
+          {neighborhoodId && <input type="hidden" name="neighborhood_id" value={neighborhoodId} />}
+          {listingId && <input type="hidden" name="listing_id" value={listingId} />}
           <p class={`${variant === 'dark' ? 'text-navy-400' : 'text-navy-400'} text-xs leading-relaxed`}>
             By submitting this form, you are giving Julie Wright Realty Group permission to contact you via email, phone, or text.
           </p>

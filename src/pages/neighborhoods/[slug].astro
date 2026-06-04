@@ -244,7 +244,7 @@ const description = n.marketing_description ?? n.description ?? null;
     </div>
   </section>
 
-  <MiniContactForm />
+  <MiniContactForm neighborhoodId={n.id} />
 
   {totalImages > 0 && (
     <div
