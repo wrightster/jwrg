@@ -143,6 +143,7 @@ const formId = formIds.contact;
 
 <script>
   import { submitForm } from '../lib/api';
+  import { getStoredSource } from '../lib/source';
 
   document.querySelectorAll<HTMLFormElement>('form[data-mini-contact]').forEach((form) => {
     form.addEventListener('submit', async (e) => {
@@ -158,7 +159,8 @@ const formId = formIds.contact;
 
       const formId = form.dataset.formId || null;
       const data = Object.fromEntries(new FormData(form).entries());
-      const result = await submitForm(formId, data);
+      // Source attribution (ref/utm from the landing URL) — form fields win on collision.
+      const result = await submitForm(formId, { ...getStoredSource(), ...data });
 
       status.classList.remove('hidden');
       status.textContent = result.message;

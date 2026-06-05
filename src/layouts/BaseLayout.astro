@@ -333,6 +333,11 @@ const navLinks: NavItem[] = [
     </footer>
 
     <script>
+      import { captureSource } from '../lib/source';
+
+      // Stash ref/utm_* landing params for form-submission attribution.
+      captureSource();
+
       // Mobile menu toggle
       const menuBtn = document.getElementById('mobile-menu-btn');
       const mobileMenu = document.getElementById('mobile-menu');

@@ -128,6 +128,7 @@ const inputCls =
 
 <script>
   import { submitForm } from '../lib/api';
+  import { getStoredSource } from '../lib/source';
 
   document.querySelectorAll<HTMLFormElement>('form[data-jwrg-form]').forEach((form) => {
     form.addEventListener('submit', async (e) => {
@@ -152,7 +153,8 @@ const inputCls =
         }
       });
 
-      const result = await submitForm(formId, data);
+      // Source attribution (ref/utm from the landing URL) — form fields win on collision.
+      const result = await submitForm(formId, { ...getStoredSource(), ...data });
 
       status.classList.remove('hidden');
       status.textContent = result.message;
