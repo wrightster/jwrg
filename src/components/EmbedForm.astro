@@ -1,0 +1,44 @@
+---
+// JWRG's adapter for the office's embed-form widget (the pattern JWLC uses
+// inline on its contact page — see ../../../jwlc/src/pages/contact.astro).
+//
+// Render a host div + the office forms.js script bound to a form token, then
+// style the rendered submit button via MutationObserver (the widget renders
+// asynchronously, so we can't style the button at parse time).
+//
+// When `token` is empty, renders nothing — callers should show a phone/email
+// fallback. See site.formTokens in src/data/site.ts.
+
+interface Props {
+  id: string;
+  token: string;
+}
+
+const { id, token } = Astro.props;
+---
+
+{token && (
+  <>
+    <div id={id}></div>
+    <script
+      is:inline
+      src="https://office.jwrgnc.com/js/forms.js"
+      data-form-token={token}
+      data-target={`#${id}`}
+    ></script>
+    <script define:vars={{ hostId: id }}>
+      const host = document.getElementById(hostId);
+      if (host) {
+        const obs = new MutationObserver(function () {
+          const btn = host.querySelector('.jwrg-submit');
+          if (btn && !btn.dataset.styled) {
+            btn.dataset.styled = '1';
+            btn.className =
+              'w-full py-3 font-display font-medium border-2 border-red-600 bg-red-600 text-earth-50 tracking-wide rounded-sm transition-all duration-300 hover:bg-red-700 hover:border-red-700 cursor-pointer';
+          }
+        });
+        obs.observe(host, { childList: true, subtree: true });
+      }
+    </script>
+  </>
+)}

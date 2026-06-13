@@ -78,7 +78,7 @@ const description = n.marketing_description ?? n.description ?? null;
           {heroSrcs.slice(0, 1).map((src, i) => (
             <button
               type="button"
-              class="gallery-tile md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto rounded-2xl overflow-hidden relative group"
+              class="gallery-tile md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto rounded-sm overflow-hidden relative group"
               data-lb-index={i}
               aria-label={`View photo ${i + 1} of ${totalImages}`}
             >
@@ -88,7 +88,7 @@ const description = n.marketing_description ?? n.description ?? null;
           {heroSrcs.slice(1, 5).map((src, i) => (
             <button
               type="button"
-              class="gallery-tile aspect-[4/3] rounded-2xl overflow-hidden relative group"
+              class="gallery-tile aspect-[4/3] rounded-sm overflow-hidden relative group"
               data-lb-index={i + 1}
               aria-label={`View photo ${i + 2} of ${totalImages}`}
             >
@@ -107,7 +107,7 @@ const description = n.marketing_description ?? n.description ?? null;
             <button
               type="button"
               id="view-all-photos"
-              class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-warm-50 font-semibold transition-all text-sm"
+              class="inline-flex items-center gap-2 px-6 py-3 rounded-sm border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-warm-50 font-semibold transition-all text-sm"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
               View all {totalImages} photos
@@ -172,7 +172,7 @@ const description = n.marketing_description ?? n.description ?? null;
       </div>
 
       <aside class="space-y-6">
-        <div class="bg-warm-100/60 rounded-2xl p-6 border border-warm-200/60">
+        <div class="bg-warm-100/60 rounded-sm p-6 border border-warm-200/60">
           <h3 class="font-serif text-lg text-navy-900 font-semibold mb-4">Quick facts</h3>
           <dl class="space-y-3 text-sm">
             {location && (
@@ -208,14 +208,14 @@ const description = n.marketing_description ?? n.description ?? null;
           </dl>
         </div>
 
-        <div class="bg-warm-100/60 rounded-2xl p-6 border border-warm-200/60">
+        <div class="bg-warm-100/60 rounded-sm p-6 border border-warm-200/60">
           <h3 class="font-serif text-lg text-navy-900 font-semibold mb-2">Interested in {n.name}?</h3>
           <p class="text-navy-500 text-sm mb-4">
             Reach out and we'll send detail sheets, available lots and homes, and arrange a tour.
           </p>
           <a
             href="/contact"
-            class="block text-center w-full py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-all"
+            class="block text-center w-full py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-sm transition-all"
           >
             Request Information
           </a>
@@ -224,7 +224,7 @@ const description = n.marketing_description ?? n.description ?? null;
               href={n.website_url}
               target="_blank"
               rel="noopener"
-              class="block text-center w-full mt-3 py-3 border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white font-semibold rounded-lg transition-all"
+              class="block text-center w-full mt-3 py-3 border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white font-semibold rounded-sm transition-all"
             >
               Visit Community Website
             </a>
@@ -234,7 +234,7 @@ const description = n.marketing_description ?? n.description ?? null;
         {(n.listings_count ?? 0) > 0 && (
           <a
             href={`/listings`}
-            class="block w-full px-6 py-4 rounded-2xl bg-navy-900 text-warm-50 hover:bg-navy-800 transition-all text-center"
+            class="block w-full px-6 py-4 rounded-sm bg-navy-900 text-warm-50 hover:bg-navy-800 transition-all text-center"
           >
             <div class="font-serif text-lg">{n.listings_count} active listing{n.listings_count === 1 ? '' : 's'}</div>
             <div class="text-warm-200 text-xs tracking-widest uppercase mt-1">View available homes →</div>

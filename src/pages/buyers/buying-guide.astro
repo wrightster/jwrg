@@ -1,54 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageBanner from '../../components/PageBanner.astro';
-import Form from '../../components/Form.astro';
-import type { Field } from '../../lib/formFields';
+import EmbedForm from '../../components/EmbedForm.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
+import { site } from '../../data/site';
 
 export const prerender = true;
 
-const fields: Field[] = [
-  { type: 'text', name: 'first_name', label: 'First Name', required: true, cols: 1 },
-  { type: 'text', name: 'last_name', label: 'Last Name', required: true, cols: 1 },
-  { type: 'email', name: 'email', label: 'Email', required: true, cols: 1 },
-  { type: 'tel', name: 'phone', label: 'Phone', cols: 1 },
-  { type: 'text', name: 'address', label: 'Mailing Address', cols: 2 },
-  { type: 'text', name: 'city', label: 'City', cols: 1 },
-  { type: 'text', name: 'state', label: 'State', cols: 1 },
-  { type: 'text', name: 'zip', label: 'Zip', cols: 1 },
-  {
-    type: 'select',
-    name: 'price_range',
-    label: 'Price Range',
-    options: [
-      'Under $200,000',
-      '$200,000 — $400,000',
-      '$400,000 — $600,000',
-      '$600,000 — $1,000,000',
-      'Over $1,000,000',
-    ],
-    cols: 1,
-  },
-  {
-    type: 'select',
-    name: 'timeline',
-    label: 'When are you looking to buy?',
-    options: ['Within 30 days', '45–60 days', 'Within 6 months', 'Within 1 year', 'Not sure yet'],
-    cols: 1,
-  },
-  { type: 'text', name: 'sqft', label: 'Desired Square Feet', cols: 1 },
-  { type: 'select', name: 'beds', label: 'Bedrooms', options: ['1', '2', '3', '4', '5+'], cols: 1 },
-  { type: 'select', name: 'baths', label: 'Bathrooms', options: ['1', '2', '3', '4+'], cols: 1 },
-  { type: 'select', name: 'half_baths', label: 'Half Baths', options: ['0', '1', '2'], cols: 1 },
-  {
-    type: 'select',
-    name: 'property_type',
-    label: 'Property Type',
-    options: ['Single-Family', 'Townhome', 'Condo', 'Land', 'Farm / Estate', 'New Construction'],
-    cols: 2,
-  },
-  { type: 'textarea', name: 'special_request', label: 'Anything specific you\'d like us to know?', cols: 2 },
-];
+const formToken = site.formTokens.buyingGuide;
 ---
 
 <BaseLayout title="Free Buying Guide | Julie Wright Realty Group">
@@ -60,13 +19,20 @@ const fields: Field[] = [
 
   <section class="py-16">
     <div class="max-w-3xl mx-auto px-6">
-      <Form
-        formKey="buyingGuide"
-        title="Request Your Free Guide"
-        description="Required fields are marked with an asterisk. We never share your information."
-        submitLabel="Request Guide"
-        fields={fields}
-      />
+      <div class="bg-white rounded-sm p-8 md:p-10">
+        <h2 class="contact-form-heading">Request Your Free Guide</h2>
+        <p class="text-earth-600 mb-6">Required fields are marked with an asterisk. We never share your information.</p>
+        {formToken ? (
+          <EmbedForm id="jwrg-buying-guide-form" token={formToken} />
+        ) : (
+          <p class="text-earth-600 leading-relaxed">
+            Our online buying-guide request form is being configured. In the meantime, please reach us
+            by <a href={`tel:${site.phoneRaw}`} class="text-red-600 hover:underline">phone</a>
+            or <a href={`mailto:${site.email}`} class="text-red-600 hover:underline">email</a>
+            and we'll send your free guide.
+          </p>
+        )}
+      </div>
     </div>
   </section>
 

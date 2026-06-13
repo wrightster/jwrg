@@ -29,7 +29,7 @@ const { county } = Astro.props;
       <h2 class="font-serif text-2xl text-navy-900 font-medium mb-6">Cities and Towns</h2>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
         {county.municipalities.map((m) => (
-          <div class="px-4 py-3 bg-white border border-warm-200/60 rounded-lg text-navy-700">{m}</div>
+          <div class="px-4 py-3 bg-white border border-warm-200/60 rounded-sm text-navy-700">{m}</div>
         ))}
       </div>
 

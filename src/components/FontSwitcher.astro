@@ -1,0 +1,431 @@
+---
+const isDev = import.meta.env.DEV;
+
+// variable: true  → smooth weight slider (loads googleVar for full wght axis)
+// variable: false → slider snaps through discrete weights[]
+const displayFonts = [
+  { name: 'Gabarito (current)',         family: "'Gabarito', Georgia, serif",            google: 'Gabarito:wght@400;700',                                       googleVar: 'Gabarito:wght@400..900',                            variable: true  },
+  { name: 'Jost',                       family: "'Jost', Georgia, serif",               google: 'Jost:ital,wght@0,400;0,700;1,400',                            googleVar: 'Jost:ital,wght@0,100..900;1,100..900',              variable: true  },
+  { name: 'DM Serif Display',           family: "'DM Serif Display', Georgia, serif",  google: 'DM+Serif+Display:ital@0;1',                                    variable: false, weights: [400] },
+  { name: 'Playfair Display',           family: "'Playfair Display', Georgia, serif",   google: 'Playfair+Display:ital,wght@0,400;0,700;1,400',                 googleVar: 'Playfair+Display:ital,wght@0,100..900;1,100..900',   variable: true  },
+  { name: 'Cormorant Garamond',         family: "'Cormorant Garamond', Georgia, serif",  google: 'Cormorant+Garamond:ital,wght@0,400;0,600;1,400',               googleVar: 'Cormorant+Garamond:ital,wght@0,100..700;1,100..700', variable: true  },
+  { name: 'Lora',                       family: "'Lora', Georgia, serif",               google: 'Lora:ital,wght@0,400;0,600;1,400',                             googleVar: 'Lora:ital,wght@0,400..700;1,400..700',              variable: true  },
+  { name: 'Merriweather',               family: "'Merriweather', Georgia, serif",        google: 'Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300',         variable: false, weights: [300, 400, 700, 900] },
+  { name: 'EB Garamond',                family: "'EB Garamond', Georgia, serif",         google: 'EB+Garamond:ital,wght@0,400;0,600;1,400',                      googleVar: 'EB+Garamond:ital,wght@0,400..800;1,400..800',       variable: true  },
+  { name: 'Libre Baskerville',          family: "'Libre Baskerville', Georgia, serif",   google: 'Libre+Baskerville:ital,wght@0,400;0,700;1,400',                variable: false, weights: [400, 700] },
+  { name: 'Crimson Pro',                family: "'Crimson Pro', Georgia, serif",         google: 'Crimson+Pro:ital,wght@0,400;0,600;1,400',                      googleVar: 'Crimson+Pro:ital,wght@0,200..900;1,200..900',       variable: true  },
+  { name: 'Spectral',                   family: "'Spectral', Georgia, serif",            google: 'Spectral:ital,wght@0,300;0,400;0,600;0,700;1,300',             variable: false, weights: [300, 400, 600, 700] },
+  { name: 'Yeseva One',                 family: "'Yeseva One', Georgia, serif",          google: 'Yeseva+One',                                                   variable: false, weights: [400] },
+];
+
+const bodyFonts = [
+  { name: 'Anek Latin (current)',     family: "'Anek Latin', system-ui, sans-serif",         google: 'Anek+Latin:wght@300;400;600',                   googleVar: 'Anek+Latin:ital,wght@0,100..800;1,100..800', variable: true  },
+  { name: 'Funnel Sans',             family: "'Funnel Sans', system-ui, sans-serif",         google: 'Funnel+Sans:ital,wght@0,300;0,400;0,600;1,400', googleVar: 'Funnel+Sans:ital,wght@0,100..900;1,100..900', variable: true  },
+  { name: 'Libre Franklin',           family: "'Libre Franklin', system-ui, sans-serif",   google: 'Libre+Franklin:wght@300;400;500;600;700',     googleVar: 'Libre+Franklin:wght@100..900',     variable: true  },
+  { name: 'Inter',                    family: "'Inter', system-ui, sans-serif",             google: 'Inter:wght@300;400;500;600;700',               googleVar: 'Inter:wght@100..900',             variable: true  },
+  { name: 'DM Sans',                  family: "'DM Sans', system-ui, sans-serif",           google: 'DM+Sans:wght@300;400;500;600;700',             googleVar: 'DM+Sans:wght@100..900',           variable: true  },
+  { name: 'Plus Jakarta Sans',        family: "'Plus Jakarta Sans', system-ui, sans-serif", google: 'Plus+Jakarta+Sans:wght@300;400;500;600;700',   googleVar: 'Plus+Jakarta+Sans:wght@200..800', variable: true  },
+  { name: 'Nunito Sans',              family: "'Nunito Sans', system-ui, sans-serif",       google: 'Nunito+Sans:wght@300;400;500;600;700',         googleVar: 'Nunito+Sans:wght@200..900',       variable: true  },
+  { name: 'Raleway',                  family: "'Raleway', system-ui, sans-serif",           google: 'Raleway:wght@300;400;500;600;700',             googleVar: 'Raleway:wght@100..900',           variable: true  },
+  { name: 'Outfit',                   family: "'Outfit', system-ui, sans-serif",            google: 'Outfit:wght@300;400;500;600;700',              googleVar: 'Outfit:wght@100..900',            variable: true  },
+  { name: 'Source Sans 3',            family: "'Source Sans 3', system-ui, sans-serif",     google: 'Source+Sans+3:wght@300;400;500;600;700',       googleVar: 'Source+Sans+3:wght@200..900',     variable: true  },
+  { name: 'Lato',                     family: "'Lato', system-ui, sans-serif",              google: 'Lato:wght@300;400;700',                        variable: false, weights: [300, 400, 700]       },
+];
+
+// Each token: id for DOM, label, primary cssVar for chaining, all CSS vars to update together, default value
+const colorTokens = [
+  { id: 'primary',   label: 'Primary Accent', cssVar: '--color-red-600', vars: ['--color-red-600'], value: '#be3528' },
+  { id: 'altbg',     label: 'Light Accent',   cssVar: '--color-earth-100',     vars: ['--color-earth-100'],     value: '#ece5d5' },
+  { id: 'accent',    label: 'Medium Accent',  cssVar: '--color-gold-300',  vars: ['--color-gold-300'],  value: '#faca83' },
+  { id: 'light',     label: 'Light Body',     cssVar: '--color-light-text',    vars: ['--color-light-text'],    value: '#ffffff' },
+  { id: 'medtext',   label: 'Medium Body',    cssVar: '--color-earth-400',     vars: ['--color-earth-400'],     value: '#bb9d72' },
+  { id: 'darktext',  label: 'Dark Body',      cssVar: '--color-earth-600',     vars: ['--color-earth-600'],     value: '#8d7350' },
+  { id: 'bg',        label: 'Light BG',       cssVar: '--color-earth-50',      vars: ['--color-earth-50'],      value: '#f4f4ec' },
+  { id: 'darkbrown', label: 'Dark BG',        cssVar: '--color-earth-900',     vars: ['--color-earth-900'],     value: '#3d3225' },
+];
+---
+
+{isDev && (
+  <div id="fs-root" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:system-ui,-apple-system,sans-serif;">
+
+    <!-- Panel -->
+    <div id="fs-panel" style="display:none;width:284px;background:#fff;border:1px solid #e8d9bb;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,0.18);margin-bottom:10px;overflow:hidden;">
+
+      <!-- Header with tabs -->
+      <div style="background:#3d3225;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;gap:2px;">
+          <button id="fs-tab-fonts"   style="padding:5px 10px;background:#f8f8f2;color:#3d3225;border:none;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Fonts</button>
+          <button id="fs-tab-colors"  style="padding:5px 10px;background:transparent;color:#bb9d72;border:none;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Colors</button>
+        </div>
+        <button id="fs-close" style="color:#bb9d72;background:none;border:none;cursor:pointer;font-size:22px;line-height:1;padding:0;">×</button>
+      </div>
+
+      <!-- ── Fonts Tab ──────────────────────────────────────────── -->
+      <div id="fs-fonts-content" style="padding:14px 14px 0;">
+
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#a48a63;margin-bottom:5px;">Display / Headings</label>
+          <select id="fs-display-select" style="width:100%;padding:6px 8px;border:1px solid #e8d9bb;border-radius:4px;font-size:12px;color:#3d3225;background:#f8f8f2;cursor:pointer;outline:none;">
+            {displayFonts.map((f, i) => <option value={i}>{f.name}</option>)}
+          </select>
+          <div id="fs-display-preview" style="margin-top:8px;font-size:21px;color:#3d3225;line-height:1.25;margin-bottom:8px;">
+            Julie Wright Land Co.
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid #f3e7c9;">
+            <span style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#a48a63;flex-shrink:0;">Wt</span>
+            <input id="fs-display-weight" type="range" min="0" max="0" step="1" value="0" disabled style="flex:1;accent-color:#be3528;opacity:0.35;cursor:default;" />
+            <span id="fs-display-weight-label" style="font-size:10px;font-family:monospace;color:#a48a63;width:28px;text-align:right;flex-shrink:0;">400</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#a48a63;margin-bottom:5px;">Body / Copy</label>
+          <select id="fs-body-select" style="width:100%;padding:6px 8px;border:1px solid #e8d9bb;border-radius:4px;font-size:12px;color:#3d3225;background:#f8f8f2;cursor:pointer;outline:none;">
+            {bodyFonts.map((f, i) => <option value={i}>{f.name}</option>)}
+          </select>
+          <div id="fs-body-preview" style="margin-top:8px;font-size:12px;color:#8d7350;line-height:1.6;margin-bottom:8px;">
+            Land brokerage, appraisals, and estate planning across the Triangle for over 50 years.
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding-bottom:10px;border-bottom:1px solid #f3e7c9;">
+            <span style="font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#a48a63;flex-shrink:0;">Wt</span>
+            <input id="fs-body-weight" type="range" min="100" max="900" step="1" value="400" style="flex:1;accent-color:#be3528;cursor:pointer;" />
+            <span id="fs-body-weight-label" style="font-size:10px;font-family:monospace;color:#a48a63;width:28px;text-align:right;flex-shrink:0;">400</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;padding-top:12px;border-top:1px solid #f3e7c9;">
+          <label style="display:block;font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#a48a63;margin-bottom:5px;">Import Any Google Font</label>
+          <input id="fs-custom-input" type="text" placeholder="e.g. Cinzel, Bitter, Raleway…" style="width:100%;padding:6px 8px;border:1px solid #e8d9bb;border-radius:4px;font-size:12px;color:#3d3225;background:#f8f8f2;outline:none;box-sizing:border-box;" />
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            <button id="fs-custom-disp" style="flex:1;padding:6px;background:#3d3225;color:#f8f8f2;border:none;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">→ Display</button>
+            <button id="fs-custom-body" style="flex:1;padding:6px;background:#3d3225;color:#f8f8f2;border:none;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;">→ Body</button>
+          </div>
+          <div id="fs-custom-error" style="display:none;margin-top:5px;font-size:10px;color:#be3528;">Font not found — check the spelling on fonts.google.com</div>
+        </div>
+
+      </div>
+
+      <!-- ── Colors Tab ─────────────────────────────────────────── -->
+      <div id="fs-colors-content" style="display:none;padding:14px 14px 0;">
+
+        {colorTokens.map(token => (
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <input
+              type="color"
+              id={"fs-color-" + token.id}
+              value={token.value}
+              style="width:34px;height:34px;padding:2px;border:1px solid #e8d9bb;border-radius:4px;cursor:pointer;flex-shrink:0;background:none;"
+            />
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:11px;font-weight:600;color:#3d3225;line-height:1.3;">{token.label}</div>
+              <div id={"fs-color-" + token.id + "-hex"} style="font-size:10px;color:#a48a63;font-family:monospace;">{token.value}</div>
+            </div>
+          </div>
+        ))}
+
+        <div style="margin-top:6px;margin-bottom:12px;">
+          <button id="fs-reset-colors" style="width:100%;padding:7px;background:#f3e7c9;color:#3d3225;border:1px solid #e8d9bb;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">
+            Reset to Defaults
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Panel footer (always visible) -->
+      <div style="padding:0 14px 12px;">
+        <button id="fs-copy-btn" style="width:100%;padding:8px;background:#be3528;color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">
+          Copy Config
+        </button>
+      </div>
+    </div>
+
+    <!-- Toggle button -->
+    <button id="fs-toggle" title="Design Tester" style="display:flex;align-items:center;justify-content:center;width:46px;height:46px;background:#be3528;color:#fff;border:none;border-radius:50%;font-size:15px;font-weight:700;font-family:Georgia,serif;cursor:pointer;box-shadow:0 4px 14px rgba(190,53,40,0.4);margin-left:auto;">
+      Aa
+    </button>
+
+    <script define:vars={{ displayFonts, bodyFonts, colorTokens }}>
+      const panel         = document.getElementById('fs-panel');
+      const toggleBtn     = document.getElementById('fs-toggle');
+      const closeBtn      = document.getElementById('fs-close');
+      const tabFonts      = document.getElementById('fs-tab-fonts');
+      const tabColors     = document.getElementById('fs-tab-colors');
+      const fontsContent  = document.getElementById('fs-fonts-content');
+      const colorsContent = document.getElementById('fs-colors-content');
+      const dispSelect    = document.getElementById('fs-display-select');
+      const bodySelect    = document.getElementById('fs-body-select');
+      const dispPrev      = document.getElementById('fs-display-preview');
+      const bodyPrev      = document.getElementById('fs-body-preview');
+      const copyBtn       = document.getElementById('fs-copy-btn');
+      const customInput   = document.getElementById('fs-custom-input');
+      const customDisp    = document.getElementById('fs-custom-disp');
+      const customBody    = document.getElementById('fs-custom-body');
+      const customError   = document.getElementById('fs-custom-error');
+      const resetBtn          = document.getElementById('fs-reset-colors');
+      const dispWeight        = document.getElementById('fs-display-weight');
+      const dispWeightLabel   = document.getElementById('fs-display-weight-label');
+      const bodyWeight        = document.getElementById('fs-body-weight');
+      const bodyWeightLabel   = document.getElementById('fs-body-weight-label');
+
+      let currentDisplay       = displayFonts[0];
+      let currentBody          = bodyFonts[0];
+
+      // Read actual weights from CSS so sliders reflect the real current state
+      const cssVars = getComputedStyle(document.documentElement);
+      let currentDisplayWeight = parseInt(cssVars.getPropertyValue('--font-display-weight')) || 400;
+      let currentBodyWeight    = parseInt(cssVars.getPropertyValue('--font-body-weight'))    || 400;
+      let customDisplayFont    = null;
+      let customBodyFont       = null;
+
+      // ── Init weight sliders from actual CSS values ────────────────
+      function initWeightSlider(font, isDisplay, weight) {
+        const slider = isDisplay ? dispWeight : bodyWeight;
+        const label  = isDisplay ? dispWeightLabel : bodyWeightLabel;
+        if (font.variable) {
+          slider.min = 100; slider.max = 900; slider.step = 1;
+          slider.disabled = false; slider.style.opacity = '1'; slider.style.cursor = 'pointer';
+          slider.value = weight;
+        } else {
+          const wts = font.weights || [400];
+          slider.min = 0; slider.max = wts.length - 1; slider.step = 1;
+          const single = wts.length <= 1;
+          slider.disabled = single;
+          slider.style.opacity = single ? '0.35' : '1';
+          slider.style.cursor  = single ? 'default' : 'pointer';
+          const idx = wts.indexOf(weight) >= 0 ? wts.indexOf(weight) : 0;
+          slider.value = idx;
+        }
+        label.textContent = weight;
+        if (isDisplay) dispPrev.style.fontWeight = weight;
+        else           bodyPrev.style.fontWeight = weight;
+      }
+      initWeightSlider(currentDisplay, true,  currentDisplayWeight);
+      initWeightSlider(currentBody,    false, currentBodyWeight);
+      dispPrev.style.fontFamily = currentDisplay.family;
+      bodyPrev.style.fontFamily = currentBody.family;
+
+      // ── Tabs ─────────────────────────────────────────────────────
+      function setTab(tab) {
+        const isFonts = tab === 'fonts';
+        fontsContent.style.display  = isFonts ? 'block' : 'none';
+        colorsContent.style.display = isFonts ? 'none'  : 'block';
+        tabFonts.style.background   = isFonts ? '#f8f8f2' : 'transparent';
+        tabFonts.style.color        = isFonts ? '#3d3225' : '#bb9d72';
+        tabColors.style.background  = isFonts ? 'transparent' : '#f8f8f2';
+        tabColors.style.color       = isFonts ? '#bb9d72' : '#3d3225';
+      }
+      tabFonts.addEventListener('click',  () => setTab('fonts'));
+      tabColors.addEventListener('click', () => setTab('colors'));
+
+      // ── Font helpers ──────────────────────────────────────────────
+      function loadFont(google) {
+        const id = 'gf-' + google.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+        if (document.getElementById(id)) return;
+        const link = document.createElement('link');
+        link.id   = id;
+        link.rel  = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=' + google + '&display=swap';
+        document.head.appendChild(link);
+      }
+
+      function loadVariableFont(font) {
+        if (!font.googleVar) return;
+        const id = 'gf-var-' + font.googleVar.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+        if (document.getElementById(id)) return;
+        const link = document.createElement('link');
+        link.id = id; link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=' + font.googleVar + '&display=swap';
+        document.head.appendChild(link);
+      }
+
+      // Sync weight slider UI and apply weight to page for the given font.
+      function syncWeightSlider(font, isDisplay) {
+        const slider = isDisplay ? dispWeight : bodyWeight;
+        const label  = isDisplay ? dispWeightLabel : bodyWeightLabel;
+        let w;
+        if (font.variable) {
+          slider.min = 100; slider.max = 900; slider.step = 1;
+          slider.disabled = false; slider.style.opacity = '1'; slider.style.cursor = 'pointer';
+          slider.value = 400; w = 400;
+        } else {
+          const wts = font.weights || [400];
+          slider.min = 0; slider.max = wts.length - 1; slider.step = 1;
+          const single = wts.length <= 1;
+          slider.disabled = single;
+          slider.style.opacity = single ? '0.35' : '1';
+          slider.style.cursor  = single ? 'default' : 'pointer';
+          const idx = wts.indexOf(400) >= 0 ? wts.indexOf(400) : Math.floor(wts.length / 2);
+          slider.value = idx; w = wts[idx];
+        }
+        label.textContent = w;
+        document.documentElement.style.setProperty(isDisplay ? '--font-display-weight' : '--font-body-weight', w);
+        if (isDisplay) { dispPrev.style.fontWeight = w; currentDisplayWeight = w; }
+        else            { bodyPrev.style.fontWeight = w; currentBodyWeight    = w; }
+      }
+
+      function applyDisplay(font) {
+        loadFont(font.google);
+        if (font.variable && font.googleVar) loadVariableFont(font);
+        document.documentElement.style.setProperty('--font-display', font.family);
+        dispPrev.style.fontFamily = font.family;
+        currentDisplay = font;
+        syncWeightSlider(font, true);
+      }
+
+      function applyBody(font) {
+        loadFont(font.google);
+        if (font.variable && font.googleVar) loadVariableFont(font);
+        document.documentElement.style.setProperty('--font-body', font.family);
+        bodyPrev.style.fontFamily = font.family;
+        currentBody = font;
+        syncWeightSlider(font, false);
+      }
+
+      function addCustomOption(select, font) {
+        let opt = select.querySelector('[data-custom]');
+        if (!opt) {
+          opt = document.createElement('option');
+          opt.setAttribute('data-custom', '');
+          select.insertBefore(opt, select.firstChild);
+        }
+        opt.value = 'custom';
+        opt.textContent = font.name;
+        select.value = 'custom';
+      }
+
+      function applyCustomFont(target) {
+        const name = customInput.value.trim();
+        if (!name) return;
+        customError.style.display = 'none';
+        const urlName   = name.replace(/\s+/g, '+');
+        const google    = urlName + ':ital,wght@0,400;0,700;1,400';
+        const googleVar = urlName + ':ital,wght@0,100..900;1,100..900';
+        const isDisplay = target === 'display';
+        const family    = "'" + name + "', " + (isDisplay ? 'Georgia, serif' : 'system-ui, sans-serif');
+        const font      = { name: 'Custom: ' + name, family, google, googleVar, variable: true };
+        const existingId = 'gf-' + google.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+        const apply = () => {
+          if (isDisplay) { customDisplayFont = font; applyDisplay(font); addCustomOption(dispSelect, font); }
+          else            { customBodyFont    = font; applyBody(font);    addCustomOption(bodySelect, font); }
+        };
+        if (document.getElementById(existingId)) {
+          apply();
+        } else {
+          const testLink = document.createElement('link');
+          testLink.id   = existingId;
+          testLink.rel  = 'stylesheet';
+          testLink.href = 'https://fonts.googleapis.com/css2?family=' + google + '&display=swap';
+          testLink.onerror = () => { customError.style.display = 'block'; };
+          testLink.onload  = apply;
+          document.head.appendChild(testLink);
+        }
+      }
+
+      dispSelect.addEventListener('change', (e) => {
+        if (e.target.value === 'custom' && customDisplayFont) applyDisplay(customDisplayFont);
+        else applyDisplay(displayFonts[parseInt(e.target.value)]);
+      });
+      bodySelect.addEventListener('change', (e) => {
+        if (e.target.value === 'custom' && customBodyFont) applyBody(customBodyFont);
+        else applyBody(bodyFonts[parseInt(e.target.value)]);
+      });
+      customDisp.addEventListener('click', () => applyCustomFont('display'));
+      customBody.addEventListener('click', () => applyCustomFont('body'));
+
+      // ── Weight sliders ────────────────────────────────────────────
+      dispWeight.addEventListener('input', () => {
+        let w;
+        if (currentDisplay.variable) {
+          w = parseInt(dispWeight.value);
+        } else {
+          const wts = currentDisplay.weights || [400];
+          w = wts[parseInt(dispWeight.value)];
+        }
+        dispWeightLabel.textContent = w;
+        dispPrev.style.fontWeight = w;
+        document.documentElement.style.setProperty('--font-display-weight', w);
+        currentDisplayWeight = w;
+      });
+
+      bodyWeight.addEventListener('input', () => {
+        let w;
+        if (currentBody.variable) {
+          w = parseInt(bodyWeight.value);
+        } else {
+          const wts = currentBody.weights || [400];
+          w = wts[parseInt(bodyWeight.value)];
+        }
+        bodyWeightLabel.textContent = w;
+        bodyPrev.style.fontWeight = w;
+        document.documentElement.style.setProperty('--font-body-weight', w);
+        currentBodyWeight = w;
+      });
+      customInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') applyCustomFont('display'); });
+
+      // ── Color helpers ─────────────────────────────────────────────
+      colorTokens.forEach(token => {
+        const input    = document.getElementById('fs-color-' + token.id);
+        const hexLabel = document.getElementById('fs-color-' + token.id + '-hex');
+        input.addEventListener('input', (e) => {
+          const val = e.target.value;
+          token.vars.forEach(v => document.documentElement.style.setProperty(v, val));
+          hexLabel.textContent = val;
+        });
+      });
+
+      resetBtn.addEventListener('click', () => {
+        colorTokens.forEach(token => {
+          const input    = document.getElementById('fs-color-' + token.id);
+          const hexLabel = document.getElementById('fs-color-' + token.id + '-hex');
+          token.vars.forEach(v => document.documentElement.style.removeProperty(v));
+          input.value = token.value;
+          hexLabel.textContent = token.value;
+        });
+      });
+
+      // ── Panel open/close ──────────────────────────────────────────
+      toggleBtn.addEventListener('click', () => {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+      });
+      closeBtn.addEventListener('click', () => {
+        panel.style.display = 'none';
+      });
+
+      // ── Copy Config ───────────────────────────────────────────────
+      copyBtn.addEventListener('click', () => {
+        const dispGoogleStr = (currentDisplay.variable && currentDisplay.googleVar)
+          ? currentDisplay.googleVar : currentDisplay.google;
+        const bodyGoogleStr = (currentBody.variable && currentBody.googleVar)
+          ? currentBody.googleVar : currentBody.google;
+        const googleUrl =
+          'https://fonts.googleapis.com/css2?family=' +
+          dispGoogleStr + '&family=' + bodyGoogleStr + '&display=swap';
+
+        const colorLines = colorTokens
+          .map(t => t.vars.map(v => v + ': ' + document.getElementById('fs-color-' + t.id).value + ';').join('\n'))
+          .join('\n');
+
+        const config = [
+          '// src/styles/global.css — inside @theme {}',
+          '',
+          '// Fonts:',
+          '--font-display: ' + currentDisplay.family + ';',
+          '--font-body:    ' + currentBody.family + ';',
+          '--font-display-weight: ' + currentDisplayWeight + ';',
+          '--font-body-weight:    ' + currentBodyWeight + ';',
+          '',
+          '// Colors:',
+          colorLines,
+          '',
+          '// src/layouts/Layout.astro — replace the Google Fonts <link>',
+          '<link href="' + googleUrl + '" rel="stylesheet" />',
+        ].join('\n');
+
+        navigator.clipboard.writeText(config).then(() => {
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => { copyBtn.textContent = 'Copy Config'; }, 2000);
+        });
+      });
+    </script>
+  </div>
+)}

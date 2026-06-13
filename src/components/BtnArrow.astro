@@ -1,0 +1,27 @@
+---
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'inverted';
+  class?: string;
+}
+const { href = '#', variant = 'primary', class: className = '' } = Astro.props;
+---
+<a href={href} class:list={['btn-arrow', `btn-arrow--${variant}`, className]}>
+  <span class="btn-arrow__inner">
+    <!-- Shaft stroke rectangle: sits behind caps; border-top/bottom provide shaft outline edges -->
+    <span class="btn-arrow__shaft" aria-hidden="true"></span>
+
+    <!-- Left cap: shoulder (251.68) + 30°-from-vertical depth (72.66) = viewBox width 324.34 -->
+    <svg class="btn-arrow__lcap" viewBox="0 0 324.34 251.68" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <polygon points="251.68,0 0,0 72.66,125.84 0,251.68 251.68,251.68 324.34,125.84"/>
+    </svg>
+
+    <!-- Shaft body: stretches to fill text width; background covers only the shaft band -->
+    <span class="btn-arrow__body"><span class="btn-arrow__label"><slot /></span></span>
+
+    <!-- Right cap: notch tip at 690.75+72.66=763.41, arrow tip at 885.73+72.66=958.39; viewBox width 267.64 -->
+    <svg class="btn-arrow__rcap" viewBox="690.75 0 267.64 251.68" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+      <polygon points="885.73,0 690.75,0 763.41,125.84 690.75,251.68 885.73,251.68 958.39,125.84"/>
+    </svg>
+  </span>
+</a>

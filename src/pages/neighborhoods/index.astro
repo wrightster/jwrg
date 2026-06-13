@@ -39,7 +39,7 @@ const statusLabels: Record<string, string> = {
             return (
               <a
                 href={`/neighborhoods/${n.slug}`}
-                class="group bg-white border border-warm-200/50 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1 flex flex-col"
+                class="group bg-white border border-warm-200/50 rounded-sm overflow-hidden hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1 flex flex-col"
               >
                 <div class="aspect-[4/3] relative overflow-hidden">
                   {heroSrc ? (
@@ -60,7 +60,7 @@ const statusLabels: Record<string, string> = {
                     </span>
                   )}
                   {(n.listings_count ?? 0) > 0 && (
-                    <span class="absolute bottom-4 right-4 px-3 py-1.5 rounded-lg text-xs font-semibold bg-navy-900/80 text-white backdrop-blur-sm">
+                    <span class="absolute bottom-4 right-4 px-3 py-1.5 rounded-sm text-xs font-semibold bg-navy-900/80 text-white backdrop-blur-sm">
                       {n.listings_count} listing{n.listings_count === 1 ? '' : 's'}
                     </span>
                   )}

@@ -1,41 +1,251 @@
 @import "tailwindcss";
+@import "@jw/shared/styles/tokens.css";
+@import "@jw/shared/styles/components.css";
+
+@property --_btn-arrow-fill {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
 
 @theme {
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-serif: "Playfair Display", Georgia, serif;
+  /* JWRG-only migration aliases from the 2026 rebrand. Layered atop the
+   * @jw/shared tokens.css palette: legacy navy and warm color names and
+   * sans / serif font roles aliased onto the shared earth / brand tokens,
+   * so pages not yet rewritten to the new component classes stay coherent.
+   * Remove this block once every page uses the new tokens directly. */
+  --color-navy-50:  var(--color-earth-50);
+  --color-navy-100: var(--color-earth-100);
+  --color-navy-200: var(--color-earth-200);
+  --color-navy-300: var(--color-earth-400);
+  --color-navy-400: var(--color-earth-500);
+  --color-navy-500: var(--color-earth-600);
+  --color-navy-600: var(--color-earth-700);
+  --color-navy-700: var(--color-earth-700);
+  --color-navy-800: var(--color-earth-800);
+  --color-navy-900: var(--color-earth-900);
+  --color-navy-950: var(--color-earth-950);
 
-  --color-navy-50: #f0f4f8;
-  --color-navy-100: #d9e2ec;
-  --color-navy-200: #bcccdc;
-  --color-navy-300: #9fb3c8;
-  --color-navy-400: #829ab1;
-  --color-navy-500: #627d98;
-  --color-navy-600: #486581;
-  --color-navy-700: #334e68;
-  --color-navy-800: #243b53;
-  --color-navy-900: #102a43;
-  --color-navy-950: #0a1f33;
+  --color-warm-50:  var(--color-earth-50);
+  --color-warm-100: var(--color-earth-100);
+  --color-warm-200: var(--color-earth-200);
+  --color-warm-300: var(--color-earth-300);
+  --color-warm-400: var(--color-earth-400);
+  --color-warm-500: var(--color-earth-500);
+  --color-warm-600: var(--color-earth-600);
+  --color-warm-700: var(--color-earth-700);
+  --color-warm-800: var(--color-earth-800);
+  --color-warm-900: var(--color-earth-900);
 
-  --color-gold-50: #fdf8ef;
-  --color-gold-100: #faecd5;
-  --color-gold-200: #f4d5a0;
-  --color-gold-300: #edbc6a;
-  --color-gold-400: #e6a33e;
-  --color-gold-500: #d4891f;
-  --color-gold-600: #b8711a;
-  --color-gold-700: #985618;
-  --color-gold-800: #7d451b;
-  --color-gold-900: #67391a;
-  --color-gold-950: #3b1d0a;
+  --font-sans:  'Anek Latin', system-ui, sans-serif;
+  --font-serif: 'Gabarito', Georgia, serif;
+}
 
-  --color-warm-50: #faf9f7;
-  --color-warm-100: #f3f1ed;
-  --color-warm-200: #e8e4dd;
-  --color-warm-300: #d5cfc4;
-  --color-warm-400: #b8b0a0;
-  --color-warm-500: #9e9482;
-  --color-warm-600: #857a69;
-  --color-warm-700: #6d6455;
-  --color-warm-800: #5b5448;
-  --color-warm-900: #4d473e;
+/* Nav accent/menu are runtime-switchable via FontSwitcher; default to brand tokens */
+:root {
+  --color-nav-accent: var(--color-gold-300);
+  --color-nav-menu:   var(--color-earth-50);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * JWRG chrome — inverted red/gold treatment on nav / footer / banner /
+ * top page-banner / above-footer feature CTA.
+ * @jw/shared/styles/components.css handles everything else.
+ * Per the chrome-divergence rule (see workspace CLAUDE.md), do NOT mirror
+ * these changes to JWLC automatically.
+ * ────────────────────────────────────────────────────────────────────────── */
+@layer components {
+
+
+  /* ══════════════════════════════════════════════════
+     SITE CHROME
+  ══════════════════════════════════════════════════ */
+  .site-body  { @apply min-h-screen flex flex-col; }
+  .site-main  { @apply flex-1 pt-20 relative z-[1]; }
+
+  /* Header */
+  .site-header { @apply fixed top-0 left-0 right-0 z-50 transition-all duration-500; }
+  .header-bg {
+    @apply absolute inset-0;
+    background: var(--color-red-600);
+  }
+  .site-nav { @apply relative z-10 max-w-7xl mx-auto px-6 lg:px-8 flex items-center h-20; }
+
+  /* Logo */
+  .nav-logo { @apply relative flex items-center flex-shrink-0; }
+  .nav-logo-icon {
+    height: 2.25rem;
+    aspect-ratio: 50 / 46;
+    background-color: var(--color-nav-accent);
+    -webkit-mask-image: url('/JWRG_Icon_Red.svg');
+    mask-image: url('/JWRG_Icon_Red.svg');
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+
+  /* Desktop nav */
+  .nav-desktop      { @apply hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2; }
+  .nav-desktop-link {
+    @apply relative px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-300;
+  }
+  .nav-link-bg {
+    position: absolute;
+    inset: 0;
+    top: -5rem;
+    bottom: -8px;
+    background-color: var(--color-earth-100);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 200ms ease, opacity 200ms ease, background-color 100ms ease;
+    z-index: -1;
+    opacity: 0;
+  }
+  .nav-link-active .nav-link-bg {
+    background-color: var(--color-gold-300);
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  .nav-link-inactive:hover .nav-link-bg {
+    transform: scaleY(1);
+    opacity: 1;
+    background-color: var(--color-earth-50);
+    border: 2px solid var(--color-gold-300);
+  }
+  .nav-active-bar   {
+    @apply absolute bottom-0 left-4 right-4 h-0.5 rounded-full;
+    background-color: var(--color-earth-900);
+  }
+  .nav-desktop-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 1rem;
+    right: 1rem;
+    height: 2px;
+    border-radius: 9999px;
+    background-color: var(--color-nav-accent);
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 250ms ease, transform 250ms ease;
+  }
+  .nav-link-inactive:hover::after { opacity: 1; transform: translateY(0); }
+  .nav-link-active::after { display: none; }
+  .nav-link-active   { color: var(--color-earth-900); }
+  .nav-link-inactive { color: var(--color-nav-menu); }
+  .nav-link-inactive:hover { color: var(--color-earth-900); }
+
+  /* Click: text color shift — bg animation is driven by inline styles in JS */
+  .nav-desktop-link.nav-link-clicking { color: var(--color-earth-900); transition-duration: 100ms; }
+
+  /* Deactivate: previously active link fades out */
+  .nav-link-active.nav-link-deactivating .nav-link-bg {
+    transform: scaleY(0);
+    opacity: 0;
+    transition: transform 100ms ease, opacity 100ms ease;
+  }
+  .nav-link-active.nav-link-deactivating { color: var(--color-nav-menu); transition-duration: 100ms; }
+
+  /* Mobile menu button */
+  .mobile-menu-btn {
+    @apply lg:hidden relative w-10 h-10 flex items-center justify-center ml-auto mr-3 cursor-pointer;
+  }
+  .hamburger-wrap { @apply w-6 flex flex-col gap-1.5; }
+  .hamburger-bar  {
+    background-color: var(--color-nav-menu);
+    transition: background-color 200ms, transform 300ms, opacity 300ms, width 300ms;
+  }
+  .mobile-menu-btn:hover .hamburger-bar { background-color: var(--color-nav-accent); }
+  #bar1 { @apply block h-0.5 w-6 origin-center; }
+  #bar2 { @apply block h-0.5 w-6; }
+  #bar3 { @apply block h-0.5 w-4 origin-center ml-auto; }
+  /* Translate first (in unrotated space) so the X center stays aligned with the hamburger center */
+  .mobile-menu-btn.open #bar1 { transform: translateY(8px) rotate(45deg); }
+  .mobile-menu-btn.open #bar2 { opacity: 0; }
+  .mobile-menu-btn.open #bar3 { transform: translateY(-8px) rotate(-45deg); width: 1.5rem; }
+
+  /* Mobile menu dropdown — right-justified floating panel, slides in from top via clip-path */
+  .mobile-menu {
+    @apply lg:hidden absolute top-full right-0 left-auto w-auto pointer-events-none;
+    clip-path: inset(0 0 100% 0 round 0 0 0 0.75rem);
+    transition: clip-path 220ms ease-out;
+    background-color: var(--color-red-600);
+    /* drop-shadow is not clipped by clip-path (unlike box-shadow), so it appears correctly */
+    filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--color-earth-900) 18%, transparent));
+  }
+  .mobile-menu.open {
+    pointer-events: auto;
+    clip-path: inset(0 0 0% 0 round 0 0 0 0.75rem);
+  }
+  /* Full-width links so the hover highlight extends to the menu's right edge */
+  .mobile-menu-list { @apply flex flex-col items-stretch py-3 gap-0.5 pl-4; }
+  .mobile-menu-link {
+    @apply relative block pl-8 pr-5 py-2.5 text-base font-display tracking-wide text-right;
+  }
+  .mobile-menu-link::before {
+    content: '';
+    position: absolute;
+    inset: 0 -4px 0 8px;
+    border-radius: 4px 0 0 4px;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 200ms ease, opacity 200ms ease, background-color 100ms ease;
+    z-index: -1;
+    opacity: 0;
+  }
+  .mobile-menu-link.nav-link-active::before {
+    background-color: var(--color-gold-300);
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  .mobile-menu-link.nav-link-inactive:hover::before {
+    background-color: var(--color-earth-50);
+    transform: scaleX(1);
+    opacity: 1;
+  }
+  /* Text colors adjusted for red menu background and gold highlight */
+  .mobile-menu-link.nav-link-inactive { color: var(--color-earth-50); }
+  .mobile-menu-link.nav-link-inactive:hover { color: var(--color-earth-900); }
+  .mobile-menu-link.nav-link-active { color: var(--color-earth-900); }
+
+  /* Footer */
+  .site-footer   { @apply relative z-[1] text-earth-50 mt-auto overflow-hidden; background: var(--color-red-600); }
+  .footer-inner  { @apply relative max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20; }
+  .footer-grid   { @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8; }
+  .footer-brand  { @apply lg:col-span-1; }
+  .footer-logo   { @apply inline-block mb-5; }
+  .footer-logo-img { @apply h-12 w-auto; }
+  .footer-tagline  { @apply text-sm leading-relaxed text-earth-100 max-w-xs; }
+  .footer-col-heading { @apply font-display text-lg text-earth-50 mb-5; }
+  .footer-nav-list    { @apply space-y-3; }
+  .footer-nav-link    { @apply text-sm text-earth-100 hover:text-gold-300 transition-colors duration-300; }
+  .footer-services-list { @apply space-y-3 text-sm text-earth-100; }
+  .footer-contact      { @apply not-italic space-y-3 text-sm text-earth-100; }
+  .footer-contact-link { @apply hover:text-gold-300 transition-colors; }
+  .footer-bottom    { @apply mt-16 pt-8 border-t border-earth-50/20 flex flex-col md:flex-row items-center justify-between gap-4; }
+  .footer-copyright { @apply text-xs text-earth-50/70; }
+  .footer-location  { @apply text-xs text-earth-50/70; }
+
+  /* ══════════════════════════════════════════════════
+     PAGE BANNER
+  ══════════════════════════════════════════════════ */
+  .page-banner       { @apply relative py-5 overflow-hidden bg-red-600; --btn-bg: var(--color-gold-300); }
+  .page-banner .section-label { @apply text-gold-300; }
+  .page-banner-title { @apply font-display italic text-4xl md:text-6xl text-gold-300 leading-tight; }
+  .page-banner-desc  { @apply text-gold-100 mt-5 text-lg max-w-[75%] text-balance; }
+
+
+  /* Above-footer feature CTA — gold band, dark text, red buttons (flat, no
+     gradient). Reuses .cta-bold-heading/body in markup; the overrides below
+     flip their text dark and render the inverted BtnArrows red on the gold. */
+  .cta-feature          { @apply py-7 bg-gold-300; --btn-bg: var(--color-gold-300); }
+  .cta-feature .cta-bold-heading { @apply text-earth-900; }
+  .cta-feature .cta-bold-body    { @apply text-earth-700; }
+  .cta-feature .btn-arrow--inverted           { color: var(--color-earth-50); --_btn-arrow-fill: var(--color-red-600); }
+  .cta-feature .btn-arrow--inverted svg       { fill: var(--color-red-600); stroke: var(--color-red-600); }
+  .cta-feature .btn-arrow--inverted:hover     { color: var(--color-red-600); --_btn-arrow-fill: var(--color-gold-300); }
+  .cta-feature .btn-arrow--inverted:hover svg { fill: var(--color-gold-300); }
+  .cta-feature .btn-arrow--inverted:hover .btn-arrow__shaft { border-top-color: var(--color-gold-300); border-bottom-color: var(--color-gold-300); }
 }

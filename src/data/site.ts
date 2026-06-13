@@ -19,4 +19,17 @@ export const site = {
   },
   counties: ['Wake', 'Granville', 'Franklin', 'Johnston', 'Harnett', 'Durham'],
   logoUrl: '/images/jwrg-logo.png',
+  // Office embed-form tokens — paste from office.jwrgnc.com admin (Marketing →
+  // Embed Forms). Empty strings mean "not yet wired"; pages render a phone/email
+  // fallback instead of the embed script.
+  formTokens: {
+    contact: '',
+    miniContact: '',
+    testimonial: '',
+    relocation: '',
+    buyingGuide: '',
+    cma: '',
+    listYourHome: '',
+    soldReport: '',
+  },
 };

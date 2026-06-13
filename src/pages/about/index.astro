@@ -1,58 +1,101 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import PageBanner from '../../components/PageBanner.astro';
-import MiniContactForm from '../../components/MiniContactForm.astro';
+import BtnArrow from '../../components/BtnArrow.astro';
 
 export const prerender = true;
+
+const stats = [
+  { value: '40+', label: 'Years of Experience', detail: 'Serving the Triangle since the 1970s' },
+  { value: '17', label: 'Brokers & Agents', detail: 'A deep, experienced team' },
+  { value: '6+', label: 'Counties Served', detail: 'Across central North Carolina' },
+  { value: '1000+', label: 'Homes Sold', detail: 'Generations of families guided home' },
+];
 ---
 
-<BaseLayout title="Our History | Julie Wright Realty Group">
-  <PageBanner
-    label="About Us"
-    title="Our History"
-    description="Four decades of Triangle real estate, three generations of expertise, and a single commitment: education-driven service for every client."
-  />
-
-  <section class="py-20">
-    <div class="max-w-4xl mx-auto px-6 space-y-8 text-navy-700 leading-relaxed">
-      <p>
-        Julie Wright Realty Group started in the 1970s, when Julie's family began selling rural land in what was then a quiet stretch of farmland north of Raleigh. The first office was, quite literally, a converted playhouse. From those modest beginnings the firm grew alongside the Triangle itself.
-      </p>
-      <p>
-        Today the team works with buyers and sellers across Wake, Granville, Franklin, Johnston, Harnett, Durham, and the surrounding counties. We handle everything from first-time-buyer townhomes to working farms, multi-acre estate sales, new-construction subdivisions, and the kind of complex land transactions that require deep knowledge of zoning, surveys, easements, and tax implications.
-      </p>
-      <p>
-        What hasn't changed is our approach: we educate our clients. The single most reliable way to help someone make a great real estate decision is to make sure they understand the decision they're making. That means real conversations about pricing, market timing, property condition, financing, and what life will actually look like in a given neighborhood.
-      </p>
-      <p>
-        We're proud of the relationships we've built — generations of families who keep coming back, brokers who have spent decades on this team, and a deep network of trusted local lenders, attorneys, builders, inspectors, and contractors. When you work with us, you get the benefit of all of it.
-      </p>
-      <p class="font-serif text-xl text-navy-900 italic mt-12 pt-8 border-t border-warm-200">
-        "We don't just close transactions. We help people build a future in the Triangle."
+<BaseLayout title="About — Julie Wright Realty Group" description="Four decades of Triangle real estate and a single commitment: education-driven service for every client.">
+  <!-- Page Header -->
+  <section class="page-banner">
+    <div class="content-wrap">
+      <h1 class="page-banner-title">Our History</h1>
+      <p class="page-banner-desc">
+        Four decades of Triangle real estate and a single commitment: education-driven service for every client.
       </p>
     </div>
   </section>
 
-  <section class="py-20 bg-navy-900 text-white">
-    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8 text-center">
-      <div>
-        <div class="text-4xl font-serif font-bold text-gold-400">40+</div>
-        <div class="text-navy-300 mt-2">Years of Experience</div>
-      </div>
-      <div>
-        <div class="text-4xl font-serif font-bold text-gold-400">17</div>
-        <div class="text-navy-300 mt-2">Brokers and Agents</div>
-      </div>
-      <div>
-        <div class="text-4xl font-serif font-bold text-gold-400">11</div>
-        <div class="text-navy-300 mt-2">Counties Served</div>
-      </div>
-      <div>
-        <div class="text-4xl font-serif font-bold text-gold-400">1000+</div>
-        <div class="text-navy-300 mt-2">Homes Sold</div>
+  <!-- Company Story -->
+  <section class="story-section">
+    <div class="content-wrap">
+      <div class="story-grid">
+        <div class="story-text-col">
+          <h2 class="section-heading">Rooted in the<br />Triangle since the 1970s</h2>
+          <div class="story-body">
+            <p>
+              Julie Wright Realty Group started in the 1970s, when Julie's family began selling rural land in what was then a quiet stretch of farmland north of Raleigh. The first office was, quite literally, a converted playhouse. From those modest beginnings the firm grew alongside the Triangle itself.
+            </p>
+            <p>
+              Today the team works with buyers and sellers across Wake, Granville, Franklin, Johnston, Harnett, Durham, and the surrounding counties. We handle everything from first-time-buyer townhomes to working farms, multi-acre estate sales, new-construction subdivisions, and the kind of complex transactions that require deep knowledge of zoning, surveys, easements, and tax implications.
+            </p>
+            <p>
+              What hasn't changed is our approach: we educate our clients. The single most reliable way to help someone make a great real estate decision is to make sure they understand the decision they're making. That means real conversations about pricing, market timing, property condition, financing, and what life will actually look like in a given neighborhood.
+            </p>
+            <p>
+              We're proud of the relationships we've built — generations of families who keep coming back, brokers who have spent decades on this team, and a deep network of trusted local lenders, attorneys, builders, inspectors, and contractors. When you work with us, you get the benefit of all of it.
+            </p>
+            <p class="font-display italic text-2xl text-red-600 mt-10 pt-8 border-t border-earth-200">
+              "We don't just close transactions. We help people build a future in the Triangle."
+            </p>
+          </div>
+        </div>
+
+        <!-- Sidebar stats -->
+        <div class="stat-sidebar">
+          <div class="stat-card">
+            {stats.map((stat) => (
+              <div class="stat-row">
+                <p class="stat-card-headline"><span>{stat.value} {stat.label}</span></p>
+                <p class="stat-card-detail">{stat.detail}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <MiniContactForm />
+  <!-- Explore more -->
+  <section class="team-section">
+    <div class="content-wrap">
+      <div class="team-header">
+        <h2 class="section-heading">Get to Know Us</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <a href="/about/team" class="group block bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300">
+          <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors">Our Team</h3>
+          <p class="text-earth-600 text-sm mt-2">Meet the brokers and agents behind the group.</p>
+        </a>
+        <a href="/about/triangle-area" class="group block bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300">
+          <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors">The Triangle Area</h3>
+          <p class="text-earth-600 text-sm mt-2">Explore the communities and counties we serve.</p>
+        </a>
+        <a href="/testimonials" class="group block bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300">
+          <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors">Testimonials</h3>
+          <p class="text-earth-600 text-sm mt-2">Hear from the families we've worked with.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-feature">
+    <div class="cta-wrap">
+      <h2 class="cta-bold-heading">Work With Our Team</h2>
+      <p class="cta-bold-body">
+        Ready to make your move in the Triangle? We'd love to hear from you.
+      </p>
+      <div class="cta-btn-row">
+        <BtnArrow href="/contact" variant="inverted">Get in Touch</BtnArrow>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

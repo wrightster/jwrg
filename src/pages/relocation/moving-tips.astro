@@ -36,7 +36,7 @@ export const prerender = true;
         </p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           {donationLinks.map((l) => (
-            <a href={l.url} target="_blank" rel="noopener" class="block p-6 bg-warm-100/60 border border-warm-200 rounded-2xl hover:border-gold-500 hover:bg-warm-50 transition-all">
+            <a href={l.url} target="_blank" rel="noopener" class="block p-6 bg-warm-100/60 border border-warm-200 rounded-sm hover:border-gold-500 hover:bg-warm-50 transition-all">
               <div class="font-semibold text-navy-900">{l.name}</div>
               <p class="text-navy-500 text-sm mt-1">{l.description}</p>
             </a>

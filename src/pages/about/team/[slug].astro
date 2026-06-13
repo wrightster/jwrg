@@ -34,7 +34,7 @@ const longBio = member.bio ?? member.short_bio ?? '';
 
       <div class="grid md:grid-cols-3 gap-10 items-start">
         <div class="md:col-span-1">
-          <div class="aspect-[4/5] overflow-hidden rounded-2xl bg-warm-100">
+          <div class="aspect-[4/5] overflow-hidden rounded-sm bg-warm-100">
             {photo ? (
               <img src={photo} alt={member.primary_photo?.alt ?? member.name} class="w-full h-full object-cover" />
             ) : (

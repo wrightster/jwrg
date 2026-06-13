@@ -1,0 +1,17 @@
+---
+// Site-specific wrapper around the shared ListingRow — injects JWRG's
+// headline (beds/baths/sqft for residential). Structural markup lives in
+// @jw/shared/components/ListingRow.astro.
+
+import SharedListingRow from '@jw/shared/components/ListingRow.astro';
+import { formatBedsBaths, formatSqft, type ApiListing } from '../lib/api';
+
+interface Props {
+  listing: ApiListing;
+}
+
+const { listing } = Astro.props;
+const headline = formatBedsBaths(listing) || formatSqft(listing.sqft);
+---
+
+<SharedListingRow listing={listing} headline={headline} />
