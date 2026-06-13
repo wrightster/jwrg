@@ -1,29 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageBanner from '../../components/PageBanner.astro';
-import Form from '../../components/Form.astro';
-import type { Field } from '../../lib/formFields';
+import EmbedForm from '../../components/EmbedForm.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
+import { site } from '../../data/site';
 
 export const prerender = true;
 
-const fields: Field[] = [
-  { type: 'text', name: 'first_name', label: 'First Name', required: true, cols: 1 },
-  { type: 'text', name: 'last_name', label: 'Last Name', required: true, cols: 1 },
-  { type: 'email', name: 'email', label: 'Email', required: true, cols: 1 },
-  { type: 'tel', name: 'phone', label: 'Phone', cols: 1 },
-  { type: 'text', name: 'address', label: 'Address', cols: 2 },
-  { type: 'text', name: 'city', label: 'City', cols: 1 },
-  { type: 'text', name: 'state', label: 'State', cols: 1 },
-  { type: 'text', name: 'zip', label: 'Zip Code', cols: 1 },
-  { type: 'textarea', name: 'comments', label: 'Comments', cols: 2 },
-  {
-    type: 'checkbox',
-    name: 'opt_in',
-    label: 'I give Julie Wright Realty Group permission to contact me via email, phone, or text.',
-    cols: 2,
-  },
-];
+const formToken = site.formTokens.soldReport;
 ---
 
 <BaseLayout title="Neighborhood Sold Report | Julie Wright Realty Group">
@@ -35,12 +19,18 @@ const fields: Field[] = [
 
   <section class="py-16">
     <div class="max-w-3xl mx-auto px-6">
-      <Form
-        formKey="soldReport"
-        title="Request Your Sold Report"
-        submitLabel="Request Report"
-        fields={fields}
-      />
+      <div class="bg-white rounded-sm p-8 md:p-10">
+        <h2 class="contact-form-heading">Request Your Sold Report</h2>
+        {formToken ? (
+          <EmbedForm id="jwrg-sold-report-form" token={formToken} />
+        ) : (
+          <p class="text-earth-600 leading-relaxed">
+            Our online sold-report request form is being configured. In the meantime, please reach us
+            by <a href={`tel:${site.phoneRaw}`} class="text-red-600 hover:underline">phone</a>
+            or <a href={`mailto:${site.email}`} class="text-red-600 hover:underline">email</a>.
+          </p>
+        )}
+      </div>
     </div>
   </section>
 

@@ -1,17 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Form from '../components/Form.astro';
+import EmbedForm from '../components/EmbedForm.astro';
 import { site } from '../data/site';
-import type { Field } from '../lib/formFields';
 
 export const prerender = true;
 
-const fields: Field[] = [
-  { type: 'text', name: 'name', label: 'Name', required: true, cols: 1 },
-  { type: 'tel', name: 'phone', label: 'Phone', required: true, cols: 1 },
-  { type: 'email', name: 'email', label: 'Email', required: true, cols: 2 },
-  { type: 'textarea', name: 'message', label: 'How can we help?', required: true, rows: 5, cols: 2 },
-];
+const formToken = site.formTokens.contact;
 
 const addressText = `${site.address.street1} ${site.address.street2} ${site.address.city} ${site.address.state} ${site.address.zip}`;
 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressText)}`;
@@ -34,13 +28,19 @@ const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComp
       <div class="contact-grid">
         <!-- Contact Form -->
         <div class="contact-form-col">
-          <Form
-            formKey="contact"
-            title="Send Us a Message"
-            description="Fill out the form below and we'll get back to you within one business day."
-            submitLabel="Send Message"
-            fields={fields}
-          />
+          <div class="bg-white rounded-sm p-8 md:p-10">
+            <h2 class="contact-form-heading">Send Us a Message</h2>
+            <p class="text-earth-600 mb-6">Fill out the form below and we'll get back to you within one business day.</p>
+            {formToken ? (
+              <EmbedForm id="jwrg-contact-form" token={formToken} />
+            ) : (
+              <p class="text-earth-600 leading-relaxed">
+                Our online contact form is being configured. In the meantime, please reach us
+                by <a href={`tel:${site.phoneRaw}`} class="text-red-600 hover:underline">phone</a>
+                or <a href={`mailto:${site.email}`} class="text-red-600 hover:underline">email</a>.
+              </p>
+            )}
+          </div>
         </div>
 
         <!-- Sidebar -->

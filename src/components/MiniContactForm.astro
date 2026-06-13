@@ -1,11 +1,10 @@
 ---
-import { formIds } from '../data/forms';
 import { site } from '../data/site';
+import EmbedForm from './EmbedForm.astro';
 
 interface Props {
   heading?: string;
   description?: string;
-  variant?: 'light' | 'dark';
 }
 
 const {
@@ -13,7 +12,7 @@ const {
   description = "Whether you're buying, selling, or just exploring your options, our team is here to help. Reach out and let us put four decades of experience to work for you.",
 } = Astro.props;
 
-const formId = formIds.contact;
+const formToken = site.formTokens.miniContact || site.formTokens.contact;
 ---
 
 <section class="py-12 lg:py-16 relative">
@@ -59,68 +58,16 @@ const formId = formIds.contact;
       <!-- Form -->
       <div class="bg-white rounded-sm p-8 md:p-10">
         <h3 class="contact-form-heading">Send Us a Message</h3>
-        <form class="form-stack" data-mini-contact data-form-id={formId ?? ''}>
-          <div class="form-row-2">
-            <div>
-              <label for="mc-name" class="form-label">Name *</label>
-              <input type="text" id="mc-name" name="name" required class="form-input" placeholder="Your full name" />
-            </div>
-            <div>
-              <label for="mc-phone" class="form-label">Phone *</label>
-              <input type="tel" id="mc-phone" name="phone" required class="form-input" placeholder="(XXX) XXX-XXXX" />
-            </div>
-          </div>
-          <div>
-            <label for="mc-email" class="form-label">Email *</label>
-            <input type="email" id="mc-email" name="email" required class="form-input" placeholder="your@email.com" />
-          </div>
-          <div>
-            <label for="mc-message" class="form-label">Message *</label>
-            <textarea id="mc-message" name="message" rows="4" required class="form-textarea" placeholder="How can we help you?"></textarea>
-          </div>
-          <input type="text" name="website" tabindex="-1" autocomplete="off" class="sr-only" aria-hidden="true" />
-          <p class="text-earth-400 text-xs leading-relaxed">
-            By submitting this form, you are giving {site.name} permission to contact you via email, phone, or text.
+        {formToken ? (
+          <EmbedForm id="jwrg-mini-contact" token={formToken} />
+        ) : (
+          <p class="text-earth-600 leading-relaxed">
+            Our online contact form is being configured. In the meantime, please reach us
+            by <a href={`tel:${site.phoneRaw}`} class="text-red-600 hover:underline">phone</a>
+            or <a href={`mailto:${site.email}`} class="text-red-600 hover:underline">email</a>.
           </p>
-          <button
-            type="submit"
-            class="w-full py-3 font-display font-medium border-2 border-red-600 bg-red-600 text-earth-50 tracking-wide rounded-sm transition-all duration-300 hover:bg-red-700 hover:border-red-700 cursor-pointer"
-          >
-            Send Message
-          </button>
-          <p data-form-status class="text-sm hidden"></p>
-        </form>
+        )}
       </div>
     </div>
   </div>
 </section>
-
-<script>
-  import { submitForm } from '../lib/api';
-
-  document.querySelectorAll<HTMLFormElement>('form[data-mini-contact]').forEach((form) => {
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const status = form.querySelector<HTMLElement>('[data-form-status]');
-      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
-      if (!button || !status) return;
-
-      button.disabled = true;
-      const originalText = button.textContent;
-      button.textContent = 'Sending…';
-      status.classList.add('hidden');
-
-      const formId = form.dataset.formId || null;
-      const data = Object.fromEntries(new FormData(form).entries());
-      const result = await submitForm(formId, data);
-
-      status.classList.remove('hidden');
-      status.textContent = result.message;
-      status.className = result.ok ? 'text-sm text-red-700' : 'text-sm text-red-600';
-
-      button.disabled = false;
-      button.textContent = originalText;
-      if (result.ok) form.reset();
-    });
-  });
-</script>

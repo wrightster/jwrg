@@ -1,75 +1,17 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageBanner from '../../components/PageBanner.astro';
-import Form from '../../components/Form.astro';
-import type { Field } from '../../lib/formFields';
+import EmbedForm from '../../components/EmbedForm.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
+import { site } from '../../data/site';
 
 export const prerender = true;
 
-const fields: Field[] = [
-  { type: 'text', name: 'first_name', label: 'First Name', required: true, cols: 1 },
-  { type: 'text', name: 'last_name', label: 'Last Name', required: true, cols: 1 },
-  { type: 'email', name: 'email', label: 'Email', required: true, cols: 1 },
-  { type: 'tel', name: 'phone', label: 'Phone', cols: 1 },
-  { type: 'text', name: 'address', label: 'Current Address', cols: 2 },
-  { type: 'text', name: 'city', label: 'City', cols: 1 },
-  { type: 'text', name: 'state', label: 'State', cols: 1 },
-  { type: 'text', name: 'zip', label: 'Zip', cols: 1 },
-  {
-    type: 'select',
-    name: 'sell_first',
-    label: 'Do you need to sell before relocating?',
-    options: ['Yes', 'No', 'Not sure'],
-    cols: 1,
-  },
-  {
-    type: 'select',
-    name: 'contact_pref',
-    label: 'Best way to contact you',
-    options: ['Email', 'Phone', 'Text'],
-    cols: 1,
-  },
-  {
-    type: 'select',
-    name: 'visit_timing',
-    label: 'When are you planning to visit the Triangle?',
-    options: ['Within 30 days', '1–3 months', '3–6 months', '6–12 months', 'No specific timeline'],
-    cols: 1,
-  },
-  {
-    type: 'select',
-    name: 'home_type',
-    label: 'Preferred Home Type',
-    options: ['Single-Family', 'Townhome', 'Condo', 'Land', 'Farm / Estate', 'New Construction'],
-    cols: 1,
-  },
-  { type: 'textarea', name: 'important_features', label: 'Important features or must-haves', cols: 2 },
-  {
-    type: 'select',
-    name: 'price_range',
-    label: 'Price Range',
-    options: [
-      'Under $300,000',
-      '$300,000 — $500,000',
-      '$500,000 — $750,000',
-      '$750,000 — $1,000,000',
-      'Over $1,000,000',
-    ],
-    cols: 1,
-  },
-  { type: 'select', name: 'beds', label: 'Minimum Bedrooms', options: ['1', '2', '3', '4', '5+'], cols: 1 },
-  { type: 'select', name: 'baths', label: 'Minimum Bathrooms', options: ['1', '2', '3', '4+'], cols: 1 },
-  { type: 'text', name: 'target_area', label: 'Target Area or Cities', cols: 2 },
-  {
-    type: 'select',
-    name: 'neighborhood_features',
-    label: 'Preferred Neighborhood Features',
-    options: ['Walkable', 'Schools / Family-Friendly', 'Quiet / Rural', 'Acreage', '55+ / Active Adult', 'Downtown / Urban'],
-    cols: 2,
-  },
-  { type: 'textarea', name: 'additional_comments', label: 'Anything else we should know?', cols: 2 },
-];
+// The relocation form's fields are now defined on the office side (see the
+// Filament Embed Forms admin); the office widget renders them based on the
+// token. Paste the token into site.formTokens.relocation when the form is
+// created.
+const formToken = site.formTokens.relocation;
 ---
 
 <BaseLayout title="Free Relocation Package | Julie Wright Realty Group">
@@ -81,13 +23,20 @@ const fields: Field[] = [
 
   <section class="py-16">
     <div class="max-w-3xl mx-auto px-6">
-      <Form
-        formKey="relocation"
-        title="Request Your Relocation Package"
-        description="Required fields are marked with an asterisk."
-        submitLabel="Request Package"
-        fields={fields}
-      />
+      <div class="bg-white rounded-sm p-8 md:p-10">
+        <h2 class="contact-form-heading">Request Your Relocation Package</h2>
+        <p class="text-earth-600 mb-6">Required fields are marked with an asterisk.</p>
+        {formToken ? (
+          <EmbedForm id="jwrg-relocation-form" token={formToken} />
+        ) : (
+          <p class="text-earth-600 leading-relaxed">
+            Our online relocation request form is being configured. In the meantime, please reach us
+            by <a href={`tel:${site.phoneRaw}`} class="text-red-600 hover:underline">phone</a>
+            or <a href={`mailto:${site.email}`} class="text-red-600 hover:underline">email</a>
+            and we'll send your customized Triangle relocation package.
+          </p>
+        )}
+      </div>
     </div>
   </section>
 
