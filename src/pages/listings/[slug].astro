@@ -17,6 +17,8 @@ if (!listing) {
 const photos = listing.photos ?? (listing.primary_photo ? [listing.primary_photo] : []);
 const imageList = photos.map(p => photoSrc(p, 800));
 const fullImageList = photos.map(p => photoSrc(p, 1600));
+// Social share card: the listing's primary photo at ~1200px wide (1.91:1-ish).
+const ogImage = photos[0] ? photoSrc(photos[0], 1200) : undefined;
 const totalImages = photos.length;
 
 const title = listing.marketing_title || listing.address;
@@ -61,7 +63,7 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
 <BaseLayout
   title={`${title} — Julie Wright Realty Group`}
   description={listing.description}
-  image={imageList[0] ?? undefined}
+  image={ogImage}
 >
   <!-- Back Link -->
   <div class="listing-back-bar">

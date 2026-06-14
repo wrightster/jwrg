@@ -18,6 +18,14 @@ const {
 const currentPath = Astro.url.pathname;
 const canonicalUrl = `${Astro.url.origin}${Astro.url.pathname}`;
 
+// Social share image. Pages pass a root-relative path or an absolute URL
+// (listing detail passes the listing's primary photo); both are resolved to an
+// absolute URL because social crawlers reject relative paths. Falls back to the
+// branded 1200×630 card. Rename the default file (not just its contents) to bust
+// LinkedIn's ~7-day preview cache.
+const DEFAULT_OG_IMAGE = '/images/og-default.png';
+const ogImageUrl = new URL(image ?? DEFAULT_OG_IMAGE, Astro.site ?? Astro.url).href;
+
 // Flat top-level nav — deeper pages are reached from each section landing page.
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -58,12 +66,12 @@ const footerNav = [
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    {image && <meta property="og:image" content={image} />}
+    <meta property="og:image" content={ogImageUrl} />
     <!-- Twitter Card -->
-    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    {image && <meta name="twitter:image" content={image} />}
+    <meta name="twitter:image" content={ogImageUrl} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&family=Anek+Latin:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet" />
