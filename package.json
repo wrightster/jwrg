@@ -11,10 +11,10 @@
   },
   "dependencies": {
     "@astrojs/node": "^9.5.5",
-    "@jw/shared": "file:../jw-shared",
     "@tailwindcss/vite": "^4.2.0",
     "astro": "^5.17.1",
-    "tailwindcss": "^4.2.0"
+    "tailwindcss": "^4.2.0",
+    "@jw/shared": "github:wrightster/jw-shared#v0.1.0"
   },
   "devDependencies": {
     "sharp": "^0.34.5"
