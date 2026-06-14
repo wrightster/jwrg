@@ -3,13 +3,15 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import ListingRow from '../../components/ListingRow.astro';
-import { fetchListings, type ApiListing } from '../../lib/api';
+import { fetchAllListings, type ApiListing } from '../../lib/api';
 export const prerender = true;
 
 let apiError = false;
 let listings: ApiListing[] = [];
 try {
-  listings = await fetchListings({ perPage: 200 });
+  // Walk every page — the API caps per_page at 50, so a single fetch would
+  // silently truncate the index once we publish more than 50 listings.
+  listings = await fetchAllListings({ perPage: 50 });
 } catch {
   apiError = true;
 }
