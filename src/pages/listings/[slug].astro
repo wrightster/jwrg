@@ -4,6 +4,7 @@ export const prerender = false;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
 import ListingCard from '../../components/ListingCard.astro';
+import VideoSection from '@jw/shared/components/VideoSection.astro';
 import { fetchListing, fetchListings, fetchTeam, formatPrice, photoSrc, documentTypeLabel } from '../../lib/api';
 import { site } from '../../data/site';
 
@@ -216,6 +217,9 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
               </ul>
             </div>
           )}
+
+          <!-- Video & Tour -->
+          <VideoSection videos={listing.videos} fallbackPoster={imageList[0]} />
 
           <!-- Directions -->
           {listing.directions && (
