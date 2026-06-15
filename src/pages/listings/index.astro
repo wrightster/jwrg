@@ -41,6 +41,19 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
         </div>
       ) : (
         <>
+      <!-- Keyword search (always visible, above the collapsible filters) -->
+      <div class="relative mb-4">
+        <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-earth-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          id="keyword-search"
+          type="search"
+          autocomplete="off"
+          placeholder="Search by address, city, or keyword…"
+          aria-label="Search listings by address, city, or keyword"
+          class="w-full rounded-sm border border-earth-200 bg-white py-3 pl-12 pr-4 text-earth-900 placeholder:text-earth-400 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-colors"
+        />
+      </div>
+
       <!-- Filter bar -->
       <div class="filter-bar" id="filter-bar">
         <button class="filter-toggle-btn" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filter-collapse">
@@ -177,6 +190,12 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
             data-status={listing.status}
             data-price={Math.round(parseFloat(listing.list_price))}
             data-sqft={listing.sqft ?? 0}
+            data-search={[
+              listing.address, listing.city, listing.county, listing.zip,
+              listing.marketing_title, listing.property_type,
+              ...(listing.features ?? []),
+              (listing.description ?? '').slice(0, 300),
+            ].filter(Boolean).join(' ').toLowerCase()}
             id={listing.slug}
           >
             <ListingCard listing={listing} index={i} />
@@ -311,6 +330,8 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
     // ── Filter logic ──────────────────────────────────────────────────────
     let priceMin = 0, priceMax = MAX_PRICE;
     let sqftMin = 0, sqftMax = MAX_SQFT;
+    let keyword = '';
+    const searchInput = document.getElementById('keyword-search') as HTMLInputElement | null;
 
     const statusToShort: Record<string, string> = {
       active: 'a', coming_soon: 'c', pending: 'p', under_contract: 'u', sold: 's'
@@ -321,6 +342,7 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
 
     function updateURL() {
       const params = new URLSearchParams();
+      if (keyword) params.set('q', keyword);
       if (filterValues.county !== 'all') params.set('county', filterValues.county);
       if (filterValues.city   !== 'all') params.set('city',   filterValues.city);
       if (filterValues.status !== 'all') params.set('status', statusToShort[filterValues.status] ?? filterValues.status);
@@ -343,8 +365,9 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
         const statusOk  = filterValues.status === 'all' || el.dataset.status === filterValues.status;
         const priceOk   = itemPrice >= priceMin && (priceMax >= MAX_PRICE || itemPrice <= priceMax);
         const sqftOk    = itemSqft >= sqftMin && (sqftMax >= MAX_SQFT || itemSqft <= sqftMax);
+        const searchOk  = keyword === '' || (el.dataset.search ?? '').includes(keyword);
         el.style.display = 'none';
-        if (countyOk && cityOk && statusOk && priceOk && sqftOk) matched.push(el);
+        if (countyOk && cityOk && statusOk && priceOk && sqftOk && searchOk) matched.push(el);
       });
 
       const totalPages = Math.max(1, Math.ceil(matched.length / perPage));
@@ -388,6 +411,7 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
 
     function updateFilterCount() {
       let active = 0;
+      if (keyword) active++;
       if (filterValues.county !== 'all') active++;
       if (filterValues.city   !== 'all') active++;
       if (filterValues.status !== 'all') active++;
@@ -455,6 +479,16 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
     sqftMaxEl.addEventListener('input', onSqftChange);
     updateFill(sqftFill, sqftMinEl, sqftMaxEl, MAX_SQFT);
 
+    // ── Keyword search ────────────────────────────────────────────────────
+    let searchDebounce = 0;
+    searchInput?.addEventListener('input', () => {
+      clearTimeout(searchDebounce);
+      searchDebounce = window.setTimeout(() => {
+        keyword = (searchInput.value ?? '').trim().toLowerCase();
+        applyFiltersReset();
+      }, 150);
+    });
+
     // ── Per-page selector ─────────────────────────────────────────────────
     const perPageBtns = document.querySelectorAll('.per-page-btn');
 
@@ -486,6 +520,9 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
     (function initFromURL() {
       const params = new URLSearchParams(window.location.search);
       if (!params.toString()) return;
+
+      const q = params.get('q');
+      if (q && searchInput) { keyword = q.trim().toLowerCase(); searchInput.value = q; }
 
       const paramMap: Array<[string, string]> = [['county', 'county'], ['city', 'city'], ['status', 'status']];
       paramMap.forEach(([param, filterId]) => {

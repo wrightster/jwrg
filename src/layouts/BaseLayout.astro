@@ -117,6 +117,15 @@ const footerNav = [
           })}
         </ul>
 
+        <!-- Desktop search (deep-links into the /listings keyword filter) -->
+        <form action="/listings" method="get" role="search" class="ml-auto hidden lg:block">
+          <label for="nav-search" class="sr-only">Search listings</label>
+          <div class="relative">
+            <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-earth-50/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="nav-search" name="q" type="search" placeholder="Search listings…" class="w-44 focus:w-60 rounded-full border border-earth-50/30 bg-earth-50/10 py-1.5 pl-9 pr-3 text-sm text-earth-50 placeholder:text-earth-50/60 focus:outline-none focus:border-earth-50/60 focus:bg-earth-50/15 transition-all duration-300" />
+          </div>
+        </form>
+
         <!-- Mobile Menu Button -->
         <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="mobile-menu">
           <span class="sr-only">Menu</span>
@@ -130,6 +139,13 @@ const footerNav = [
 
       <!-- Mobile Menu -->
       <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+        <form action="/listings" method="get" role="search" class="px-4 pt-3 pb-1">
+          <label for="nav-search-mobile" class="sr-only">Search listings</label>
+          <div class="relative">
+            <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-earth-50/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="nav-search-mobile" name="q" type="search" placeholder="Search listings…" class="w-full rounded-full border border-earth-50/30 bg-earth-50/10 py-2 pl-9 pr-3 text-sm text-earth-50 placeholder:text-earth-50/60 focus:outline-none focus:border-earth-50/60 transition-colors" />
+          </div>
+        </form>
         <ul class="mobile-menu-list">
           {navLinks.map((link) => {
             const isActive = currentPath === link.href;
