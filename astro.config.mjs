@@ -13,6 +13,11 @@ export default defineConfig({
   // when the new site is promoted to production.
   site: 'https://stage.jwrgnc.com',
   output: 'server',
+  // The old Dakno-era /property-search page was removed; send any lingering
+  // links/bookmarks to the listings page (which now has keyword search).
+  redirects: {
+    '/property-search': '/listings',
+  },
   vite: {
     plugins: [tailwindcss()]
   },
