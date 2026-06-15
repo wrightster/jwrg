@@ -231,10 +231,8 @@
   /* Compliance / affiliation marks (Equal Housing Opportunity, REALTOR®) */
   .footer-affiliations      { @apply mt-12 pt-8 border-t border-earth-50/15 flex flex-wrap items-center gap-x-8 gap-y-4 text-earth-50/65; }
   .footer-affiliation       { @apply inline-flex items-center gap-2.5; }
-  .footer-affiliation-mark  { @apply h-9 w-9 shrink-0; }
+  .footer-affiliation-mark  { @apply h-9 w-auto shrink-0; }
   .footer-affiliation-label { @apply text-xs leading-tight max-w-[7rem]; }
-  .footer-realtor-mark      { @apply font-display font-extrabold tracking-[0.18em] text-sm text-earth-50/80; }
-  .footer-realtor-reg       { @apply align-super text-[0.6em] tracking-normal; }
 
   /* ══════════════════════════════════════════════════
      PAGE BANNER
