@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @import "@jw/shared/styles/tokens.css";
 @import "@jw/shared/styles/components.css";
+/* Scan the shared package's components so the Tailwind utility classes they
+   use inline (e.g. VideoSection's aspect-video / play-button) get generated —
+   Tailwind ignores node_modules by default. */
+@source "../../node_modules/@jw/shared/src/**/*.astro";
 
 @property --_btn-arrow-fill {
   syntax: "<color>";
