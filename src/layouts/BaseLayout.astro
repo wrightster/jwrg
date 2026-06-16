@@ -1,18 +1,28 @@
 ---
 import '../styles/global.css';
 import FontSwitcher from '../components/FontSwitcher.astro';
+import Seo from '@jw/shared/components/Seo.astro';
+import { brokerageJsonLd } from '@jw/shared/jsonLd';
 import { site } from '../data/site';
 
 interface Props {
   title?: string;
   description?: string;
   image?: string;
+  imageAlt?: string;
+  ogType?: string;
+  /** Page-specific JSON-LD (e.g. RealEstateListing + breadcrumb); merged with
+   *  the sitewide brokerage block emitted on every page. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const {
   title = `${site.name} | Triangle Area Real Estate`,
   description = site.description,
   image,
+  imageAlt,
+  ogType = 'website',
+  jsonLd,
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
@@ -25,6 +35,22 @@ const canonicalUrl = `${Astro.url.origin}${Astro.url.pathname}`;
 // LinkedIn's ~7-day preview cache.
 const DEFAULT_OG_IMAGE = '/images/og-default.png';
 const ogImageUrl = new URL(image ?? DEFAULT_OG_IMAGE, Astro.site ?? Astro.url).href;
+
+// Sitewide brokerage identity (one RealEstateAgent block on every page). Uses
+// the canonical production host regardless of environment so the identity is
+// stable. Page-provided JSON-LD is appended after it.
+const brokerage = brokerageJsonLd({
+  name: 'Julie Wright Realty Group LLC',
+  url: 'https://juliewrightrealtygroup.com',
+  licenseNumber: 'C29156',
+  street: `${site.address.street1}, ${site.address.street2}`,
+  city: site.address.city,
+  region: site.address.state,
+  postalCode: '27615-2085',
+  areaServed: site.counties.map((c) => `${c} County, NC`),
+});
+const pageJsonLd = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const jsonLdBlocks = [brokerage, ...pageJsonLd];
 
 // Flat top-level nav — deeper pages are reached from each section landing page.
 const navLinks = [
@@ -56,21 +82,16 @@ const footerNav = [
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/JWRG_Icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
-    <title>{title}</title>
-    <link rel="canonical" href={canonicalUrl} />
-    <!-- Open Graph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content={site.name} />
-    <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImageUrl} />
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={ogImageUrl} />
+    <Seo
+      title={title}
+      description={description}
+      canonicalUrl={canonicalUrl}
+      siteName={site.name}
+      image={ogImageUrl}
+      imageAlt={imageAlt}
+      ogType={ogType}
+      jsonLd={jsonLdBlocks}
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&family=Anek+Latin:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet" />
