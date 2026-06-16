@@ -1,0 +1,44 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageBanner from '../components/PageBanner.astro';
+
+export const prerender = true;
+
+// Full Triangle-MLS search, embedded from Flexmls (Doorify/Triangle MLS IDX).
+// The Flexmls app is a self-contained, JS-driven search/results UI that manages
+// its own internal scrolling, so we give it a tall iframe and let it own that
+// space. https is required — the page is served over https and an http frame
+// would be blocked as mixed content.
+const SEARCH_URL = 'https://link.flexmls.com/1tx0fx9giy0l,7';
+---
+
+<BaseLayout
+  title="Property Search | Julie Wright Realty Group"
+  description="Search every active listing across the Triangle MLS — homes for sale in Wake, Granville, Franklin, Johnston, Harnett, and Durham counties."
+>
+  <PageBanner
+    label="Find Your Home"
+    title="Property Search"
+    description="Search the full Triangle MLS — every active listing across Wake, Granville, Franklin, Johnston, Harnett, and Durham counties. Save searches and set up alerts as new homes hit the market."
+  />
+
+  <section class="py-10">
+    <div class="content-wrap">
+      <div class="overflow-hidden rounded-lg border border-earth-200 bg-white shadow-sm">
+        <iframe
+          src={SEARCH_URL}
+          title="Triangle MLS property search powered by Flexmls"
+          class="block w-full h-[85vh] min-h-[760px] border-0"
+          loading="lazy"
+          referrerpolicy="origin"
+        ></iframe>
+      </div>
+      <p class="mt-4 text-center text-sm text-earth-600">
+        Search not loading?
+        <a href={SEARCH_URL} target="_blank" rel="noopener noreferrer" class="text-red-600 underline">
+          Open the full search in a new tab
+        </a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
