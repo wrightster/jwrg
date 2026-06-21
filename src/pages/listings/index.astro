@@ -4,7 +4,7 @@ import BtnArrow from '../../components/BtnArrow.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import ListingRow from '../../components/ListingRow.astro';
 import { fetchAllListings, type ApiListing } from '../../lib/api';
-export const prerender = true;
+export const prerender = false;
 
 let apiError = false;
 let listings: ApiListing[] = [];
