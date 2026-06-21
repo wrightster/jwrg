@@ -92,7 +92,7 @@
   /* Desktop nav */
   .nav-desktop      { @apply hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2; }
   .nav-desktop-link {
-    @apply relative px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-300;
+    @apply relative inline-flex items-center px-4 py-2 text-sm font-medium tracking-wide transition-colors duration-300;
   }
   .nav-link-bg {
     position: absolute;
