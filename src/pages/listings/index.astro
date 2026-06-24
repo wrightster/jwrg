@@ -16,6 +16,10 @@ try {
 
 const counties = [...new Set(listings.map(l => l.county))].filter(Boolean).sort();
 const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
+// [slug, name] pairs for neighborhoods that actually have listings, sorted by name.
+const neighborhoods = [...new Map(
+  listings.filter(l => l.neighborhood).map(l => [l.neighborhood!.slug, l.neighborhood!.name] as const)
+)].sort((a, b) => a[1].localeCompare(b[1]));
 ---
 
 <BaseLayout title="Listings — Julie Wright Realty Group" description="Browse homes for sale across Wake, Granville, Franklin, Johnston, Harnett, and Durham counties.">
@@ -104,6 +108,25 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
             </div>
           </div>
 
+          <!-- Neighborhood dropdown -->
+          {neighborhoods.length > 0 && (
+          <div class="filter-select-wrap">
+            <span class="filter-select-label">Neighborhood</span>
+            <div class="custom-select" data-filter="neighborhood">
+              <button class="custom-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <span class="custom-select-val">All Neighborhoods</span>
+                <svg class="custom-select-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <ul class="custom-select-list" role="listbox">
+                <li class="custom-select-option is-selected" data-value="all" role="option" aria-selected="true">All Neighborhoods</li>
+                {neighborhoods.map(([slug, name]) => (
+                  <li class="custom-select-option" data-value={slug} role="option" aria-selected="false">{name}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          )}
+
           <!-- Price slider -->
           <div class="filter-range-wrap">
             <p class="filter-select-label" id="price-range-label">Price Range</p>
@@ -172,6 +195,7 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
             class="listing-item"
             data-county={listing.county}
             data-city={listing.city}
+            data-neighborhood={listing.neighborhood?.slug ?? ''}
             data-status={listing.status}
             data-price={Math.round(parseFloat(listing.list_price))}
             data-sqft={listing.sqft ?? 0}
@@ -229,7 +253,7 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
     const MAX_SQFT = highestSqft > 0 ? Math.ceil(highestSqft / 500) * 500 : 6000;
 
     // ── Custom select state ───────────────────────────────────────────────
-    const filterValues: Record<string, string> = { county: 'all', city: 'all', status: 'all' };
+    const filterValues: Record<string, string> = { county: 'all', city: 'all', neighborhood: 'all', status: 'all' };
 
     function closeAll(except?: Element) {
       document.querySelectorAll('.custom-select.is-open').forEach(cs => {
@@ -321,6 +345,7 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
       const params = new URLSearchParams();
       if (filterValues.county !== 'all') params.set('county', filterValues.county);
       if (filterValues.city   !== 'all') params.set('city',   filterValues.city);
+      if (filterValues.neighborhood !== 'all') params.set('neighborhood', filterValues.neighborhood);
       if (filterValues.status !== 'all') params.set('status', statusToShort[filterValues.status] ?? filterValues.status);
       if (priceMin > 0 || priceMax < MAX_PRICE)   params.set('price', `${priceMin / 1000}-${priceMax / 1000}`);
       if (sqftMin > 0 || sqftMax < MAX_SQFT)      params.set('sqft', `${sqftMin}-${sqftMax}`);
@@ -338,11 +363,12 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
         const itemSqft  = parseFloat(el.dataset.sqft ?? '0');
         const countyOk  = filterValues.county === 'all' || el.dataset.county === filterValues.county;
         const cityOk    = filterValues.city   === 'all' || el.dataset.city   === filterValues.city;
+        const hoodOk    = filterValues.neighborhood === 'all' || el.dataset.neighborhood === filterValues.neighborhood;
         const statusOk  = filterValues.status === 'all' || el.dataset.status === filterValues.status;
         const priceOk   = itemPrice >= priceMin && (priceMax >= MAX_PRICE || itemPrice <= priceMax);
         const sqftOk    = itemSqft >= sqftMin && (sqftMax >= MAX_SQFT || itemSqft <= sqftMax);
         el.style.display = 'none';
-        if (countyOk && cityOk && statusOk && priceOk && sqftOk) matched.push(el);
+        if (countyOk && cityOk && hoodOk && statusOk && priceOk && sqftOk) matched.push(el);
       });
 
       const totalPages = Math.max(1, Math.ceil(matched.length / perPage));
@@ -388,6 +414,7 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
       let active = 0;
       if (filterValues.county !== 'all') active++;
       if (filterValues.city   !== 'all') active++;
+      if (filterValues.neighborhood !== 'all') active++;
       if (filterValues.status !== 'all') active++;
       if (priceMin > 0 || priceMax < MAX_PRICE) active++;
       if (sqftMin > 0 || sqftMax < MAX_SQFT)    active++;
@@ -485,7 +512,7 @@ const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
       const params = new URLSearchParams(window.location.search);
       if (!params.toString()) return;
 
-      const paramMap: Array<[string, string]> = [['county', 'county'], ['city', 'city'], ['status', 'status']];
+      const paramMap: Array<[string, string]> = [['county', 'county'], ['city', 'city'], ['neighborhood', 'neighborhood'], ['status', 'status']];
       paramMap.forEach(([param, filterId]) => {
         const raw = params.get(param);
         if (!raw) return;
