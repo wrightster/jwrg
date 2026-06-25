@@ -2,7 +2,7 @@
 
 Public marketing website for **Julie Wright Realty Group**, a full-service residential brokerage in the North Carolina Triangle. Astro 5 SSR with Tailwind 4. Sister site to [`jwlc`](https://github.com/wrightster/jwlc) (Land Company); both consume the same back-office API at `office.jwrgnc.com`.
 
-> 🧭 **First time here?** This repo is one of three siblings in the JWRG platform workspace. Read [wrightster/jwrg-workspace](https://github.com/wrightster/jwrg-workspace) for the full setup — clone the meta repo and run `bootstrap.sh` to get all three projects in place at once.
+> 🧭 **First time here?** This repo is one of several siblings in the JWRG platform workspace. Read [wrightster/jwrg-workspace](https://github.com/wrightster/jwrg-workspace) for the full setup — clone the meta repo and run `./engage.sh` (one idempotent command) to get every project in place at once.
 
 ## Stack
 
