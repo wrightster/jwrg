@@ -43,12 +43,22 @@ const hoaLine = (() => {
 })();
 
 const location = [n.city, n.county && `${n.county} County`].filter(Boolean).join(' · ');
-const description = n.marketing_description ?? n.description ?? null;
+// marketing_description is rich HTML (office RichEditor); description is legacy plain text.
+const aboutHtml = n.marketing_description?.trim() || null;
+const aboutText = n.description?.trim() || null;
+const aboutStripped = (aboutHtml ?? aboutText ?? '')
+  .replace(/<[^>]*>/g, ' ')
+  .replace(/&nbsp;/gi, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+const hasAbout = aboutStripped.length > 0;
+// Meta description must be plain text — never raw HTML tags.
+const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area community offered by Julie Wright Realty Group.`;
 ---
 
 <BaseLayout
   title={`${n.name} | Julie Wright Realty Group`}
-  description={description ?? `Explore ${n.name}, a Triangle-area community offered by Julie Wright Realty Group.`}
+  description={metaDescription}
 >
   <section class="pt-28 pb-8">
     <div class="max-w-7xl mx-auto px-6">
@@ -138,12 +148,14 @@ const description = n.marketing_description ?? n.description ?? null;
   <section class="py-12">
     <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12">
       <div class="lg:col-span-2 space-y-10">
-        {description && (
+        {hasAbout && (
           <div>
             <h2 class="font-serif text-2xl text-navy-900 font-medium mb-4">About {n.name}</h2>
-            <div class="prose prose-navy max-w-none text-navy-700 leading-relaxed whitespace-pre-line">
-              {description}
-            </div>
+            {aboutHtml ? (
+              <div class="prose prose-navy max-w-none text-navy-700 leading-relaxed" set:html={aboutHtml} />
+            ) : (
+              <div class="prose prose-navy max-w-none text-navy-700 leading-relaxed whitespace-pre-line">{aboutText}</div>
+            )}
           </div>
         )}
 

@@ -41,6 +41,12 @@ const statusLabels: Record<string, string> = {
             // card background instead.
             const heroWebp = photoSrcSet(n.primary_photo, 'webp');
             const location = [n.city, n.county && `${n.county} County`].filter(Boolean).join(' · ');
+            // marketing_description is rich HTML — strip tags for this plain, line-clamped excerpt.
+            const excerpt = (n.marketing_description ?? n.description ?? '')
+              .replace(/<[^>]*>/g, ' ')
+              .replace(/&nbsp;/gi, ' ')
+              .replace(/\s+/g, ' ')
+              .trim() || `Explore ${n.name} — ${location || 'a community curated by Julie Wright Realty Group'}.`;
             return (
               <a
                 href={`/neighborhoods/${n.slug}`}
@@ -83,7 +89,7 @@ const statusLabels: Record<string, string> = {
                     {n.name}
                   </h3>
                   <p class="text-navy-500 text-sm mt-2 leading-relaxed line-clamp-3 flex-1">
-                    {n.marketing_description ?? n.description ?? `Explore ${n.name} — ${location || 'a community curated by Julie Wright Realty Group'}.`}
+                    {excerpt}
                   </p>
                   {(n.amenities?.length ?? 0) > 0 && (
                     <div class="mt-4 pt-4 border-t border-warm-200/60 flex flex-wrap gap-1.5">
