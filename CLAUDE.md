@@ -40,10 +40,10 @@ src/
 │   ├── forms.ts           # Form ID → backend Filament form mapping
 │   ├── keyTerms.ts        # Real estate glossary
 │   ├── movingTips.ts      # Relocation moving-tips content
-│   ├── neighborhoods.ts   # Neighborhood directory
 │   ├── site.ts            # Global site metadata (name, contact, etc.)
-│   ├── stagingTips.ts     # Seller staging-tips content
-│   └── team.ts            # Broker/agent profiles
+│   └── stagingTips.ts     # Seller staging-tips content
+│   # NOTE: team + neighborhoods are NOT static — they come from the office API
+│   #       (fetchTeam / fetchNeighborhoods). No src/data file for them.
 ├── layouts/
 │   └── BaseLayout.astro   # Shell: parallax topo bg + fixed flat nav + footer
 ├── lib/
@@ -76,7 +76,8 @@ overlay is `public/FallTopo_v2.svg`. Masters: `wrightster/JWRG-JWLC-Design`.
 
 - **SSR mode** via `@astrojs/node` standalone adapter (`output: 'server'` in `astro.config.mjs`). Most pages should set `export const prerender = true` for static output unless they genuinely need request-time rendering.
 - **Listings via API** — fetched from `office.jwrgnc.com/api/v1` filtered by `?site=jwrg`. See `../../SHARED_FRONTEND_GUIDE.md` for the contract.
-- **Static content** (team, neighborhoods, FAQs, etc.) lives in `src/data/*.ts`.
+- **Team & neighborhoods via API** — fetched from the office (`fetchTeam` / `fetchNeighborhoods` in `src/lib/api.ts`), same as listings. They are *not* static.
+- **Static content** (FAQs, glossary, moving/staging tips, counties, site metadata) lives in `src/data/*.ts`.
 - **No React/Vue** — pure Astro components.
 
 ## Design System
@@ -157,8 +158,10 @@ Team members are managed in the office Filament admin (`office.jwrgnc.com` → S
 
 ### Adding a Neighborhood
 
-1. Add entry to `src/data/neighborhoods.ts`
-2. The dynamic page at `src/pages/neighborhoods/[slug].astro` will render it automatically.
+Neighborhoods are managed in the office (Filament admin, or the `create-neighborhood` / `search-neighborhoods` MCP tools) — the site fetches them live. No code change needed:
+
+1. Create the neighborhood in the office; the index (`src/pages/neighborhoods/index.astro`, via `fetchNeighborhoods()`) and the detail page (`[slug].astro`, via `fetchNeighborhood(slug)`) pick it up automatically.
+2. To associate a listing with a neighborhood, set it on the listing in the office — it then surfaces in the neighborhood's homes list and the `/listings` neighborhood filter.
 
 ### Adding a New Form
 
