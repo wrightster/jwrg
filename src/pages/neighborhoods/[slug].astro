@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
-import { fetchNeighborhood, fetchListings, photoSrc, formatPrice } from '../../lib/api';
+import { fetchNeighborhood, fetchListings, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
 
 const { slug } = Astro.params;
 const n = slug ? await fetchNeighborhood(slug) : null;
@@ -21,6 +21,9 @@ const listingCount = nListings.length;
 const photos = n.photos ?? (n.primary_photo ? [n.primary_photo] : []);
 const totalImages = photos.length;
 const heroSrcs = photos.slice(0, 5).map((p, i) => photoSrc(p, i === 0 ? 1600 : 800));
+// Alpha-preserving webp so transparent logos used as neighborhood images sit on
+// the light tile background instead of the jpg's black matte.
+const heroWebpSets = photos.slice(0, 5).map((p) => photoSrcSet(p, 'webp'));
 const lightboxSrcs = photos.map((p) => photoSrc(p, 1600));
 
 const statusLabels: Record<string, string> = {
@@ -86,21 +89,27 @@ const description = n.marketing_description ?? n.description ?? null;
           {heroSrcs.slice(0, 1).map((src, i) => (
             <button
               type="button"
-              class="gallery-tile md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto rounded-sm overflow-hidden relative group"
+              class="gallery-tile md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto rounded-sm overflow-hidden relative group bg-gradient-to-br from-warm-200 via-gold-100 to-warm-100"
               data-lb-index={i}
               aria-label={`View photo ${i + 1} of ${totalImages}`}
             >
-              <img src={src ?? undefined} alt={photos[i].alt ?? photos[i].caption ?? n.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+              <picture class="contents">
+                {heroWebpSets[i] && <source type="image/webp" srcset={heroWebpSets[i]} sizes="(min-width:768px) 66vw, 100vw" />}
+                <img src={src ?? undefined} alt={photos[i].alt ?? photos[i].caption ?? n.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+              </picture>
             </button>
           ))}
           {heroSrcs.slice(1, 5).map((src, i) => (
             <button
               type="button"
-              class="gallery-tile aspect-[4/3] rounded-sm overflow-hidden relative group"
+              class="gallery-tile aspect-[4/3] rounded-sm overflow-hidden relative group bg-gradient-to-br from-warm-200 via-gold-100 to-warm-100"
               data-lb-index={i + 1}
               aria-label={`View photo ${i + 2} of ${totalImages}`}
             >
-              <img src={src ?? undefined} alt={photos[i + 1].alt ?? photos[i + 1].caption ?? n.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+              <picture class="contents">
+                {heroWebpSets[i + 1] && <source type="image/webp" srcset={heroWebpSets[i + 1]} sizes="(min-width:768px) 22vw, 50vw" />}
+                <img src={src ?? undefined} alt={photos[i + 1].alt ?? photos[i + 1].caption ?? n.name} class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+              </picture>
               {i === 3 && totalImages > 5 && (
                 <div class="absolute inset-0 bg-navy-950/60 flex flex-col items-center justify-center text-warm-50">
                   <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91M3.75 21h16.5a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H3.75a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
