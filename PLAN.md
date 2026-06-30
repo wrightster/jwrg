@@ -49,9 +49,11 @@ flat top-level bar (deeper pages reached from section landing pages).
     - `GET /forms/{formId}` — public form config
     - `POST /forms/{formId}/submit` — public form submission (CORS allowed
       by `FormCors` middleware; honeypot + validation server-side)
-  - **Static content** (team, neighborhoods, counties, glossary, FAQ,
-    staging tips, moving tips, testimonials, business directory): TS files
-    under `src/data/` — same approach as jwlc.
+  - **API content** (team, neighborhoods): fetched from the office via
+    `fetchTeam()` / `fetchNeighborhoods()` in `src/lib/api.ts` — NOT static
+    (there is no `src/data/team.ts` or `src/data/neighborhoods.ts`).
+  - **Static content** (counties, glossary, FAQ, staging tips, moving tips,
+    business directory): TS files under `src/data/` — same approach as jwlc.
 - **No React/Vue** — pure Astro components. Sharp for image optimization.
 - **Reference codebase**: `~/code/jwlc` — design system tokens, component
   classes, `src/lib/api.ts`, `src/data/*.ts`, page structure, deploy flow.

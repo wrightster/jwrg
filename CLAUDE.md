@@ -17,7 +17,7 @@ Real estate website for a North Carolina full-service brokerage (Triangle / Wake
 
 - `npm run dev` — Start dev server (localhost:4321)
 - `npm run build` — Production build to `./dist/`
-- `npm run start` — Run production server (`node ./dist/server/entry.mjs`)
+- `npm run start` — Run production server (`HOST=127.0.0.1 PORT=4342 node ./dist/server/entry.mjs`)
 - `npm run preview` — Astro preview
 
 ## Architecture
