@@ -31,5 +31,6 @@ export const site = {
     cma: '',
     listYourHome: '',
     soldReport: '',
+    listingInquiry: 'F7h6VKTWpW8J3GiytA38RsMuCXxJoHwD',
   },
 };

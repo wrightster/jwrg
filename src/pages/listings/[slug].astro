@@ -3,6 +3,7 @@ export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
+import EmbedForm from '../../components/EmbedForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import VideoSection from '@jw/shared/components/VideoSection.astro';
 import { fetchListing, fetchListings, fetchTeam, formatPrice, photoSrc, photoSrcSet, photoDimensions, photoAlt, documentTypeLabel } from '../../lib/api';
@@ -308,7 +309,11 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
             )}
 
             <div class="listing-contact-actions">
-              <BtnArrow href="/contact" class="w-full justify-center">Get in Touch</BtnArrow>
+              {site.formTokens.listingInquiry ? (
+                <EmbedForm id="listing-inquiry-form" token={site.formTokens.listingInquiry} listingId={listing.id} />
+              ) : (
+                <BtnArrow href="/contact" class="w-full justify-center">Get in Touch</BtnArrow>
+              )}
             </div>
 
             <div class="listing-contact-meta">

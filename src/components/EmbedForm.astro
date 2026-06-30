@@ -8,13 +8,21 @@
 //
 // When `token` is empty, renders nothing — callers should show a phone/email
 // fallback. See site.formTokens in src/data/site.ts.
+//
+// `listingId` / `agentId` / `neighborhoodId`, when passed, are forwarded on the
+// script tag so the office resolves the submission's subject and routes/notifies
+// the right agent (e.g. a listing inquiry → that listing's agent). forms.js reads
+// these off the <script> tag. Astro omits any attribute whose value is undefined.
 
 interface Props {
   id: string;
   token: string;
+  listingId?: string;
+  agentId?: string;
+  neighborhoodId?: string;
 }
 
-const { id, token } = Astro.props;
+const { id, token, listingId, agentId, neighborhoodId } = Astro.props;
 ---
 
 {token && (
@@ -25,6 +33,9 @@ const { id, token } = Astro.props;
       src="https://office.jwrgnc.com/js/forms.js"
       data-form-token={token}
       data-target={`#${id}`}
+      data-listing-id={listingId}
+      data-agent-id={agentId}
+      data-neighborhood-id={neighborhoodId}
     ></script>
     <script define:vars={{ hostId: id }}>
       const host = document.getElementById(hostId);
