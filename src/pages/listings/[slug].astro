@@ -11,7 +11,13 @@ import { listingJsonLd, breadcrumbJsonLd } from '@jw/shared/jsonLd';
 import { site } from '../../data/site';
 
 const { slug } = Astro.params;
-const listing = await fetchListing(slug!).catch(() => null);
+// Fetch the listing and the "other listings" strip in parallel — they're
+// independent, so this saves a round trip. Team is fetched after (it depends on
+// the listing's agent names).
+const [listing, otherListings] = await Promise.all([
+  fetchListing(slug!).catch(() => null),
+  fetchListings({ perPage: 4 }).catch(() => []),
+]);
 
 if (!listing) {
   return Astro.redirect('/listings');
@@ -61,7 +67,6 @@ const brokerPhoto = photoSrc(brokerMember?.primary_photo, 400);
 const coBrokerMember = coAgentName ? team.find((t) => t.name === coAgentName) : undefined;
 const coBrokerPhoto = photoSrc(coBrokerMember?.primary_photo, 400);
 
-const otherListings = await fetchListings({ perPage: 4 }).catch(() => []);
 const relatedListings = otherListings.filter(l => l.slug !== listing.slug).slice(0, 3);
 
 const documents = (listing.documents ?? [])
