@@ -22,13 +22,6 @@ const helpLinks = [
   { href: '/neighborhoods', label: 'Neighborhoods', desc: 'Explore communities across six counties.' },
   { href: '/about/team', label: 'Meet the Team', desc: 'Four decades of local expertise, one trusted group.' },
 ];
-
-const stats = [
-  { value: '40+', label: 'Years of Experience' },
-  { value: '6', label: 'Counties Served' },
-  { value: '1000+', label: 'Homes Sold' },
-  { value: '100%', label: 'Client Dedication' },
-];
 ---
 
 <BaseLayout title="Julie Wright Realty Group — Triangle Area Real Estate">
@@ -103,20 +96,6 @@ const stats = [
             ))}
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══════════════════════════════════ STATS ═══════════════════════════════════ -->
-  <section class="cta-bold">
-    <div class="content-wrap">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-        {stats.map((stat) => (
-          <div>
-            <div class="font-display font-bold text-3xl md:text-4xl text-gold-300">{stat.value}</div>
-            <div class="text-earth-400 text-sm mt-1 tracking-wide">{stat.label}</div>
-          </div>
-        ))}
       </div>
     </div>
   </section>
