@@ -257,5 +257,5 @@
   .cta-feature .btn-arrow--inverted svg       { fill: var(--color-red-600); stroke: var(--color-red-600); }
   .cta-feature .btn-arrow--inverted:hover     { color: var(--color-red-600); --_btn-arrow-fill: var(--color-gold-300); }
   .cta-feature .btn-arrow--inverted:hover svg { fill: var(--color-gold-300); }
-  .cta-feature .btn-arrow--inverted:hover .btn-arrow__shaft { border-top-color: var(--color-gold-300); border-bottom-color: var(--color-gold-300); }
+  .cta-feature .btn-arrow--inverted:hover .btn-arrow__shaft { border-top-color: var(--color-red-600); border-bottom-color: var(--color-red-600); }
 }
