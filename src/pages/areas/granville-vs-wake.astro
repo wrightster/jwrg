@@ -1,0 +1,671 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BtnArrow from '../../components/BtnArrow.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+
+export const prerender = true;
+
+// ---------------------------------------------------------------------------
+// All figures verified 2026-07-07. See LANDING_PAGE_GRANVILLE_VS_WAKE.md and the
+// verification notes for sources (Census ACS/BPS, county tax offices, Niche,
+// Redfin, office API). Tax rates reflect both counties' 2024 revaluations.
+// Update annually — checklist in the brief §6.
+// ---------------------------------------------------------------------------
+const LAST_REVIEWED = 'July 2026';
+
+const compareRows = [
+  {
+    metric: 'Median home value',
+    granville: '~$247,700',
+    wake: '~$461,300',
+    note: 'U.S. Census ACS 2020–2024',
+  },
+  {
+    metric: 'Median sale price (2025 market)',
+    granville: '~$340,000',
+    wake: '~$465,000',
+    note: 'What buyers actually pay today',
+  },
+  {
+    metric: 'New construction, starting',
+    granville: 'High $200s',
+    wake: '~$400,000',
+    note: 'Entry-level new single-family',
+  },
+  {
+    metric: 'Typical new-build lot',
+    granville: '0.25–1+ acres',
+    wake: '0.15–0.33 acres',
+    note: 'Our communities start near an acre',
+  },
+  {
+    metric: 'Property tax rate (county base)',
+    granville: '$0.631 / $100',
+    wake: '$0.517 / $100',
+    note: 'Granville’s rate is higher',
+  },
+  {
+    metric: 'County tax on a $500K home',
+    granville: '~$3,155 / yr',
+    wake: '~$2,586 / yr',
+    note: 'County base only; cities add more',
+  },
+  {
+    metric: 'Commute to RTP (southern end)',
+    granville: '~26 min',
+    wake: '15–25 min',
+    note: 'From Creedmoor vs. Wake Forest/Apex',
+  },
+  {
+    metric: 'School district grade (Niche)',
+    granville: 'C',
+    wake: 'A',
+    note: 'Wake is stronger overall',
+  },
+  {
+    metric: 'Population density',
+    granville: '~115 / sq mi',
+    wake: '~1,477 / sq mi',
+    note: 'Nearly 13× more space per person',
+  },
+  {
+    metric: 'New homes permitted (2025)',
+    granville: '257',
+    wake: '13,806',
+    note: 'Census Building Permits Survey',
+  },
+  {
+    metric: 'HOA prevalence',
+    granville: 'Low–moderate',
+    wake: 'High',
+    note: 'Nearly universal in Wake new builds',
+  },
+];
+
+const commuteRows = [
+  { from: 'Creedmoor (Granville)', rtp: '~26 min', raleigh: '~35–45 min' },
+  { from: 'Oxford (Granville)', rtp: '~36 min', raleigh: '~50–55 min' },
+  { from: 'Wake Forest (Wake)', rtp: '~25–30 min', raleigh: '~20–30 min' },
+  { from: 'Apex (Wake)', rtp: '~15–20 min', raleigh: '~20–25 min' },
+];
+
+const chooseWake = [
+  'Schools are your #1 priority and you want the strongest public system.',
+  'You commute daily to RTP or downtown Raleigh and want the shortest possible drive.',
+  'You prefer a suburban lifestyle with shopping, restaurants, and services close by.',
+  'You’re comfortable with a smaller lot and HOA rules.',
+];
+
+const chooseGranville = [
+  'You want more land — an acre or more — without leaving the Triangle.',
+  'You want a custom home built by a builder you choose, not a production floor plan.',
+  'You work from home, have a flexible schedule, or don’t mind 10–15 extra minutes.',
+  'You value privacy, trees, and space over being next to shopping.',
+  'You want to get more home for your money.',
+];
+
+const faqs = [
+  {
+    q: 'Is Granville County cheaper than Wake County?',
+    a: 'Yes. The Census median home value is about $247,700 in Granville versus $461,300 in Wake, and 2025 market medians run roughly $340,000 versus $465,000. For a comparable new home you’ll typically spend $100,000–$150,000 less in Granville.',
+  },
+  {
+    q: 'How far is Granville County from RTP?',
+    a: 'From the southern end of the county — Creedmoor — Research Triangle Park is about a 26-minute drive. From Oxford it’s roughly 35–40 minutes. I-85 and NC-50 provide direct routes, and traffic is noticeably lighter than Wake County’s main corridors.',
+  },
+  {
+    q: 'Are Granville County schools good?',
+    a: 'Granville County Schools currently earns a C on Niche, compared with an A for Wake County, with a graduation rate around 84%. Individual standouts include Granville Early College High School (rated A) and Oxford Preparatory School (A-). If a top-rated public system is your priority, Wake County is stronger overall.',
+  },
+  {
+    q: 'Do Granville County homes have HOAs?',
+    a: 'HOAs are far less common in Granville than in Wake, where they’re nearly universal in new construction. Many rural and custom Granville properties have no HOA at all, though some newer planned communities do. Always confirm on a specific property.',
+  },
+  {
+    q: 'What’s the property tax rate in Granville County vs. Wake County?',
+    a: 'Granville’s county base rate is $0.631 per $100 of value (about 0.63%); Wake’s is $0.5171 per $100 (about 0.52%). Both counties revalued property in 2024. Granville’s rate is higher, but lower home prices usually mean a lower total tax bill — and Wake homes inside a city or town add municipal tax on top.',
+  },
+  {
+    q: 'Can I build a custom home in Granville County?',
+    a: 'Yes. Communities like Tennyson offer wooded homesites of roughly an acre with a curated roster of custom builders, so you choose your builder and floor plan rather than buying a production home off a menu.',
+  },
+  {
+    q: 'Is Granville County growing?',
+    a: 'Yes, steadily. The county permitted 257 new housing units in 2025 (Wake permitted 13,806), and a large mixed-use development of roughly 800 homes and apartments has been proposed in Butner in southern Granville. Growth here is measured, not explosive.',
+  },
+  {
+    q: 'What’s the average lot size in Granville County?',
+    a: 'In our Granville communities, homesites generally run from about 0.75 to 2.5 acres. Typical new-build lots in Wake County average closer to 0.15–0.33 acres.',
+  },
+];
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://juliewrightrealtygroup.com/' },
+    {
+      '@type': 'ListItem',
+      position: 2,
+      name: 'Granville County vs. Wake County',
+      item: 'https://juliewrightrealtygroup.com/areas/granville-vs-wake/',
+    },
+  ],
+};
+
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+
+const metaDescription =
+  'Comparing Granville County and Wake County for your next home? We break down taxes, prices, schools, commute times, and lot sizes — honestly. More land, lower prices, custom builders — about 10–15 minutes farther out.';
+---
+
+<BaseLayout
+  title="Granville County vs. Wake County: An Honest Comparison for Home Buyers"
+  description={metaDescription}
+  ogType="article"
+  jsonLd={[breadcrumbJsonLd, faqJsonLd]}
+>
+  <!-- Page Header -->
+  <section class="page-banner">
+    <div class="content-wrap">
+      <p class="section-label">Compare the Triangle</p>
+      <h1 class="page-banner-title">Granville County vs. Wake County</h1>
+      <p class="page-banner-desc">
+        An honest comparison for buyers who want more than a quarter-acre lot.
+      </p>
+    </div>
+  </section>
+
+  <!-- Intro + hero visual -->
+  <section class="story-section">
+    <div class="content-wrap">
+      <div class="story-grid">
+        <div class="story-text-col">
+          <h2 class="section-heading">More home for your money —<br />about 15 minutes farther out</h2>
+          <div class="story-body">
+            <p>
+              A lot of Triangle buyers feel like they’re settling: paying north of $450,000 for a
+              house on a quarter-acre lot, hemmed in by fifty near-identical homes and an HOA that
+              tells you what color to paint the door. If that’s you, it’s worth knowing what sits
+              just over the county line.
+            </p>
+            <p>
+              Wake County is a genuinely great place to live — top schools, short commutes, and
+              everything close at hand. We’re not here to talk you out of it. But if you want land,
+              a custom home, and room to breathe, Granville County delivers dramatically more house
+              per dollar for the price of a slightly longer drive. Here’s the honest side-by-side,
+              with the trade-offs stated plainly.
+            </p>
+          </div>
+        </div>
+
+        <div class="stat-sidebar">
+          <!-- Hero visual placeholder: swap for the split drone shot when captured -->
+          <div
+            class="aspect-[4/5] w-full rounded-sm bg-earth-100 ring-1 ring-inset ring-earth-200 flex items-center justify-center p-6 text-center"
+          >
+            <span class="text-earth-500 text-sm font-display leading-relaxed">
+              Hero visual — split drone shot:<br />tight Wake subdivision (left)<br />vs. wooded Granville lot (right)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick comparison table -->
+  <section class="py-14 lg:py-16 relative">
+    <div class="content-wrap">
+      <p class="section-label">The Short Version</p>
+      <h2 class="section-heading">At a glance</h2>
+      <p class="text-earth-600 leading-relaxed mt-4 mb-8 max-w-2xl">
+        The numbers that matter most, side by side. Where Wake County comes out ahead, we say so.
+      </p>
+
+      <div class="overflow-x-auto -mx-6 px-6 lg:mx-0 lg:px-0">
+        <table class="w-full min-w-[640px] border-collapse text-left">
+          <thead>
+            <tr class="border-b-2 border-earth-200">
+              <th class="py-3 pr-4 font-display text-earth-900 text-sm uppercase tracking-wide">Metric</th>
+              <th class="py-3 px-4 font-display text-red-600 text-sm uppercase tracking-wide">Granville County</th>
+              <th class="py-3 px-4 font-display text-earth-700 text-sm uppercase tracking-wide">Wake County</th>
+            </tr>
+          </thead>
+          <tbody>
+            {compareRows.map((row) => (
+              <tr class="border-b border-earth-100 align-top">
+                <td class="py-4 pr-4">
+                  <div class="font-display text-earth-900">{row.metric}</div>
+                  <div class="text-earth-500 text-xs mt-0.5">{row.note}</div>
+                </td>
+                <td class="py-4 px-4 font-display text-lg text-red-600">{row.granville}</td>
+                <td class="py-4 px-4 font-display text-lg text-earth-700">{row.wake}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="text-earth-500 text-xs mt-4">
+        Sources: U.S. Census (QuickFacts, ACS, Building Permits Survey), Granville &amp; Wake county
+        tax offices, Niche, Redfin. Figures are approximate and reviewed annually.
+      </p>
+    </div>
+  </section>
+
+  <!-- Property taxes -->
+  <section class="story-section">
+    <div class="content-wrap">
+      <div class="story-grid">
+        <div class="story-text-col">
+          <p class="section-label">Property Taxes</p>
+          <h2 class="section-heading">The tax rate is higher — the bill usually isn’t</h2>
+          <div class="story-body">
+            <p>
+              Here’s a fact we won’t bury: Granville County’s property tax <em>rate</em> is higher
+              than Wake’s. After both counties revalued property in 2024, Granville’s county base
+              rate is about <strong>$0.631 per $100</strong> of value, versus Wake’s
+              <strong>$0.517 per $100</strong>.
+            </p>
+            <p>
+              So on the same $500,000 home, Granville’s county tax (~$3,155) is actually a bit higher
+              than Wake’s (~$2,586). But you rarely buy the <em>same</em> home in both places — a
+              comparable house simply costs far less in Granville. And most Wake homes sit inside a
+              city or town (Raleigh, Cary, Apex, Wake Forest) that adds municipal tax on top, while
+              Granville homes are more often unincorporated.
+            </p>
+            <p>
+              Put the real numbers together — a ~$340,000 Granville home versus a ~$465,000 Wake home
+              inside city limits — and the lower price wins by a wide margin, tax rate and all.
+            </p>
+          </div>
+        </div>
+
+        <div class="stat-sidebar">
+          <div class="stat-card">
+            <div class="stat-row">
+              <p class="stat-card-headline"><span>$0.631 / $100</span></p>
+              <p class="stat-card-detail">Granville county base rate (higher)</p>
+            </div>
+            <div class="stat-row">
+              <p class="stat-card-headline"><span>$0.517 / $100</span></p>
+              <p class="stat-card-detail">Wake county base rate</p>
+            </div>
+            <div class="stat-row">
+              <p class="stat-card-headline"><span>~$3,155 vs ~$2,586</span></p>
+              <p class="stat-card-detail">County tax on an identical $500K home (Granville / Wake)</p>
+            </div>
+          </div>
+          <p class="text-earth-500 text-xs mt-3">
+            County base rates only. Homes inside a municipality or fire district pay more — which
+            applies to far more Wake County homes than Granville ones.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What your budget gets you -->
+  <section class="py-14 lg:py-16 relative">
+    <div class="content-wrap">
+      <p class="section-label">Your Budget</p>
+      <h2 class="section-heading">What the same money buys</h2>
+      <p class="text-earth-600 leading-relaxed mt-4 mb-10 max-w-2xl">
+        The clearest way to see the difference is to hold the budget fixed and look at what shows up
+        on each side of the line.
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-10">
+        <!-- $500K Wake -->
+        <div class="bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100">
+          <p class="section-label">$500K in Wake County</p>
+          <ul class="mt-4 space-y-2 text-earth-700">
+            <li>3-bed, 2.5-bath production home</li>
+            <li>~2,200 sq ft on ~0.2 acres</li>
+            <li>HOA: $75–150 / month</li>
+            <li>Builder: national production (D.R. Horton, Lennar, Ryan)</li>
+          </ul>
+        </div>
+        <!-- $500K Granville -->
+        <div class="bg-white rounded-sm p-7 ring-2 ring-inset ring-red-600">
+          <p class="section-label">$500K in Granville County</p>
+          <ul class="mt-4 space-y-2 text-earth-700">
+            <li>3-bed, 2.5-bath custom home</li>
+            <li>~2,500 sq ft on 1+ acres</li>
+            <li>No HOA, or a modest $30–75 / month</li>
+            <li>Builder: custom — your choice of plan</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6 mb-10">
+        <!-- $800K Wake -->
+        <div class="bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100">
+          <p class="section-label">$800K in Wake County</p>
+          <ul class="mt-4 space-y-2 text-earth-700">
+            <li>4-bed, 3-bath semi-custom home</li>
+            <li>~3,200 sq ft on ~0.33 acres</li>
+            <li>HOA: $100–200 / month</li>
+          </ul>
+        </div>
+        <!-- $800K Granville -->
+        <div class="bg-white rounded-sm p-7 ring-2 ring-inset ring-red-600">
+          <p class="section-label">$800K in Granville County</p>
+          <ul class="mt-4 space-y-2 text-earth-700">
+            <li>4-bed, 3-bath fully custom home</li>
+            <li>~3,500 sq ft on 1+ wooded acres</li>
+            <li>Custom builder of your choice</li>
+            <li>Private, wooded homesite at Tennyson</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Budget comparison photo placeholders -->
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="aspect-[16/10] rounded-sm bg-earth-100 ring-1 ring-inset ring-earth-200 flex items-center justify-center p-6 text-center">
+          <span class="text-earth-500 text-sm font-display">Photo — $800K in Wake:<br />production home on ~0.25 acres</span>
+        </div>
+        <div class="aspect-[16/10] rounded-sm bg-earth-100 ring-1 ring-inset ring-earth-200 flex items-center justify-center p-6 text-center">
+          <span class="text-earth-500 text-sm font-display">Photo — $800K in Granville:<br />custom home on 1+ wooded acres</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Schools -->
+  <section class="story-section">
+    <div class="content-wrap">
+      <div class="story-grid">
+        <div class="story-text-col">
+          <p class="section-label">Schools</p>
+          <h2 class="section-heading">Where Wake County wins</h2>
+          <div class="story-body">
+            <p>
+              We’ll be straight with you: Wake County has the stronger public school system. Wake
+              County Public Schools earns an A on Niche across roughly 160,000 students and 197
+              schools, with a 90% graduation rate. Granville County Schools currently earns a C, with
+              about 6,550 students and an ~84% graduation rate.
+            </p>
+            <p>
+              That said, Granville has genuine standouts. Granville Early College High School is rated
+              A, and Oxford Preparatory School earns an A-. Many families in our communities also
+              choose charter or private options.
+            </p>
+            <p>
+              The honest bottom line: if a top-rated public system is your single most important
+              factor, Wake County is hard to beat. If schools are one factor among several — space,
+              price, lifestyle — Granville has solid options worth a real look.
+            </p>
+          </div>
+        </div>
+
+        <div class="stat-sidebar">
+          <div class="stat-card">
+            <div class="stat-row">
+              <p class="stat-card-headline"><span>Wake: A &nbsp;·&nbsp; Granville: C</span></p>
+              <p class="stat-card-detail">Niche district grade</p>
+            </div>
+            <div class="stat-row">
+              <p class="stat-card-headline"><span>90% vs ~84%</span></p>
+              <p class="stat-card-detail">Graduation rate (Wake / Granville)</p>
+            </div>
+            <div class="stat-row">
+              <p class="stat-card-headline"><span>A &nbsp;·&nbsp; A-</span></p>
+              <p class="stat-card-detail">Granville Early College HS · Oxford Prep</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Commute -->
+  <section class="py-14 lg:py-16 relative">
+    <div class="content-wrap">
+      <p class="section-label">Commute</p>
+      <h2 class="section-heading">10–15 extra minutes, most days</h2>
+      <p class="text-earth-600 leading-relaxed mt-4 mb-8 max-w-2xl">
+        If you drive to RTP or downtown Raleigh every day, Wake County wins on time. But southern
+        Granville — Creedmoor and Stem — is closer than most people expect, and the roads are calmer.
+      </p>
+
+      <div class="overflow-x-auto -mx-6 px-6 lg:mx-0 lg:px-0">
+        <table class="w-full min-w-[560px] border-collapse text-left">
+          <thead>
+            <tr class="border-b-2 border-earth-200">
+              <th class="py-3 pr-4 font-display text-earth-900 text-sm uppercase tracking-wide">From</th>
+              <th class="py-3 px-4 font-display text-earth-900 text-sm uppercase tracking-wide">To RTP</th>
+              <th class="py-3 px-4 font-display text-earth-900 text-sm uppercase tracking-wide">To Downtown Raleigh</th>
+            </tr>
+          </thead>
+          <tbody>
+            {commuteRows.map((row) => (
+              <tr class="border-b border-earth-100">
+                <td class="py-4 pr-4 font-display text-earth-900">{row.from}</td>
+                <td class="py-4 px-4 text-earth-700">{row.rtp}</td>
+                <td class="py-4 px-4 text-earth-700">{row.raleigh}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="text-earth-500 text-xs mt-4">
+        Approximate off-peak drive times (Google Maps). I-85 and NC-50 provide direct routes.
+      </p>
+    </div>
+  </section>
+
+  <!-- Space & lifestyle -->
+  <section class="story-section">
+    <div class="content-wrap">
+      <div class="story-grid">
+        <div class="story-text-col">
+          <p class="section-label">Space &amp; Lifestyle</p>
+          <h2 class="section-heading">Room to breathe</h2>
+          <div class="story-body">
+            <p>
+              Wake County packs roughly <strong>1,477 people per square mile</strong>. Granville has
+              about <strong>115</strong> — nearly thirteen times more space per person. You feel it
+              the moment you turn off the main road: trees instead of rooftops, quiet instead of
+              traffic.
+            </p>
+            <p>
+              Lot sizes tell the same story. Typical Wake new-build lots average around 0.16 acres —
+              about 7,100 square feet. Homesites in our Granville communities start near an acre and
+              run to 2.5+. In Wake County you’re buying a house; in Granville, you’re buying a
+              homesite, where the land matters as much as the structure.
+            </p>
+            <p>
+              HOAs follow the same pattern — nearly universal in Wake new construction, common but far
+              from guaranteed in Granville.
+            </p>
+          </div>
+        </div>
+
+        <div class="stat-sidebar">
+          <div class="stat-card">
+            <div class="stat-row">
+              <p class="stat-card-headline"><span>~13× more space</span></p>
+              <p class="stat-card-detail">Per-person density: 115 vs ~1,477 / sq mi</p>
+            </div>
+            <div class="stat-row">
+              <p class="stat-card-headline"><span>~1 acre vs ~0.16 acre</span></p>
+              <p class="stat-card-detail">Typical homesite (Granville / Wake new build)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- New construction -->
+  <section class="py-14 lg:py-16 relative">
+    <div class="content-wrap">
+      <p class="section-label">New Construction</p>
+      <h2 class="section-heading">Two very different building landscapes</h2>
+      <div class="grid md:grid-cols-2 gap-6 mt-8">
+        <div class="bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100">
+          <h3 class="font-display text-xl text-earth-900">Wake County</h3>
+          <p class="text-earth-700 leading-relaxed mt-3">
+            Massive scale — 13,806 housing units permitted in 2025 — and dominated by national
+            production builders (D.R. Horton, Lennar, Ryan, Ashton Woods). Fast, efficient, and
+            standardized, with prices from about $400,000 to well past $1 million. True custom
+            options are limited unless you buy land separately.
+          </p>
+        </div>
+        <div class="bg-white rounded-sm p-7 ring-2 ring-inset ring-red-600">
+          <h3 class="font-display text-xl text-earth-900">Granville County</h3>
+          <p class="text-earth-700 leading-relaxed mt-3">
+            Smaller and more deliberate — 257 units permitted in 2025. A mix of national builders
+            (LGI, Dream Finders, D.R. Horton from the high $200s) and true custom builders. Our
+            communities offer curated custom-builder rosters on one-acre-plus wooded lots. And the
+            area is investing in itself: a large mixed-use development of roughly 800 homes and
+            apartments has been proposed in Butner, so services and infrastructure keep improving.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Which is right for you -->
+  <section class="story-section">
+    <div class="content-wrap">
+      <p class="section-label">The Honest Answer</p>
+      <h2 class="section-heading">Which county is right for you?</h2>
+      <div class="grid md:grid-cols-2 gap-6 mt-8">
+        <div class="bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100">
+          <h3 class="font-display text-xl text-earth-900 mb-4">Choose Wake County if…</h3>
+          <ul class="space-y-3">
+            {chooseWake.map((item) => (
+              <li class="flex gap-3 text-earth-700">
+                <span class="text-earth-400 shrink-0 mt-1">›</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div class="bg-white rounded-sm p-7 ring-2 ring-inset ring-red-600">
+          <h3 class="font-display text-xl text-earth-900 mb-4">Choose Granville County if…</h3>
+          <ul class="space-y-3">
+            {chooseGranville.map((item) => (
+              <li class="flex gap-3 text-earth-700">
+                <span class="text-red-600 shrink-0 mt-1">›</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <p class="text-earth-700 leading-relaxed mt-8 max-w-2xl">
+        <strong>Can’t decide?</strong> Walk the lots. The best way to know is to stand on the land
+        and picture your life there. <a href="/contact" class="text-red-600 hover:underline">Reach
+        out and we’ll set up a tour.</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Our communities -->
+  <section class="py-14 lg:py-16 relative">
+    <div class="content-wrap">
+      <p class="section-label">Where We Build</p>
+      <h2 class="section-heading">Our communities in Granville County</h2>
+      <p class="text-earth-600 leading-relaxed mt-4 mb-8 max-w-2xl">
+        Two of our custom-home communities deliver exactly this trade-off — acre-plus wooded lots and
+        the builder of your choice, just inside Granville County minutes from Wake Forest.
+      </p>
+      <div class="grid md:grid-cols-2 gap-6">
+        <a
+          href="https://tennyson.jwrgnc.com"
+          class="group block bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300"
+        >
+          <p class="section-label">Granville County</p>
+          <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors mt-1">Tennyson</h3>
+          <p class="text-earth-600 leading-relaxed mt-2">
+            A small community in Wake Forest, just inside Granville County — 20 wooded homesites of
+            roughly an acre, each ready for a custom home from our builder roster. Now selling.
+          </p>
+          <span class="inline-block mt-4 text-red-600 font-display text-sm">Explore Tennyson →</span>
+        </a>
+        <a
+          href="https://preservewest.jwrgnc.com"
+          class="group block bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300"
+        >
+          <p class="section-label">Granville County</p>
+          <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors mt-1">Preserve West</h3>
+          <p class="text-earth-600 leading-relaxed mt-2">
+            More of the same on a bigger canvas: 48 wooded homesites from 0.75 to 2.5 acres in
+            Granville County near Wake Forest, with protected greenspace and walking trails preserved
+            in the master plan. Coming soon.
+          </p>
+          <span class="inline-block mt-4 text-red-600 font-display text-sm">Explore Preserve West →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="story-section">
+    <div class="content-wrap">
+      <p class="section-label">Questions &amp; Answers</p>
+      <h2 class="section-heading">Granville vs. Wake, answered</h2>
+      <div class="mt-8 max-w-3xl divide-y divide-earth-200">
+        {faqs.map((f) => (
+          <details class="group py-5">
+            <summary class="flex cursor-pointer items-start justify-between gap-4 list-none">
+              <span class="font-display text-lg text-earth-900">{f.q}</span>
+              <span class="text-red-600 text-2xl leading-none shrink-0 transition-transform duration-200 group-open:rotate-45">+</span>
+            </summary>
+            <p class="text-earth-700 leading-relaxed mt-3">{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-feature">
+    <div class="cta-wrap">
+      <h2 class="cta-bold-heading">See it for yourself</h2>
+      <p class="cta-bold-body">
+        The numbers make the case, but the land makes the decision. Let’s walk a few lots and find
+        the right fit — in either county.
+      </p>
+      <div class="cta-btn-row">
+        <BtnArrow href="/contact" variant="inverted">Talk to an Agent</BtnArrow>
+        <BtnArrow href="/listings?county=Granville" variant="secondary">Browse Granville Homes</BtnArrow>
+      </div>
+    </div>
+  </section>
+
+  <MiniContactForm
+    heading="Thinking about making the jump?"
+    description="Whether you’re leaning toward Granville, Wake, or still weighing both, our team knows every community along the line. Reach out and let’s talk through your options."
+  />
+
+  <!-- Compliance / sources note -->
+  <section class="pb-14 relative">
+    <div class="content-wrap">
+      <div class="border-t border-earth-200 pt-6 text-earth-500 text-xs leading-relaxed max-w-3xl">
+        <p>
+          Data reviewed {LAST_REVIEWED} from public sources: U.S. Census Bureau (QuickFacts, ACS,
+          Building Permits Survey), the Granville and Wake county tax offices, Niche.com, and Redfin.
+          Home prices, tax rates, school ratings, and drive times are approximate and change over
+          time; verify specifics for any individual property.
+        </p>
+        <p class="mt-3">
+          Julie Wright Realty Group LLC — North Carolina real estate firm license C29156. Equal
+          Housing Opportunity. We do not steer buyers toward or away from any community on the basis
+          of race, color, religion, sex, disability, familial status, national origin, or any other
+          protected class.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
