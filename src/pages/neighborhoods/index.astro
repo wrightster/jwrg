@@ -2,35 +2,12 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageBanner from '../../components/PageBanner.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
-import { fetchNeighborhoods, fetchListings, photoSrc, photoSrcSet } from '../../lib/api';
+import { fetchNeighborhoods, photoSrc, photoSrcSet } from '../../lib/api';
 
+// The office API returns neighborhoods already ordered by their most recently
+// created listing or lot (newest first; those with no inventory sort last) —
+// see the office NeighborhoodController index. Render in that order.
 const neighborhoods = await fetchNeighborhoods().catch(() => []);
-
-// Order neighborhoods by their most recent listing (newest first). Only those
-// that actually have listings need a lookup — the rest keep their original
-// order at the bottom — so this is usually just one small (memoized) call.
-const latestListingBySlug = new Map<string, string>();
-await Promise.all(
-  neighborhoods
-    .filter((n) => (n.listings_count ?? 0) > 0)
-    .map(async (n) => {
-      const listings = await fetchListings({ neighborhood: n.slug, perPage: 100 });
-      const latest = listings
-        .map((l) => l.list_date)
-        .filter((d): d is string => Boolean(d))
-        .sort()
-        .at(-1);
-      if (latest) latestListingBySlug.set(n.slug, latest);
-    }),
-);
-const sortedNeighborhoods = [...neighborhoods].sort((a, b) => {
-  const da = latestListingBySlug.get(a.slug);
-  const db = latestListingBySlug.get(b.slug);
-  if (da && db) return db.localeCompare(da); // both listed → newest first
-  if (da) return -1; // a is listed, b isn't → a first
-  if (db) return 1;
-  return 0; // neither listed → keep original API order
-});
 
 // Neighborhoods that display a brand logo (from public/images/neighborhoods/)
 // over the site background instead of an API photo. `scale` optically balances
@@ -75,7 +52,7 @@ const statusLabels: Record<string, string> = {
         </div>
       ) : (
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedNeighborhoods.map((n) => {
+          {neighborhoods.map((n) => {
             const heroSrc = photoSrc(n.primary_photo, 800);
             // Prefer the alpha-preserving webp: several neighborhood "photos" are
             // actually transparent logos, and the jpg conversion flattens them to
