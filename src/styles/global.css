@@ -247,10 +247,10 @@
   .page-banner-desc  { @apply text-gold-100 mt-5 text-lg max-w-[75%] text-balance; }
 
 
-  /* Above-footer feature CTA — gold band, dark text, red buttons (flat, no
+  /* Above-footer feature CTA — sand band, dark text, red buttons (flat, no
      gradient). Reuses .cta-bold-heading/body in markup; the overrides below
-     flip their text dark and render the inverted BtnArrows red on the gold. */
-  .cta-feature          { @apply py-7 bg-gold-300; --btn-bg: var(--color-gold-300); }
+     flip their text dark and render the inverted BtnArrows red on the sand. */
+  .cta-feature          { @apply py-7 bg-earth-100; --btn-bg: var(--color-earth-100); }
   .cta-feature .cta-bold-heading { @apply text-earth-900; }
   .cta-feature .cta-bold-body    { @apply text-earth-700; }
   .cta-feature .btn-arrow--inverted           { color: var(--color-earth-50); --_btn-arrow-fill: var(--color-red-600); }

@@ -97,7 +97,7 @@ class structure across both; do *not* assume visual treatments mirror.
 | Family | Use |
 |---|---|
 | `red-*` (50–950) | Dark accent / red clay — CTAs, links, badges, section labels, footer bg, top page-banner bg. `red-600` (`#b52126`) is the primary site color |
-| `gold-*` (50–950) | Light accent / muted gold — selection, pending badge, page-banner title/label text, above-footer CTA band bg. `gold-300` (`#ffcf7d`) |
+| `gold-*` (50–950) | Light accent / muted gold — selection, pending badge, page-banner title/label text. `gold-300` (`#ffcf7d`) |
 | `earth-*` (50–950) | Neutrals — page bg (`earth-50`), cards (`earth-100`), body text (`earth-700`), dark sections + main text (`earth-900`) |
 
 In Tailwind use `bg-red-600`, `text-earth-900`, etc.; the same tokens are
@@ -120,8 +120,8 @@ filter bar, the detail-page gallery/lightbox, and the `.topo-bg` overlay.
 Status pills color via `[data-status="available|coming_soon|pending|sold"]`.
 
 CTA variants are named by emphasis, not color (flat fills, no gradients):
-`.cta-bold` is the dark `bg-earth-900` band, `.cta-feature` is the gold
-(`bg-gold-300`) above-footer band with dark `earth-900`/`earth-700` text and red
+`.cta-bold` is the dark `bg-earth-900` band, `.cta-feature` is the sand
+(`bg-earth-100`) above-footer band with dark `earth-900`/`earth-700` text and red
 `primary` buttons, and `.cta-subtle` is the light bordered band. `.cta-feature`
 reuses `.cta-bold-heading`/`.cta-bold-body` in markup with scoped overrides under
 `.cta-feature` in `global.css`; its body `<p>`s use a bare `.cta-bold-body` (the
