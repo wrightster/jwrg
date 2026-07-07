@@ -4,9 +4,9 @@ import PageBanner from '../../components/PageBanner.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import { fetchNeighborhoods, photoSrc, photoSrcSet } from '../../lib/api';
 
-// The office API returns neighborhoods already ordered by their most recently
-// created listing or lot (newest first; those with no inventory sort last) —
-// see the office NeighborhoodController index. Render in that order.
+// The office API returns neighborhoods in their manual display order (the
+// `sort` column — editable by drag-and-drop or a number field in the back
+// office; see the office NeighborhoodController index). Render in that order.
 const neighborhoods = await fetchNeighborhoods().catch(() => []);
 
 // Neighborhoods that display a brand logo (from public/images/neighborhoods/)
