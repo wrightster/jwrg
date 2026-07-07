@@ -6,6 +6,15 @@ import { fetchNeighborhoods, photoSrc, photoSrcSet } from '../../lib/api';
 
 const neighborhoods = await fetchNeighborhoods().catch(() => []);
 
+// Neighborhoods that display a brand logo (from public/images/neighborhoods/)
+// over the site background instead of an API photo.
+const localLogos: Record<string, string> = {
+  'aubrie-place': '/images/neighborhoods/aubrie-place.svg',
+  'cedar-knolls': '/images/neighborhoods/cedar-knolls.svg',
+  'woodland-park': '/images/neighborhoods/woodland-park.svg',
+  'yancey-farms': '/images/neighborhoods/yancey-farms.svg',
+};
+
 const statusLabels: Record<string, string> = {
   planning: 'Planning',
   under_development: 'Under Development',
@@ -19,11 +28,7 @@ const statusLabels: Record<string, string> = {
   title="Neighborhoods | Julie Wright Realty Group"
   description="Triangle-area communities and subdivisions curated by Julie Wright Realty Group. Photos, amenities, HOA details, schools, and current listings for each."
 >
-  <PageBanner
-    label="Explore"
-    title="Triangle Area Neighborhoods and Subdivisions"
-    description="A curated selection of communities offered by or familiar to Julie Wright Realty Group — from gated estate enclaves to working farms and new construction."
-  />
+  <PageBanner title="Our Neighborhoods" />
 
   <section class="py-20">
     <div class="max-w-7xl mx-auto px-6">
@@ -32,7 +37,7 @@ const statusLabels: Record<string, string> = {
           <p>No neighborhoods are available right now. Please check back soon.</p>
         </div>
       ) : (
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {neighborhoods.map((n) => {
             const heroSrc = photoSrc(n.primary_photo, 800);
             // Prefer the alpha-preserving webp: several neighborhood "photos" are
@@ -41,22 +46,28 @@ const statusLabels: Record<string, string> = {
             // card background instead.
             const heroWebp = photoSrcSet(n.primary_photo, 'webp');
             const location = [n.city, n.county && `${n.county} County`].filter(Boolean).join(' · ');
-            // marketing_description is rich HTML — strip tags for this plain, line-clamped excerpt.
-            const excerpt = (n.marketing_description ?? n.description ?? '')
-              .replace(/<[^>]*>/g, ' ')
-              .replace(/&nbsp;/gi, ' ')
-              .replace(/\s+/g, ' ')
-              .trim() || `Explore ${n.name} — ${location || 'a community curated by Julie Wright Realty Group'}.`;
+            // Some neighborhoods display a brand logo (over the site background)
+            // instead of an API photo — see localLogos above.
+            const logoSrc = localLogos[n.slug];
             return (
               <a
                 href={`/neighborhoods/${n.slug}`}
-                class="group bg-white border border-warm-200/50 rounded-sm overflow-hidden hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1 flex flex-col"
+                class="group flex flex-col transition-transform duration-300 hover:-translate-y-1"
               >
-                <div class="aspect-[4/3] relative overflow-hidden bg-gradient-to-br from-warm-200 via-gold-100 to-warm-100">
-                  {heroSrc ? (
+                <div class="aspect-[4/3] relative overflow-hidden rounded-sm">
+                  {logoSrc ? (
+                    <div class="w-full h-full flex items-center justify-center p-8">
+                      <img
+                        src={logoSrc}
+                        alt={n.name}
+                        class="w-auto h-auto max-w-full max-h-full object-contain"
+                        loading="lazy"
+                      />
+                    </div>
+                  ) : heroSrc ? (
                     <picture class="contents">
                       {heroWebp && (
-                        <source type="image/webp" srcset={heroWebp} sizes="(min-width:1024px) 33vw, (min-width:768px) 50vw, 100vw" />
+                        <source type="image/webp" srcset={heroWebp} sizes="(min-width:1280px) 25vw, (min-width:1024px) 33vw, (min-width:768px) 50vw, 100vw" />
                       )}
                       <img
                         src={heroSrc}
@@ -81,18 +92,15 @@ const statusLabels: Record<string, string> = {
                     </span>
                   )}
                 </div>
-                <div class="p-6 flex-1 flex flex-col">
+                <div class="pt-4 flex-1 flex flex-col">
                   {location && (
                     <div class="text-gold-600 text-xs tracking-widest uppercase mb-1">{location}</div>
                   )}
                   <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors">
                     {n.name}
                   </h3>
-                  <p class="text-navy-500 text-sm mt-2 leading-relaxed line-clamp-3 flex-1">
-                    {excerpt}
-                  </p>
                   {(n.amenities?.length ?? 0) > 0 && (
-                    <div class="mt-4 pt-4 border-t border-warm-200/60 flex flex-wrap gap-1.5">
+                    <div class="mt-4 pt-4 border-t border-warm-200/60 flex flex-wrap gap-1.5 flex-1">
                       {n.amenities.slice(0, 3).map((a) => (
                         <span class="text-xs px-2 py-0.5 rounded-full bg-warm-100 text-navy-700">{a}</span>
                       ))}
