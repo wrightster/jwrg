@@ -78,11 +78,11 @@
   /* Logo */
   .nav-logo { @apply relative flex items-center flex-shrink-0; }
   .nav-logo-icon {
-    height: 2.25rem;
-    aspect-ratio: 50 / 46;
+    height: 1.5rem;
+    aspect-ratio: 98 / 24;
     background-color: var(--color-nav-accent);
-    -webkit-mask-image: url('/JWRG_Icon_Red.svg');
-    mask-image: url('/JWRG_Icon_Red.svg');
+    -webkit-mask-image: url('/JWRG_Icon_Horizontal_Inverse.svg');
+    mask-image: url('/JWRG_Icon_Horizontal_Inverse.svg');
     -webkit-mask-size: contain;
     mask-size: contain;
     -webkit-mask-repeat: no-repeat;

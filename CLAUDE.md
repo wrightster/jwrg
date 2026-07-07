@@ -70,9 +70,12 @@ src/
 ```
 
 Logos live in `public/`: `JWRG_Full.svg` (footer/hero), `JWRG_Full_Gold.svg` /
-`JWRG_Full_White.svg` (reversed on dark), `JWRG_Icon.svg` (favicon),
-`JWRG_Icon_Red.svg` (nav-logo mask), `JWRG_Icon_Horizontal.svg`. The shared topo
-overlay is `public/FallTopo_v2.svg`. Masters: `wrightster/JWRG-JWLC-Design`.
+`JWRG_Full_White.svg` (reversed on dark), `JWRG_Icon_Inset.svg` (favicon — square
+red badge with gold glyph), `JWRG_Icon_Horizontal_Inverse.svg` (nav-logo mask —
+horizontal wordmark letterforms only, no box, matching JWLC's nav treatment).
+Also present but unused by the current chrome: `JWRG_Icon.svg`, `JWRG_Icon_Red.svg`,
+`JWRG_Icon_Horizontal.svg` (boxed variant). The shared topo overlay is
+`public/FallTopo_v2.svg`. Masters: `wrightster/JWRG-JWLC-Design`.
 
 - **SSR mode** via `@astrojs/node` standalone adapter (`output: 'server'` in `astro.config.mjs`). Most pages should set `export const prerender = true` for static output unless they genuinely need request-time rendering.
 - **Listings via API** — fetched from `office.jwrgnc.com/api/v1` filtered by `?site=jwrg`. See `../../SHARED_FRONTEND_GUIDE.md` for the contract.
