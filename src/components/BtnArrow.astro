@@ -3,10 +3,12 @@ interface Props {
   href?: string;
   variant?: 'primary' | 'secondary' | 'inverted';
   class?: string;
+  target?: string;
+  rel?: string;
 }
-const { href = '#', variant = 'primary', class: className = '' } = Astro.props;
+const { href = '#', variant = 'primary', class: className = '', target, rel } = Astro.props;
 ---
-<a href={href} class:list={['btn-arrow', `btn-arrow--${variant}`, className]}>
+<a href={href} target={target} rel={rel} class:list={['btn-arrow', `btn-arrow--${variant}`, className]}>
   <span class="btn-arrow__inner">
     <!-- Shaft stroke rectangle: sits behind caps; border-top/bottom provide shaft outline edges -->
     <span class="btn-arrow__shaft" aria-hidden="true"></span>

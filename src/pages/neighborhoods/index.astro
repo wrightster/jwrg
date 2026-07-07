@@ -3,31 +3,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageBanner from '../../components/PageBanner.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import { fetchNeighborhoods, photoSrc, photoSrcSet } from '../../lib/api';
+import { neighborhoodLogos } from '../../data/neighborhoodLogos';
 
 // The office API returns neighborhoods in their manual display order (the
 // `sort` column — editable by drag-and-drop or a number field in the back
 // office; see the office NeighborhoodController index). Render in that order.
 const neighborhoods = await fetchNeighborhoods().catch(() => []);
 
-// Neighborhoods that display a brand logo (from public/images/neighborhoods/)
-// over the site background instead of an API photo. `scale` optically balances
-// the marks so they read at a similar size in the card. Each logo was rendered
-// and measured on two axes — bounding-box extent (how far it spans) and ink
-// mass (how bold/dense it is) — because a logo looks "big" if it's large by
-// EITHER (a wide thin wordmark, or a small bold emblem). Perceived size = the
-// max of the two (each normalized across the set); heavier/wider marks scale
-// down toward the lightest (preserve-west = 1.0). Recompute if artwork changes.
-const localLogos: Record<string, { src: string; scale?: number }> = {
-  'aubrie-place': { src: '/images/neighborhoods/aubrie-place.svg', scale: 0.86 },
-  'bragg-farm': { src: '/images/neighborhoods/bragg-farm.svg', scale: 0.85 },
-  'cannady-mill-rd-lots': { src: '/images/neighborhoods/cannady-mill-rd-lots.svg', scale: 0.78 },
-  'cedar-knolls': { src: '/images/neighborhoods/cedar-knolls.svg', scale: 0.95 },
-  'colvard-farms': { src: '/images/neighborhoods/colvard-farms.svg', scale: 0.79 },
-  'preserve-west': { src: '/images/neighborhoods/preserve-west.svg' },
-  'tennyson': { src: '/images/neighborhoods/tennyson.svg', scale: 0.90 },
-  'woodland-park': { src: '/images/neighborhoods/woodland-park.svg', scale: 0.85 },
-  'yancey-farms': { src: '/images/neighborhoods/yancey-farms.svg', scale: 0.92 },
-};
+// Neighborhoods that display a local brand logo (over the site background)
+// instead of an API photo. Shared with the detail page — see
+// src/data/neighborhoodLogos.ts.
+const localLogos = neighborhoodLogos;
 
 const statusLabels: Record<string, string> = {
   planning: 'Planning',

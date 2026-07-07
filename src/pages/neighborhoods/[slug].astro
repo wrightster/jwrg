@@ -2,7 +2,10 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
+import BtnArrow from '../../components/BtnArrow.astro';
 import { fetchNeighborhood, fetchListings, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
+import { neighborhoodLogos } from '../../data/neighborhoodLogos';
+import { neighborhoodSites } from '../../data/neighborhoodSites';
 
 const { slug } = Astro.params;
 const n = slug ? await fetchNeighborhood(slug) : null;
@@ -18,8 +21,36 @@ if (!n) {
 const nListings = await fetchListings({ neighborhood: n.slug, perPage: 100 });
 const listingCount = nListings.length;
 
+// A neighborhood with a local brand logo shows that mark as the hero (mirroring
+// the neighborhoods grid) instead of its API photos — which for these are
+// themselves logos that would crop badly in the gallery tiles. See
+// src/data/neighborhoodLogos.ts.
+//
+// Sizing keeps the grid's *relative* sizing: each logo fits (object-contain) into
+// a `scale`-fraction of a cap box whose aspect matches the grid card's content
+// box (226×153.5), enlarged ~2.18× so Preserve West — the scale=1.0 anchor —
+// lands at the size it had before, and every other mark scales with it. But
+// rather than center the mark in that (tall) cap box, we size the container to
+// the logo's OWN box so it hugs the mark with no empty top/bottom space: width =
+// the mark's fitted width, height follows via `aspect-ratio`. See index.astro
+// for the grid side.
+const logo = neighborhoodLogos[n.slug];
+const logoScale = logo?.scale ?? 1;
+const logoAspect = logo?.aspect ?? 1;
+// Cap box = grid content box (226×153.5) × ~2.18. A wide mark is width-capped,
+// a tall/square one height-capped; either way logoW is its fitted width in px.
+const CAP_W = 492;
+const CAP_H = 334;
+const logoW = Math.round((logoAspect < CAP_W / CAP_H ? CAP_H * logoAspect : CAP_W) * logoScale);
+
+// If this neighborhood has its own JWRG-built microsite, link to it from the
+// top of the sidebar. See src/data/neighborhoodSites.ts.
+const neighborhoodSite = neighborhoodSites[n.slug];
+
 const photos = n.photos ?? (n.primary_photo ? [n.primary_photo] : []);
 const totalImages = photos.length;
+// Only show the API photo gallery when there's no local logo taking the hero.
+const showGallery = !logo && totalImages > 0;
 const heroSrcs = photos.slice(0, 5).map((p, i) => photoSrc(p, i === 0 ? 1600 : 800));
 // Alpha-preserving webp so transparent logos used as neighborhood images sit on
 // the light tile background instead of the jpg's black matte.
@@ -72,9 +103,15 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
           {location && (
             <div class="text-gold-600 text-xs tracking-widest uppercase mb-2">{location}</div>
           )}
-          <h1 class="font-serif text-4xl md:text-5xl text-navy-900 font-medium leading-tight">
-            {n.name}
-          </h1>
+          {/* The logo is a wordmark carrying the name, so hide the plain-text
+              title on logo pages — but keep an sr-only h1 for SEO/a11y. */}
+          {logo ? (
+            <h1 class="sr-only">{n.name}</h1>
+          ) : (
+            <h1 class="font-serif text-4xl md:text-5xl text-navy-900 font-medium leading-tight">
+              {n.name}
+            </h1>
+          )}
         </div>
         <div class="flex flex-wrap gap-2">
           {n.status && (
@@ -92,7 +129,24 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
     </div>
   </section>
 
-  {totalImages > 0 && (
+  {logo && (
+    <section class="pb-12">
+      <div class="max-w-7xl mx-auto px-6">
+        <div
+          class="mx-auto flex items-center justify-center"
+          style={`width:${logoW}px;max-width:90vw;aspect-ratio:${logoAspect};`}
+        >
+          <img
+            src={logo.src}
+            alt={n.name}
+            class="w-full h-full object-contain"
+          />
+        </div>
+      </div>
+    </section>
+  )}
+
+  {showGallery && (
     <section class="pb-12">
       <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -201,6 +255,12 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
       </div>
 
       <aside class="space-y-6">
+        {neighborhoodSite && (
+          <BtnArrow href={neighborhoodSite} target="_blank" rel="noopener" class="w-full justify-center">
+            Full Neighborhood Site
+          </BtnArrow>
+        )}
+
         <div class="bg-warm-100/60 rounded-sm p-6 border border-warm-200/60">
           <h3 class="font-serif text-lg text-navy-900 font-semibold mb-4">Quick facts</h3>
           <dl class="space-y-3 text-sm">
@@ -298,7 +358,7 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
 
   <MiniContactForm neighborhoodId={n.id} />
 
-  {totalImages > 0 && (
+  {showGallery && (
     <div
       id="lightbox"
       class="lightbox"
@@ -412,7 +472,7 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
     }
   </style>
 
-  {totalImages > 0 && (
+  {showGallery && (
     <script define:vars={{ lightboxSrcs, totalImages }}>
       let currentIndex = 0;
       let trigger = null;
