@@ -383,6 +383,21 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
     const counter = document.getElementById('image-counter');
     const thumbs = document.querySelectorAll('.thumb-btn');
 
+    // Fade an <img> back to targetOpacity only once its (new) source has
+    // decoded — otherwise the element fades in while still loading and you get
+    // a blank/old-frame flicker before the real image pops in.
+    function fadeInWhenReady(img, targetOpacity) {
+      const show = () => { img.style.opacity = String(targetOpacity); };
+      if (typeof img.decode === 'function') {
+        img.decode().then(show, show);
+      } else if (img.complete) {
+        show();
+      } else {
+        img.addEventListener('load', show, { once: true });
+        img.addEventListener('error', show, { once: true });
+      }
+    }
+
     function setMainImage(index) {
       currentIndex = index;
       if (mainImage) {
@@ -399,7 +414,7 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
             mainImage.removeAttribute('sizes');
           }
           mainImage.src = imageList[index];
-          mainImage.style.opacity = '1';
+          fadeInWhenReady(mainImage, 1);
         }, 150);
       }
       if (counter) counter.textContent = `${index + 1} / ${totalImages}`;
@@ -463,14 +478,14 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
         setTimeout(() => {
           lbImage.src = src;
           lbImage.alt = `Photo ${currentIndex + 1}`;
-          lbImage.style.opacity = '1';
+          fadeInWhenReady(lbImage, 1);
         }, 150);
       }
       if (lbBg) {
         lbBg.style.opacity = '0';
         setTimeout(() => {
           lbBg.src = src;
-          lbBg.style.opacity = '0.50';
+          fadeInWhenReady(lbBg, 0.5);
         }, 150);
       }
       if (lbCounter) lbCounter.textContent = `${currentIndex + 1} / ${totalImages}`;
