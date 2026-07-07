@@ -152,6 +152,35 @@
   }
   .nav-link-active.nav-link-deactivating { color: var(--color-nav-menu); transition-duration: 100ms; }
 
+  /* Nav search — cream outline + cream icon/text with no fill by default;
+     fills cream with dark contents when focused (clicked). Corners match the
+     nav link shapes (--radius-sm). Shared by the desktop and mobile boxes;
+     the icon is a sibling of the input, so state is driven by :focus-within. */
+  .nav-search-input {
+    border: 1px solid color-mix(in srgb, var(--color-earth-50) 70%, transparent);
+    background-color: transparent;
+    border-radius: var(--radius-sm);
+    color: var(--color-earth-50);
+  }
+  .nav-search-input::placeholder {
+    color: color-mix(in srgb, var(--color-earth-50) 60%, transparent);
+  }
+  .nav-search-icon {
+    color: color-mix(in srgb, var(--color-earth-50) 70%, transparent);
+    transition: color 200ms ease;
+  }
+  .nav-search:focus-within .nav-search-input {
+    background-color: var(--color-earth-50);
+    border-color: var(--color-earth-50);
+    color: var(--color-earth-900);
+  }
+  .nav-search:focus-within .nav-search-input::placeholder {
+    color: color-mix(in srgb, var(--color-earth-900) 55%, transparent);
+  }
+  .nav-search:focus-within .nav-search-icon {
+    color: var(--color-earth-900);
+  }
+
   /* Mobile menu button */
   .mobile-menu-btn {
     @apply lg:hidden relative w-10 h-10 flex items-center justify-center ml-auto mr-3 cursor-pointer;
