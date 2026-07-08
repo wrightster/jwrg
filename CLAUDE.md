@@ -122,6 +122,14 @@ CTA blocks (`.cta-bold`/`.cta-feature`/`.cta-subtle`), listing card/row, the lis
 filter bar, the detail-page gallery/lightbox, and the `.topo-bg` overlay.
 Status pills color via `[data-status="available|coming_soon|pending|sold"]`.
 
+**Section-label eyebrows are hidden site-wide on JWRG.** The small uppercase
+kicker above section headings and page-banner titles (`.section-label`, still
+defined in `@jw/shared` and rendered by `Section.astro`/`PageBanner.astro` via
+their `label` prop) is suppressed by a JWRG-local `.section-label { display:none }`
+override in `global.css`. `label=` props are left in the markup (harmless) — to
+bring a kicker back, drop the override rather than re-adding labels. This is
+JWRG-only: **JWLC still shows section labels** (don't mirror the override).
+
 CTA variants are named by emphasis, not color (flat fills, no gradients):
 `.cta-bold` is the dark `bg-earth-900` band, `.cta-feature` is the sand
 (`bg-earth-100`) above-footer band with dark `earth-900`/`earth-700` text and red

@@ -76,14 +76,6 @@ const heroSrcs = photos.slice(0, 5).map((p, i) => photoSrc(p, i === 0 ? 1600 : 8
 const heroWebpSets = photos.slice(0, 5).map((p) => photoSrcSet(p, 'webp'));
 const lightboxSrcs = photos.map((p) => photoSrc(p, 1600));
 
-const statusLabels: Record<string, string> = {
-  planning: 'Planning',
-  under_development: 'Under Development',
-  active_sales: 'Active Sales',
-  sold_out: 'Sold Out',
-  established: 'Established',
-};
-
 const hoaLine = (() => {
   if (!n.hoa.fee && !n.hoa.frequency) return null;
   const fee = n.hoa.fee ? formatPrice(String(n.hoa.fee)) : null;
@@ -119,9 +111,6 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
 
       <div class="flex flex-wrap items-end justify-between gap-6">
         <div>
-          {location && (
-            <div class="text-gold-600 text-xs tracking-widest uppercase mb-2">{location}</div>
-          )}
           {/* The logo is a wordmark carrying the name, so hide the plain-text
               title on logo pages — but keep an sr-only h1 for SEO/a11y. */}
           {logo ? (
@@ -130,18 +119,6 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
             <h1 class="font-serif text-4xl md:text-5xl text-navy-900 font-medium leading-tight">
               {n.name}
             </h1>
-          )}
-        </div>
-        <div class="flex flex-wrap gap-2">
-          {n.status && (
-            <span class="px-3 py-1 rounded-full text-xs font-semibold border bg-warm-100 text-navy-700 border-warm-200">
-              {statusLabels[n.status]}
-            </span>
-          )}
-          {listingCount > 0 && (
-            <a href="#homes" class="px-3 py-1 rounded-full text-xs font-semibold border bg-gold-50 text-gold-800 border-gold-200 hover:bg-gold-100 transition-colors">
-              {listingCount} active listing{listingCount === 1 ? '' : 's'}
-            </a>
           )}
         </div>
       </div>
@@ -324,6 +301,14 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
                 <dd class="text-navy-900 mt-0.5">{startingPriceLabel}</dd>
               </div>
             )}
+            {listingCount > 0 && (
+              <div>
+                <dt class="text-navy-400 text-xs uppercase tracking-wider">Available Listings</dt>
+                <dd class="text-navy-900 mt-0.5">
+                  <a href="#homes" class="text-gold-600 hover:text-gold-700">{listingCount}</a>
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
 
@@ -336,7 +321,6 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
       <div class="max-w-7xl mx-auto px-6">
         <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
-            <div class="text-gold-600 text-xs tracking-widest uppercase mb-2">Available Now</div>
             <h2 class="font-serif text-3xl text-navy-900 font-medium">Homes in {n.name}</h2>
           </div>
           <a

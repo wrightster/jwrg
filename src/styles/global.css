@@ -271,7 +271,10 @@
      PAGE BANNER
   ══════════════════════════════════════════════════ */
   .page-banner       { @apply relative py-5 overflow-hidden bg-red-600; --btn-bg: var(--color-gold-300); }
-  .page-banner .section-label { @apply text-gold-300; }
+  /* The small uppercase eyebrow/kicker above section headings and page-banner
+     titles is removed site-wide on JWRG. Kept in @jw/shared for JWLC — this is
+     a JWRG-local override, so labels still render there. */
+  .section-label { display: none; }
   .page-banner-title { @apply font-display italic text-4xl md:text-6xl text-gold-300 leading-tight; }
   .page-banner-desc  { @apply text-gold-100 mt-5 text-lg max-w-[75%] text-balance; }
 
