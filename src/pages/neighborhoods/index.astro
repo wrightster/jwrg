@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageBanner from '../../components/PageBanner.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
-import { fetchNeighborhoods, photoSrc, photoSrcSet } from '../../lib/api';
+import { fetchNeighborhoods, fetchNeighborhoodLots, photoSrc, photoSrcSet } from '../../lib/api';
 import { neighborhoodLogos } from '../../data/neighborhoodLogos';
 
 // The office API returns neighborhoods in their manual display order (the
@@ -15,13 +15,29 @@ const neighborhoods = await fetchNeighborhoods().catch(() => []);
 // src/data/neighborhoodLogos.ts.
 const localLogos = neighborhoodLogos;
 
-const statusLabels: Record<string, string> = {
-  planning: 'Planning',
-  under_development: 'Under Development',
-  active_sales: 'Active Sales',
-  sold_out: 'Sold Out',
-  established: 'Established',
-};
+// Each card carries a single lifecycle tag — "Active" (red) or "Planned"
+// (gold) — plus one inventory number. Office statuses that mean "not yet
+// selling" (planning / under_development) read as Planned; everything live
+// (active_sales / sold_out / established / unset) reads as Active.
+const plannedStatuses = new Set(['planning', 'under_development']);
+
+// Enrich each neighborhood with its display tag + inventory count. Available
+// listings win; only fall back to a live lot count for neighborhoods that have
+// no available listings (so lot-based communities still show a number).
+const cards = await Promise.all(
+  neighborhoods.map(async (n) => {
+    const listings = n.listings_count ?? 0;
+    let count = listings;
+    let unit: 'listing' | 'lot' = 'listing';
+    if (listings === 0) {
+      const lots = await fetchNeighborhoodLots(n.slug).catch(() => []);
+      count = lots.filter((l) => l.status === 'available').length;
+      unit = 'lot';
+    }
+    const planned = plannedStatuses.has(n.status ?? '');
+    return { n, count, unit, planned };
+  }),
+);
 ---
 
 <BaseLayout
@@ -30,15 +46,15 @@ const statusLabels: Record<string, string> = {
 >
   <PageBanner title="Our Neighborhoods" />
 
-  <section class="py-20">
+  <section class="py-8">
     <div class="max-w-7xl mx-auto px-6">
-      {neighborhoods.length === 0 ? (
+      {cards.length === 0 ? (
         <div class="text-center text-navy-500 py-16">
           <p>No neighborhoods are available right now. Please check back soon.</p>
         </div>
       ) : (
         <div class="flex flex-wrap justify-center gap-6">
-          {neighborhoods.map((n) => {
+          {cards.map(({ n, count, unit, planned }) => {
             const heroSrc = photoSrc(n.primary_photo, 800);
             // Prefer the alpha-preserving webp: several neighborhood "photos" are
             // actually transparent logos, and the jpg conversion flattens them to
@@ -52,14 +68,15 @@ const statusLabels: Record<string, string> = {
             return (
               <a
                 href={`/neighborhoods/${n.slug}`}
+                aria-label={n.name}
                 class="group flex flex-col transition-transform duration-300 hover:-translate-y-1 w-full md:w-[calc((100%_-_1.5rem)/2)] lg:w-[calc((100%_-_3rem)/3)] xl:w-[calc((100%_-_4.5rem)/4)]"
               >
                 <div class="aspect-[4/3] relative overflow-hidden rounded-sm">
                   {logo ? (
-                    <div class="w-full h-full flex items-center justify-center p-8">
+                    <div class="w-full h-full flex items-center justify-center px-8 py-0">
                       <img
                         src={logo.src}
-                        alt={n.name}
+                        alt={`${n.name} logo`}
                         class="w-auto h-auto object-contain"
                         style={`max-width:${logoPct};max-height:${logoPct}`}
                         loading="lazy"
@@ -78,34 +95,24 @@ const statusLabels: Record<string, string> = {
                       />
                     </picture>
                   ) : (
-                    <div class="w-full h-full flex items-center justify-center">
+                    <div class="w-full h-full flex items-center justify-center" aria-hidden="true">
                       <svg class="w-24 h-24 text-gold-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                     </div>
                   )}
-                  {n.status && n.status !== 'established' && n.status !== 'active_sales' && (
-                    <span class="absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-semibold border bg-gold-500/90 text-white border-gold-400 backdrop-blur-sm">
-                      {statusLabels[n.status]}
-                    </span>
-                  )}
-                  {(n.listings_count ?? 0) > 0 && (
-                    <span class="absolute bottom-4 right-4 px-3 py-1.5 rounded-sm text-xs font-semibold bg-navy-900/80 text-white backdrop-blur-sm">
-                      {n.listings_count} listing{n.listings_count === 1 ? '' : 's'}
-                    </span>
-                  )}
                 </div>
-                <div class="pt-4 flex-1 flex flex-col">
-                  <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors">
-                    {n.name}
-                  </h3>
-                  {(n.amenities?.length ?? 0) > 0 && (
-                    <div class="mt-4 pt-4 border-t border-warm-200/60 flex flex-wrap gap-1.5 flex-1">
-                      {n.amenities.slice(0, 3).map((a) => (
-                        <span class="text-xs px-2 py-0.5 rounded-full bg-warm-100 text-navy-700">{a}</span>
-                      ))}
-                      {n.amenities.length > 3 && (
-                        <span class="text-xs px-2 py-0.5 text-navy-500">+ {n.amenities.length - 3} more</span>
-                      )}
-                    </div>
+                <div class="pt-4 flex items-center justify-center gap-2.5">
+                  <span
+                    class:list={[
+                      'px-3 py-1 rounded-full text-xs font-semibold',
+                      planned ? 'bg-gold-300 text-earth-900' : 'bg-red-600 text-white',
+                    ]}
+                  >
+                    {planned ? 'Planned' : 'Active'}
+                  </span>
+                  {count > 0 && (
+                    <span class="text-sm font-semibold text-earth-800">
+                      {count} {unit}{count === 1 ? '' : 's'}
+                    </span>
                   )}
                 </div>
               </a>
