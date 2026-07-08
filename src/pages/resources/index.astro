@@ -1,0 +1,81 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageBanner from '../../components/PageBanner.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+
+export const prerender = true;
+
+const sections = [
+  {
+    title: 'For Buyers',
+    href: '/resources/buyers',
+    description:
+      'Everything you need to buy with confidence — from understanding financing to running the numbers before you make an offer.',
+    inside: ['Real Estate 101', 'Buyer FAQs', 'Mortgage Calculator', 'Free Buying Guide'],
+  },
+  {
+    title: 'For Sellers',
+    href: '/resources/sellers',
+    description:
+      'Price it right, show it well, and know your market. The tools and guidance to sell for the best result.',
+    inside: ['Staging Tips', 'Home Value Estimate', 'List Your Property', 'Neighborhood Sold Report'],
+  },
+  {
+    title: 'Relocating',
+    href: '/resources/relocation',
+    description:
+      'Moving to the Triangle? Get oriented to the area and make the transition smooth, whatever your timeline.',
+    inside: ['Relocation Package', 'Moving Tips', 'About the Triangle'],
+  },
+];
+---
+
+<BaseLayout
+  title="Resources — Julie Wright Realty Group"
+  description="Guides, calculators, and local knowledge for buying, selling, and relocating in the Triangle."
+>
+  <PageBanner
+    label="Resources"
+    title="Resources"
+    description="Guides, calculators, and local knowledge for every stage of your move — whether you're buying, selling, or relocating to the Triangle."
+  />
+
+  <section class="py-16 lg:py-20">
+    <div class="content-wrap">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {sections.map((s) => (
+          <a
+            href={s.href}
+            class="group flex flex-col bg-white rounded-sm p-8 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300"
+          >
+            <h2 class="font-display text-2xl text-earth-900 group-hover:text-red-600 transition-colors">
+              {s.title}
+            </h2>
+            <p class="text-earth-600 mt-3 leading-relaxed">{s.description}</p>
+            <ul class="mt-5 space-y-1.5">
+              {s.inside.map((item) => (
+                <li class="flex items-start gap-2 text-sm text-earth-700">
+                  <svg class="w-4 h-4 mt-0.5 shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <span class="mt-6 pt-4 border-t border-earth-100 text-red-600 text-sm font-display flex items-center gap-1">
+              Explore {s.title}
+              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <MiniContactForm
+    heading="Not sure where to start?"
+    description="Tell us a little about your move and we'll point you to the right resources — or just answer your questions directly."
+  />
+</BaseLayout>

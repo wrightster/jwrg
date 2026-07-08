@@ -51,9 +51,10 @@ src/
 │   └── formFields.ts      # Form field definitions
 ├── pages/
 │   ├── about/             # About, team, triangle-area, business-directory
-│   ├── buyers/            # Buying guide, FAQ, mortgage calc, RE 101
-│   ├── sellers/           # Home value, list-your-property, staging, sold reports
-│   ├── relocation/        # Relocation package, moving tips
+│   ├── resources/         # Hub (index) → buyers/ sellers/ relocation/ subsections
+│   │   ├── buyers/            # Buying guide, FAQ, mortgage calc, RE 101
+│   │   ├── sellers/           # Home value, list-your-property, staging, sold reports
+│   │   └── relocation/        # Relocation package, moving tips
 │   ├── neighborhoods/     # Index + [slug] dynamic pages
 │   ├── listings/          # Index + [slug] dynamic property detail
 │   ├── 404.astro

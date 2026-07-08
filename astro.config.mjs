@@ -17,6 +17,14 @@ export default defineConfig({
   // links/bookmarks to the listings page (which now has keyword search).
   redirects: {
     '/property-search': '/listings',
+    // Buyers/Sellers/Relocation now live under the Resources hub (2026-07).
+    // 301 the old top-level paths (and every deep page) to their new home.
+    '/buyers': '/resources/buyers',
+    '/buyers/[...slug]': '/resources/buyers/[...slug]',
+    '/sellers': '/resources/sellers',
+    '/sellers/[...slug]': '/resources/sellers/[...slug]',
+    '/relocation': '/resources/relocation',
+    '/relocation/[...slug]': '/resources/relocation/[...slug]',
   },
   vite: {
     plugins: [tailwindcss()]

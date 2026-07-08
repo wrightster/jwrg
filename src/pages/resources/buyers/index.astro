@@ -1,7 +1,7 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import PageBanner from '../../components/PageBanner.astro';
-import MiniContactForm from '../../components/MiniContactForm.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PageBanner from '../../../components/PageBanner.astro';
+import MiniContactForm from '../../../components/MiniContactForm.astro';
 
 export const prerender = true;
 
@@ -9,22 +9,22 @@ const resources = [
   {
     title: 'Real Estate 101',
     description: 'Master the vocabulary of buying. Glossary of financing, valuation, legal, and transaction terms.',
-    href: '/buyers/real-estate-101',
+    href: '/resources/buyers/real-estate-101',
   },
   {
     title: 'Buyer FAQs',
     description: 'Honest answers to the questions every first-time and seasoned buyer asks.',
-    href: '/buyers/faq',
+    href: '/resources/buyers/faq',
   },
   {
     title: 'Mortgage Calculator',
     description: 'Estimate monthly payments — principal, interest, taxes, and insurance — in seconds.',
-    href: '/buyers/mortgage-calculator',
+    href: '/resources/buyers/mortgage-calculator',
   },
   {
     title: 'Free Buying Guide',
     description: 'Request our complimentary guide for a step-by-step walkthrough of the home-buying process.',
-    href: '/buyers/buying-guide',
+    href: '/resources/buyers/buying-guide',
   },
 ];
 ---
