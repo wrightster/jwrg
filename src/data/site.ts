@@ -5,7 +5,7 @@ export const site = {
   name: 'Julie Wright Realty Group',
   shortName: 'Julie Wright Realty Group',
   description:
-    'Four decades specializing in Triangle Area properties. Your comprehensive real estate resource for Wake, Granville, Franklin, Johnston, Harnett, and Durham Counties.',
+    'Five decades specializing in Triangle Area properties. Your comprehensive real estate resource for Wake, Granville, Franklin, Johnston, Harnett, and Durham Counties.',
   phone: '(919) 847-7140',
   phoneRaw: '9198477140',
   fax: '(919) 847-7182',
