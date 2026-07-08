@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
-import { fetchNeighborhood, fetchListings, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
+import { fetchNeighborhood, fetchListings, fetchNeighborhoodLots, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
 import { neighborhoodLogos } from '../../data/neighborhoodLogos';
 import { neighborhoodSites } from '../../data/neighborhoodSites';
 
@@ -20,6 +20,25 @@ if (!n) {
 // of site or status — so drive the page's listing UI off this.
 const nListings = await fetchListings({ neighborhood: n.slug, perPage: 100 });
 const listingCount = nListings.length;
+
+// Subdivision lots for the sidebar quick facts: the count of currently
+// available lots and a "from the $X00s" starting price off the cheapest
+// available lot's advertised base_price. Missing/empty data hides each line.
+const lots = await fetchNeighborhoodLots(n.slug);
+const availableLots = lots.filter((l) => l.status === 'available');
+const availableLotCount = availableLots.length;
+const availableBasePrices = availableLots
+  .map((l) => Number(l.base_price))
+  .filter((p) => Number.isFinite(p) && p > 0);
+const startingPrice = availableBasePrices.length ? Math.min(...availableBasePrices) : null;
+// Bucket the starting price the way homes are marketed: "$400s" = $400,000s,
+// "$80s" = $80,000s for sub-$100k land, "$1.2M" once past a million.
+const priceFromLabel = (p: number): string => {
+  if (p >= 1_000_000) return `From $${(Math.floor(p / 100_000) / 10).toFixed(1)}M`;
+  if (p >= 100_000) return `From the $${Math.floor(p / 100_000) * 100}s`;
+  return `From the $${Math.floor(p / 10_000) * 10}s`;
+};
+const startingPriceLabel = startingPrice != null ? priceFromLabel(startingPrice) : null;
 
 // A neighborhood with a local brand logo shows that mark as the hero (mirroring
 // the neighborhoods grid) instead of its API photos — which for these are
@@ -91,7 +110,7 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
   title={`${n.name} | Julie Wright Realty Group`}
   description={metaDescription}
 >
-  <section class="pt-28 pb-8">
+  <section class="pt-8 pb-8">
     <div class="max-w-7xl mx-auto px-6">
       <a href="/neighborhoods" class="text-sm text-gold-600 hover:text-gold-700 inline-flex items-center gap-1 mb-6">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -262,7 +281,6 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
         )}
 
         <div class="bg-warm-100/60 rounded-sm p-6 border border-warm-200/60">
-          <h3 class="font-serif text-lg text-navy-900 font-semibold mb-4">Quick facts</h3>
           <dl class="space-y-3 text-sm">
             {location && (
               <div>
@@ -294,41 +312,21 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
                 <dd class="text-navy-900 mt-0.5">{hoaLine}</dd>
               </div>
             )}
+            {availableLotCount > 0 && (
+              <div>
+                <dt class="text-navy-400 text-xs uppercase tracking-wider">Available Lots</dt>
+                <dd class="text-navy-900 mt-0.5">{availableLotCount}</dd>
+              </div>
+            )}
+            {startingPriceLabel && (
+              <div>
+                <dt class="text-navy-400 text-xs uppercase tracking-wider">Price Range</dt>
+                <dd class="text-navy-900 mt-0.5">{startingPriceLabel}</dd>
+              </div>
+            )}
           </dl>
         </div>
 
-        <div class="bg-warm-100/60 rounded-sm p-6 border border-warm-200/60">
-          <h3 class="font-serif text-lg text-navy-900 font-semibold mb-2">Interested in {n.name}?</h3>
-          <p class="text-navy-500 text-sm mb-4">
-            Reach out and we'll send detail sheets, available lots and homes, and arrange a tour.
-          </p>
-          <a
-            href="/contact"
-            class="block text-center w-full py-3 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-sm transition-all"
-          >
-            Request Information
-          </a>
-          {n.website_url && (
-            <a
-              href={n.website_url}
-              target="_blank"
-              rel="noopener"
-              class="block text-center w-full mt-3 py-3 border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white font-semibold rounded-sm transition-all"
-            >
-              Visit Community Website
-            </a>
-          )}
-        </div>
-
-        {listingCount > 0 && (
-          <a
-            href="#homes"
-            class="block w-full px-6 py-4 rounded-sm bg-navy-900 text-warm-50 hover:bg-navy-800 transition-all text-center"
-          >
-            <div class="font-serif text-lg">{listingCount} active listing{listingCount === 1 ? '' : 's'}</div>
-            <div class="text-warm-200 text-xs tracking-widest uppercase mt-1">View available homes →</div>
-          </a>
-        )}
       </aside>
     </div>
   </section>
