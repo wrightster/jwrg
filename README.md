@@ -34,7 +34,7 @@ src/
 ├── data/         Static site content (team, neighborhoods fallback, FAQ, glossary)
 ├── layouts/      BaseLayout shell
 ├── lib/api.ts    Office API client + types — keep in sync with jwlc/src/lib/api.ts
-├── pages/        Routes (about, buyers, sellers, listings, neighborhoods, etc.)
+├── pages/        Routes (about, resources/{buyers,sellers,relocation}, listings, neighborhoods, etc.)
 └── styles/       global.css with Tailwind @theme tokens
 ```
 
