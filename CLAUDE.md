@@ -36,7 +36,8 @@ src/
 │   └── TeamCard.astro        # Broker / agent card
 ├── data/             # Static site content as TypeScript
 │   ├── buyerFaq.ts        # Buyer FAQ entries
-│   ├── counties.ts        # NC county data (areas served)
+│   ├── counties.ts        # NC county data (areas served); ordered by descending population
+│   ├── countyShapes.ts    # Generated county silhouette SVG paths (About "Triangle Area")
 │   ├── forms.ts           # Form ID → backend Filament form mapping
 │   ├── keyTerms.ts        # Real estate glossary
 │   ├── movingTips.ts      # Relocation moving-tips content
@@ -50,7 +51,7 @@ src/
 │   ├── api.ts             # Office API client — see ../../SHARED_FRONTEND_GUIDE.md
 │   └── formFields.ts      # Form field definitions
 ├── pages/
-│   ├── about/             # About, team, triangle-area, business-directory
+│   ├── about/             # Single consolidated About page (index) + team/[slug] agent profiles
 │   ├── resources/         # Hub (index) → buyers/ sellers/ relocation/ subsections
 │   │   ├── buyers/            # Buying guide, FAQ, mortgage calc, RE 101
 │   │   ├── sellers/           # Home value, list-your-property, staging, sold reports
@@ -64,8 +65,7 @@ src/
 │   ├── neighborhood-map.astro
 │   ├── privacy.astro
 │   ├── property-organizer.astro
-│   ├── property-search.astro
-│   └── testimonials.astro
+│   └── property-search.astro
 └── styles/
     └── global.css         # @import tailwindcss + @theme tokens + all component classes
 ```

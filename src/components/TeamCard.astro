@@ -15,9 +15,9 @@ const email = member.public_email ?? '';
 
 <a
   href={`/about/team/${member.slug}`}
-  class="group relative flex flex-col bg-white rounded-sm overflow-hidden ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300"
+  class="group relative flex flex-col bg-white rounded-sm overflow-hidden ring-1 ring-inset ring-earth-100 transition-all duration-300"
 >
-  <div class="aspect-[4/5] overflow-hidden bg-earth-100">
+  <div class="aspect-square overflow-hidden bg-earth-100">
     {photo ? (
       <img
         src={photo}
@@ -42,4 +42,11 @@ const email = member.public_email ?? '';
       </div>
     )}
   </div>
+  <!-- Hover stroke overlay — absolutely positioned as the last child so its inset
+       ring paints on top of everything, including the photo (an inset ring on the
+       <a> itself would render underneath the child image). -->
+  <span
+    class="pointer-events-none absolute inset-0 rounded-sm ring-2 ring-inset ring-red-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+    aria-hidden="true"
+  ></span>
 </a>

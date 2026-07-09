@@ -16,9 +16,7 @@ const STATIC_PATHS = [
   '/resources/sellers',
   '/resources/relocation',
   '/about',
-  '/about/team',
   '/areas/granville-vs-wake',
-  '/testimonials',
   '/contact',
 ];
 

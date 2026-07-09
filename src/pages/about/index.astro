@@ -1,90 +1,182 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
+import TeamCard from '../../components/TeamCard.astro';
+import EmbedForm from '../../components/EmbedForm.astro';
+import { fetchTeam } from '../../lib/api';
+import { counties } from '../../data/counties';
+import { countyShapes } from '../../data/countyShapes';
+import { site } from '../../data/site';
 
-export const prerender = true;
+// SSR (not prerendered) so the team grid stays live — team members are managed
+// in the office and change without a site rebuild.
+export const prerender = false;
 
-const stats = [
-  { value: '50+', label: 'Years of Experience', detail: 'Serving the Triangle since the 1970s' },
-  { value: '17', label: 'Brokers & Agents', detail: 'A deep, experienced team' },
-  { value: '6+', label: 'Counties Served', detail: 'Across central North Carolina' },
-  { value: '1000+', label: 'Homes Sold', detail: 'Generations of families guided home' },
+const team = await fetchTeam();
+
+const testimonialToken = site.formTokens.testimonial;
+
+// Section visibility — flip to true to bring a section back (markup is kept below).
+const showTestimonials = false;
+const showDirectory = false;
+
+const directoryCategories = [
+  'Mortgage & Lending',
+  'Home Inspection',
+  'Real Estate Attorney',
+  'Title & Escrow',
+  'Surveyor',
+  'General Contractor',
+  'Roofing',
+  'HVAC',
+  'Plumbing & Electrical',
+  'Landscaping',
+  'Cleaning & Staging',
+  'Moving Companies',
+  'Insurance',
+  'Pest Control',
 ];
 ---
 
-<BaseLayout title="About — Julie Wright Realty Group" description="Five decades of Triangle real estate and a single commitment: education-driven service for every client.">
+<BaseLayout title="About — Julie Wright Realty Group" description="Five decades of Triangle real estate, and one way of working: we make sure clients understand the decisions they're making. Meet our team, the counties we serve, and the local network behind us.">
   <!-- Page Header -->
   <section class="page-banner">
     <div class="content-wrap">
-      <h1 class="page-banner-title">Our History</h1>
+      <h1 class="page-banner-title">About Us</h1>
       <p class="page-banner-desc">
-        Five decades of Triangle real estate and a single commitment: education-driven service for every client.
+        Five decades of Triangle real estate, and one way of working: we make sure you understand the decisions you're making.
       </p>
     </div>
   </section>
 
   <!-- Company Story -->
-  <section class="story-section">
+  <section id="story" class="story-section scroll-mt-24">
     <div class="content-wrap">
-      <div class="story-grid">
-        <div class="story-text-col">
-          <h2 class="section-heading">Rooted in the<br />Triangle since the 1970s</h2>
-          <div class="story-body">
+      <div class="max-w-3xl mx-auto">
+        <h2 class="section-heading text-center">Rooted in the Triangle</h2>
+        <div class="story-body">
             <p>
-              Julie Wright Realty Group started in the 1970s, when Julie's family began selling rural land in what was then a quiet stretch of farmland north of Raleigh. The first office was, quite literally, a converted playhouse. From those modest beginnings the firm grew alongside the Triangle itself.
+              Julie Wright Realty Group started in the 1970s, when Julie's family began selling rural land north of Raleigh out of a first office that was, quite literally, a converted playhouse. The firm grew alongside the Triangle. Today the team works with buyers and sellers across Wake, Granville, Franklin, Johnston, Harnett, Durham, and the surrounding counties, handling everything from first-time townhomes and working farms to multi-acre estate sales, new-construction subdivisions, and the complex deals that turn on zoning, surveys, easements, and taxes.
             </p>
             <p>
-              Today the team works with buyers and sellers across Wake, Granville, Franklin, Johnston, Harnett, Durham, and the surrounding counties. We handle everything from first-time-buyer townhomes to working farms, multi-acre estate sales, new-construction subdivisions, and the kind of complex transactions that require deep knowledge of zoning, surveys, easements, and tax implications.
-            </p>
-            <p>
-              What hasn't changed is our approach: we educate our clients. The single most reliable way to help someone make a great real estate decision is to make sure they understand the decision they're making. That means real conversations about pricing, market timing, property condition, financing, and what life will actually look like in a given neighborhood.
-            </p>
-            <p>
-              We're proud of the relationships we've built — generations of families who keep coming back, brokers who have spent decades on this team, and a deep network of trusted local lenders, attorneys, builders, inspectors, and contractors. When you work with us, you get the benefit of all of it.
-            </p>
-            <p class="font-display italic text-2xl text-red-600 mt-10 pt-8 border-t border-earth-200">
-              "We don't just close transactions. We help people build a future in the Triangle."
+              What hasn't changed is the approach: we make sure you understand the decision in front of you, from pricing and market timing to property condition, financing, and what living in a given neighborhood is actually like. Much of our business comes from families who keep coming back and brokers who have been here for decades, backed by local lenders, attorneys, builders, inspectors, and contractors we trust.
             </p>
           </div>
-        </div>
-
-        <!-- Sidebar stats -->
-        <div class="stat-sidebar">
-          <div class="stat-card">
-            {stats.map((stat) => (
-              <div class="stat-row">
-                <p class="stat-card-headline"><span>{stat.value} {stat.label}</span></p>
-                <p class="stat-card-detail">{stat.detail}</p>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   </section>
 
-  <!-- Explore more -->
-  <section class="team-section">
+  <!-- Our Team -->
+  <section id="team" class="team-section scroll-mt-24">
     <div class="content-wrap">
       <div class="team-header">
-        <h2 class="section-heading">Get to Know Us</h2>
+        <h2 class="section-heading">Meet the Team</h2>
+        <p class="text-earth-600 leading-relaxed mt-4 max-w-2xl mx-auto">
+          Brokers and agents who know the Triangle. Their specialties run from new construction and equestrian properties to land, relocation, and estate planning.
+        </p>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <a href="/about/team" class="group block bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300">
-          <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors">Our Team</h3>
-          <p class="text-earth-600 text-sm mt-2">Meet the brokers and agents behind the group.</p>
-        </a>
-        <a href="/about/triangle-area" class="group block bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300">
-          <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors">The Triangle Area</h3>
-          <p class="text-earth-600 text-sm mt-2">Explore the communities and counties we serve.</p>
-        </a>
-        <a href="/testimonials" class="group block bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300">
-          <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors">Testimonials</h3>
-          <p class="text-earth-600 text-sm mt-2">Hear from the families we've worked with.</p>
-        </a>
+      {team.length === 0 ? (
+        <p class="text-center text-earth-500 py-12">Our team will be listed here shortly. Please check back soon.</p>
+      ) : (
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {team.map((m) => <TeamCard member={m} />)}
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- The Triangle Area -->
+  <section id="triangle-area" class="team-section scroll-mt-24">
+    <div class="content-wrap">
+      <div class="team-header">
+        <h2 class="section-heading">The Triangle Area</h2>
+        <p class="text-earth-600 leading-relaxed mt-4 max-w-2xl mx-auto">
+          From Raleigh and Durham to the lakefront at Kerr Lake, our service area covers central North Carolina: fast-growing suburbs, rural farmland, and lake towns alike.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {counties.map((c) => (
+          <div class="relative overflow-hidden bg-white rounded-sm p-7 ring-1 ring-inset ring-earth-100">
+            {countyShapes[c.slug] && (
+              <svg
+                viewBox="0 0 100 100"
+                preserveAspectRatio="xMidYMid meet"
+                class="pointer-events-none absolute left-2/3 top-1/2 -translate-x-1/2 -translate-y-1/2 h-full aspect-square text-earth-400/10"
+                fill="currentColor"
+                fill-rule="evenodd"
+                aria-hidden="true"
+              >
+                <path d={countyShapes[c.slug]} />
+              </svg>
+            )}
+            <div class="relative z-10">
+              <h3 class="font-display text-xl text-earth-900">{c.name}</h3>
+              <p class="text-earth-600 text-sm leading-relaxed mt-2">{c.description}</p>
+              <p class="text-earth-500 text-xs mt-3">{c.municipalities.join(' · ')}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   </section>
+
+  <!-- Testimonials (hidden — flip showTestimonials in the frontmatter to restore) -->
+  {showTestimonials && (
+  <section id="testimonials" class="team-section scroll-mt-24">
+    <div class="content-wrap">
+      <div class="team-header">
+        <h2 class="section-heading">Testimonials</h2>
+        <p class="text-earth-600 leading-relaxed mt-4 max-w-2xl mx-auto">
+          The best measure of our work is what our clients say after the keys are handed over.
+        </p>
+      </div>
+      <div class="max-w-3xl mx-auto">
+        <div class="bg-white rounded-sm p-8 md:p-10">
+          <h3 class="contact-form-heading">Share Your Experience</h3>
+          <p class="text-earth-600 mb-6">If we've helped you buy, sell, or relocate, we'd love to hear from you. Your testimonial may be featured on our website.</p>
+          {testimonialToken ? (
+            <EmbedForm id="jwrg-testimonial-form" token={testimonialToken} />
+          ) : (
+            <p class="text-earth-600 leading-relaxed">
+              Our online testimonial form is being configured. In the meantime, please share your story
+              by <a href={`mailto:${site.email}`} class="text-red-600 hover:underline">email</a>.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  </section>
+  )}
+
+  <!-- Business Directory (hidden — flip showDirectory in the frontmatter to restore) -->
+  {showDirectory && (
+  <section id="directory" class="team-section scroll-mt-24">
+    <div class="content-wrap">
+      <div class="team-header">
+        <h2 class="section-heading">Business Directory</h2>
+        <p class="text-earth-600 leading-relaxed mt-4 max-w-2xl mx-auto">
+          Local professionals we've worked with and trust, for any step of buying, selling, or owning a home.
+        </p>
+      </div>
+      <div class="max-w-5xl mx-auto">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-10">
+          {directoryCategories.map((c) => (
+            <span class="px-4 py-3 bg-earth-100 text-earth-700 text-sm rounded-sm ring-1 ring-inset ring-earth-200 text-center">
+              {c}
+            </span>
+          ))}
+        </div>
+        <div class="bg-earth-100 rounded-sm p-8 text-center">
+          <h3 class="font-display text-xl text-earth-900 mb-2">Need a personal recommendation?</h3>
+          <p class="text-earth-600 mb-6 max-w-2xl mx-auto">
+            Every transaction is different. Tell us what you need and we'll connect you with the right local professional from our network.
+          </p>
+          <BtnArrow href="/contact">Ask for a Recommendation</BtnArrow>
+        </div>
+      </div>
+    </div>
+  </section>
+  )}
 
   <!-- CTA -->
   <section class="cta-feature">
