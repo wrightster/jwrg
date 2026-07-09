@@ -53,8 +53,25 @@ const cards = await Promise.all(
           <p>No neighborhoods are available right now. Please check back soon.</p>
         </div>
       ) : (
-        <div class="flex flex-wrap justify-center gap-6">
-          {cards.map(({ n, count, unit, planned }) => {
+        <div class="flex flex-wrap justify-center gap-x-6 -mb-6">
+          {cards.map(({ n, count, unit, planned }, i) => {
+            // Staggered rows at EVERY breakpoint: each row alternates between the
+            // breakpoint's column count and one less, offset like brickwork. Every
+            // card is a FIXED width (w-72) — it never scales with the viewport;
+            // extra width just grows the side margins (justify-center + the
+            // max-w-7xl wrapper), the same way the grid already behaved past its
+            // full-width cap. The breakpoint only changes how many fixed cards fit
+            // per row: xl → 3,4,3,4 · lg → 2,3,2,3 · md → 1,2,1,2 · base → 1–2.
+            // Shorter rows don't fill the width and center; full rows fill it.
+            // Zero-height, full-width spacers force the wrap at each row's end —
+            // fixed-width cards would otherwise just pack as many as fit. Break
+            // positions differ per breakpoint (the [n-1,n] cycle length is 3 / 5
+            // / 7 for md / lg / xl), so each card renders up to three spacers,
+            // each scoped to a single breakpoint band. Vertical rhythm comes from
+            // each card's mb-6 (not a row-gap) so the spacer lines add no space.
+            const breakMd = i % 3 === 0 || i % 3 === 2; // md band: 1,2 cycle
+            const breakLg = i % 5 === 1 || i % 5 === 4; // lg band: 2,3 cycle
+            const breakXl = i % 7 === 2 || i % 7 === 6; // xl band: 3,4 cycle
             const heroSrc = photoSrc(n.primary_photo, 800);
             // Prefer the alpha-preserving webp: several neighborhood "photos" are
             // actually transparent logos, and the jpg conversion flattens them to
@@ -66,10 +83,11 @@ const cards = await Promise.all(
             const logo = localLogos[n.slug];
             const logoPct = `${(logo?.scale ?? 1) * 100}%`;
             return (
+              <Fragment>
               <a
                 href={`/neighborhoods/${n.slug}`}
                 aria-label={n.name}
-                class="group flex flex-col transition-transform duration-300 hover:-translate-y-1 w-full md:w-[calc((100%_-_1.5rem)/2)] lg:w-[calc((100%_-_3rem)/3)] xl:w-[calc((100%_-_4.5rem)/4)]"
+                class="group flex flex-col mb-6 transition-transform duration-300 hover:-translate-y-1 w-72 max-w-full shrink-0"
               >
                 <div class="aspect-[4/3] relative overflow-hidden rounded-sm">
                   {logo ? (
@@ -116,6 +134,16 @@ const cards = await Promise.all(
                   )}
                 </div>
               </a>
+              {breakMd && (
+                <div class="hidden md:block lg:hidden basis-full h-0" aria-hidden="true"></div>
+              )}
+              {breakLg && (
+                <div class="hidden lg:block xl:hidden basis-full h-0" aria-hidden="true"></div>
+              )}
+              {breakXl && (
+                <div class="hidden xl:block basis-full h-0" aria-hidden="true"></div>
+              )}
+              </Fragment>
             );
           })}
         </div>
