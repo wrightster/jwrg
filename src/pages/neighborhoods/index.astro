@@ -95,7 +95,7 @@ const cards = await Promise.all(
                       <img
                         src={logo.src}
                         alt={`${n.name} logo`}
-                        class="w-auto h-auto object-contain"
+                        class="w-auto h-auto object-contain origin-bottom transition-transform duration-300 group-hover:scale-[1.04]"
                         style={`max-width:${logoPct};max-height:${logoPct}`}
                         loading="lazy"
                       />
@@ -118,19 +118,13 @@ const cards = await Promise.all(
                     </div>
                   )}
                 </div>
-                <div class="flex items-center justify-center gap-2.5">
-                  <span
-                    class:list={[
-                      'px-3 py-1 rounded-full text-xs font-semibold',
-                      planned ? 'bg-gold-300 text-earth-900' : 'bg-red-600 text-white',
-                    ]}
-                  >
-                    {planned ? 'Planned' : 'Active'}
-                  </span>
+                <div class="flex items-center justify-center gap-2 text-sm font-semibold text-earth-800">
+                  <span>{planned ? 'Planned' : 'Active'}</span>
                   {count > 0 && (
-                    <span class="text-sm font-semibold text-earth-800">
-                      {count} {unit}{count === 1 ? '' : 's'}
-                    </span>
+                    <Fragment>
+                      <span aria-hidden="true">·</span>
+                      <span>{count} {unit}{count === 1 ? '' : 's'}</span>
+                    </Fragment>
                   )}
                 </div>
               </a>
