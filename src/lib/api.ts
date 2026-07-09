@@ -6,6 +6,7 @@ import {
   BASE_URL,
   fetchAllListings as sharedFetchAllListings,
   fetchListings as sharedFetchListings,
+  fetchNeighborhoods as sharedFetchNeighborhoods,
   fetchTeam as sharedFetchTeam,
   fetchTeamMember as sharedFetchTeamMember,
   type ListingsQuery,
@@ -19,6 +20,9 @@ export const fetchListings = (q: ListingsQuery = {}) => sharedFetchListings(SITE
 export const fetchAllListings = (q: ListingsQuery = {}) => sharedFetchAllListings(SITE_SLUG, q);
 export const fetchTeam = () => sharedFetchTeam(SITE_SLUG);
 export const fetchTeamMember = (slug: string) => sharedFetchTeamMember(slug, SITE_SLUG);
+// Bind the site slug so neighborhood cards' listings_count reflects only what's
+// live on JWRG (see the shared fetchNeighborhoods + NeighborhoodController).
+export const fetchNeighborhoods = () => sharedFetchNeighborhoods(SITE_SLUG);
 
 // Subdivision lots for a neighborhood, from the office public API
 // (`GET /neighborhoods/{slug}/lots`, served by LotResource). Marketing-safe
