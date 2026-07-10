@@ -84,6 +84,24 @@ Also present but unused by the current chrome: `JWRG_Icon.svg`, `JWRG_Icon_Red.s
 - **Static content** (FAQs, glossary, moving/staging tips, counties, site metadata) lives in `src/data/*.ts`.
 - **No React/Vue** — pure Astro components.
 
+### Listing status labels
+
+The office labels the `active` status **"Active"** (`status_label`, from
+`ListingStatus::getLabel()`), but the public sites say **"Available."** Both
+JWRG and JWLC therefore run every listing through `normalizeListingLabel()`
+(`@jw/shared/api`) inside their `src/lib/api.ts` shim, which rewrites
+`status_label` and nothing else.
+
+Apply it in **all three** listing-returning fetchers — `fetchListings`,
+`fetchAllListings`, and `fetchListing`. The last one is easy to miss: without a
+local override it falls through to `export * from '@jw/shared/api'` and the
+detail page silently reads "Active" while the cards read "Available."
+
+The raw `status` key stays `active`. Anything that keys off it — the
+`[data-status]` pill colors, the `?status=a` filter, `publicStatus()`, the
+sitemap's `INDEXABLE` set, JSON-LD availability — is unaffected. Don't "fix"
+those to `available`.
+
 ## Design System
 
 As of the **2026 rebrand**, JWRG shares brand tokens + fonts with JWLC —
@@ -121,7 +139,9 @@ buttons (`.btn-primary`/`.btn-secondary`/`.btn-inverted`/`.btn-nav`, plus the
 `.section-heading`, `.page-banner-title`), layout (`.content-wrap`, `.cta-wrap`),
 CTA blocks (`.cta-bold`/`.cta-feature`/`.cta-subtle`), listing card/row, the listings
 filter bar, the detail-page gallery/lightbox, and the `.topo-bg` overlay.
-Status pills color via `[data-status="available|coming_soon|pending|sold"]`.
+Status pills color via `[data-status="active|coming_soon|pending|under_contract|sold"]`
+— the raw office `status`, not the label shown inside the pill (see
+"Listing status labels").
 
 **Section-label eyebrows are hidden site-wide on JWRG.** The small uppercase
 kicker above section headings and page-banner titles (`.section-label`, still

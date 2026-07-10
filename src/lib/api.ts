@@ -5,10 +5,13 @@
 import {
   BASE_URL,
   fetchAllListings as sharedFetchAllListings,
+  fetchListing as sharedFetchListing,
   fetchListings as sharedFetchListings,
   fetchNeighborhoods as sharedFetchNeighborhoods,
   fetchTeam as sharedFetchTeam,
   fetchTeamMember as sharedFetchTeamMember,
+  normalizeListingLabel,
+  type ApiListing,
   type ListingsQuery,
 } from '@jw/shared/api';
 
@@ -16,8 +19,20 @@ export * from '@jw/shared/api';
 
 export const SITE_SLUG = 'jwrg';
 
-export const fetchListings = (q: ListingsQuery = {}) => sharedFetchListings(SITE_SLUG, q);
-export const fetchAllListings = (q: ListingsQuery = {}) => sharedFetchAllListings(SITE_SLUG, q);
+// The office labels the `active` status "Active"; both public sites say
+// "Available" instead, so every fetcher that returns listings normalizes.
+export const fetchListings = async (q: ListingsQuery = {}): Promise<ApiListing[]> =>
+  (await sharedFetchListings(SITE_SLUG, q)).map(normalizeListingLabel);
+
+export const fetchAllListings = async (q: ListingsQuery = {}): Promise<ApiListing[]> =>
+  (await sharedFetchAllListings(SITE_SLUG, q)).map(normalizeListingLabel);
+
+export const fetchListing = async (slug: string): Promise<ApiListing | null> => {
+  const listing = await sharedFetchListing(slug);
+
+  return listing ? normalizeListingLabel(listing) : null;
+};
+
 export const fetchTeam = () => sharedFetchTeam(SITE_SLUG);
 export const fetchTeamMember = (slug: string) => sharedFetchTeamMember(slug, SITE_SLUG);
 // Bind the site slug so neighborhood cards' listings_count reflects only what's
