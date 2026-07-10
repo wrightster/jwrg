@@ -42,6 +42,8 @@ src/
 
 Talks to `https://office.jwrgnc.com/api/v1`, filtered by `?site=jwrg`. The shared contract (and rules that apply to **both** JWRG and JWLC) is documented in [`SHARED_FRONTEND_GUIDE.md`](https://github.com/wrightster/jwrg-workspace/blob/main/SHARED_FRONTEND_GUIDE.md). When changing the API client, update **both** sites' `src/lib/api.ts` in the same session.
 
+The office labels the `active` status "Active"; the public sites say "Available." Every listing-returning fetcher in `src/lib/api.ts` runs its results through `normalizeListingLabel()`, which rewrites `status_label` and leaves the raw `status` key alone. See [`CLAUDE.md`](./CLAUDE.md) § "Listing status labels."
+
 ## Brand
 
 Navy + gold + warm neutrals. Inter (sans) + Playfair Display (serif). All tokens live in `src/styles/global.css`.
