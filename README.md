@@ -46,7 +46,11 @@ The office labels the `active` status "Active"; the public sites say "Available.
 
 ## Brand
 
-Navy + gold + warm neutrals. Inter (sans) + Playfair Display (serif). All tokens live in `src/styles/global.css`.
+Red clay + earth + gold, as of the 2026 rebrand. Gabarito (display) + Anek Latin (body).
+
+Tokens and component classes are canonical in [`@jw/shared`](https://github.com/wrightster/jw-shared) (`styles/tokens.css`, `styles/components.css`), imported at the top of `src/styles/global.css`. JWRG shares those tokens, fonts, and class names with JWLC; it does **not** share its logo or its chrome — nav, footer, and the top page banner use an inverted solid red/gold treatment, where JWLC keeps a lighter gold→sand gradient.
+
+`global.css` also defines JWRG-only `@theme` aliases mapping the retired `navy-*` / `warm-*` names onto the shared `earth-*` palette, so pages not yet rewritten to the new classes stay coherent. Don't add new `navy-*` usages — the block goes away once the last page is migrated.
 
 ## Deploy
 
