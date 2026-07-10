@@ -295,9 +295,12 @@
   .site-footer   { @apply relative z-[1] text-earth-50 mt-auto overflow-hidden; background: var(--color-red-600); }
   .footer-inner  { @apply relative max-w-7xl mx-auto px-6 lg:px-8 py-16 lg:py-20; }
   .footer-grid   { @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8; }
-  .footer-brand  { @apply lg:col-span-1; }
+  /* Set the brand column apart from the nav cluster without narrowing it:
+     the gap comes out of the first nav column, not the brand column. */
+  .footer-grid > :nth-child(2) { @apply lg:ml-16; }
+  .footer-brand  { @apply lg:col-span-1 flex flex-col; }
   .footer-logo   { @apply inline-block mb-5; }
-  .footer-logo-img { @apply h-12 w-auto; }
+  .footer-logo-img { @apply h-[4.5rem] w-auto; }
   .footer-tagline  { @apply text-sm leading-relaxed text-earth-100 max-w-xs; }
   .footer-col-heading { @apply font-display text-lg text-earth-50 mb-5; }
   .footer-nav-list    { @apply space-y-3; }
@@ -309,11 +312,22 @@
   .footer-copyright { @apply text-xs text-earth-50/90; }
   .footer-location  { @apply text-xs text-earth-50/90; }
 
-  /* Compliance / affiliation marks (Equal Housing Opportunity, REALTOR®) */
-  .footer-affiliations      { @apply mt-12 pt-8 border-t border-earth-50/15 flex flex-wrap items-center gap-x-8 gap-y-4 text-earth-50/90; }
-  .footer-affiliation       { @apply inline-flex items-center gap-2.5; }
-  .footer-affiliation-mark  { @apply h-9 w-auto shrink-0; }
-  .footer-affiliation-label { @apply text-xs leading-tight max-w-[7rem]; }
+  /* Compliance / affiliation marks (Equal Housing Opportunity, REALTOR®) — sits at
+     the bottom of the brand column; single-color official SVGs recolored to the
+     footer palette via CSS mask (source files in jw-design-guide). */
+  .footer-affiliations      { @apply mt-auto pt-10 flex items-center gap-5; }
+  .footer-affiliation       { @apply inline-flex; }
+  .footer-affiliation-mark  {
+    @apply block shrink-0;
+    height: 3.25rem;
+    aspect-ratio: 1 / 1;
+    background-color: var(--color-earth-50);
+    -webkit-mask-size: contain; mask-size: contain;
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+  }
+  .footer-affiliation-mark--eho     { -webkit-mask-image: url('/affiliations/equal-housing.svg'); mask-image: url('/affiliations/equal-housing.svg'); }
+  .footer-affiliation-mark--realtor { -webkit-mask-image: url('/affiliations/realtor.svg'); mask-image: url('/affiliations/realtor.svg'); }
 
   /* ══════════════════════════════════════════════════
      PAGE BANNER

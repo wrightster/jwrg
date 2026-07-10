@@ -211,6 +211,18 @@ const footerNav = [
               Five decades guiding Triangle-area families home — full-service residential real estate
               across the greater Triangle region and surrounding counties.
             </p>
+
+            <!-- Affiliation / compliance marks (Equal Housing Opportunity + REALTOR®).
+                 Single-color official SVGs recolored to the footer palette via CSS mask —
+                 source files live in jw-design-guide (public/affiliations/). -->
+            <div class="footer-affiliations">
+              <span class="footer-affiliation" role="img" aria-label="Equal Housing Opportunity">
+                <span class="footer-affiliation-mark footer-affiliation-mark--eho"></span>
+              </span>
+              <span class="footer-affiliation" role="img" aria-label="REALTOR&reg;">
+                <span class="footer-affiliation-mark footer-affiliation-mark--realtor"></span>
+              </span>
+            </div>
           </div>
 
           <!-- Quick Links -->
@@ -251,26 +263,6 @@ const footerNav = [
               </p>
             </address>
           </div>
-        </div>
-
-        <!-- Affiliations / compliance marks -->
-        <div class="footer-affiliations">
-          <span class="footer-affiliation">
-            <svg class="footer-affiliation-mark" viewBox="0 0 64 64" role="img" aria-labelledby="eho-title">
-              <title id="eho-title">Equal Housing Opportunity</title>
-              <path d="M9 31 L32 11 L55 31" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" />
-              <path d="M15 28 V54 H49 V28" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" />
-              <rect x="23" y="34" width="18" height="4.5" fill="currentColor" />
-              <rect x="23" y="43" width="18" height="4.5" fill="currentColor" />
-            </svg>
-            <span class="footer-affiliation-label">Equal Housing Opportunity</span>
-          </span>
-          <!-- Official REALTOR® membership mark (white version, used as-is per
-               NAR Membership Marks rules). Source files live in jw-design-guide
-               (public/affiliations/realtor/). -->
-          <span class="footer-affiliation">
-            <img src="/affiliations/realtor-logo-white.png" class="footer-affiliation-mark" alt="REALTOR&reg;" width="600" height="600" />
-          </span>
         </div>
 
         <div class="footer-bottom">
