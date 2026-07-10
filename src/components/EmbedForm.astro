@@ -30,6 +30,7 @@ const { id, token, listingId, agentId, neighborhoodId } = Astro.props;
     <div id={id}></div>
     <script
       is:inline
+      defer
       src="https://office.jwrgnc.com/js/forms.js"
       data-form-token={token}
       data-target={`#${id}`}

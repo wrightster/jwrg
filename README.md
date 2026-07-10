@@ -30,13 +30,24 @@ npm run dev              # http://localhost:4321
 
 ```
 src/
-├── components/   Astro components (ListingCard, MiniContactForm, etc.)
-├── data/         Static site content (team, neighborhoods fallback, FAQ, glossary)
-├── layouts/      BaseLayout shell
-├── lib/api.ts    Office API client + types — keep in sync with jwlc/src/lib/api.ts
-├── pages/        Routes (about, resources/{buyers,sellers,relocation}, listings, neighborhoods, etc.)
-└── styles/       global.css with Tailwind @theme tokens
+├── components/     Astro components (ListingCard, EmbedForm, MiniContactForm, etc.)
+├── data/           Static site content (counties, FAQ, glossary, site metadata)
+├── layouts/        BaseLayout shell
+├── lib/api.ts      Office API client + types — keep in sync with jwlc/src/lib/api.ts
+├── middleware.ts   Short edge cache (Cache-Control) on SSR responses
+├── pages/          Routes (about, resources/{buyers,sellers,relocation}, listings, neighborhoods, etc.)
+└── styles/         global.css: Tailwind @theme tokens + self-hosted @font-face
 ```
+
+Fonts live in `public/fonts/` (self-hosted WOFF2, preloaded) — no Google Fonts request.
+
+## Rendering & performance
+
+Pages `export const prerender = true` unless they need request-time data; the live
+pages (home, listings, neighborhoods, team bios) set `prerender = false` and get a
+short `s-maxage`/`stale-while-revalidate` edge cache from `src/middleware.ts`, which
+keeps repeated renders off the shared droplet. Absolute URLs (canonical / og / JSON-LD)
+derive from one source so they can't drift across hosts — see `CLAUDE.md`.
 
 ## API contract
 
@@ -46,7 +57,7 @@ The office labels the `active` status "Active"; the public sites say "Available.
 
 ## Brand
 
-Red clay + earth + gold, as of the 2026 rebrand. Gabarito (display) + Anek Latin (body).
+Red clay + earth + gold, as of the 2026 rebrand. Gabarito (display) + Anek Latin (body), self-hosted from `public/fonts/`.
 
 Tokens and component classes are canonical in [`@jw/shared`](https://github.com/wrightster/jw-shared) (`styles/tokens.css`, `styles/components.css`), imported at the top of `src/styles/global.css`. JWRG shares those tokens, fonts, and class names with JWLC; it does **not** share its logo or its chrome — nav, footer, and the top page banner use an inverted solid red/gold treatment, where JWLC keeps a lighter gold→sand gradient.
 

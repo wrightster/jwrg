@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { fetchAllListings } from '../lib/api';
+import { site as siteData } from '../data/site';
 
 // Dynamic sitemap. The standard @astrojs/sitemap integration can't see SSR
 // listing routes, so we enumerate them from the live feed here, alongside the
@@ -10,7 +11,9 @@ import { fetchAllListings } from '../lib/api';
 const STATIC_PATHS = [
   '/',
   '/listings',
+  '/search',
   '/neighborhoods',
+  '/neighborhood-map',
   '/resources',
   '/resources/buyers',
   '/resources/sellers',
@@ -18,6 +21,8 @@ const STATIC_PATHS = [
   '/about',
   '/areas/granville-vs-wake',
   '/contact',
+  '/privacy',
+  '/accessibility',
 ];
 
 // Listing statuses worth indexing — currently-marketed homes. Sold listings are
@@ -25,7 +30,7 @@ const STATIC_PATHS = [
 const INDEXABLE = new Set(['active', 'coming_soon', 'pending', 'under_contract']);
 
 export const GET: APIRoute = async ({ site }) => {
-  const origin = (site?.href ?? 'https://juliewrightrealtygroup.com/').replace(/\/$/, '');
+  const origin = (site?.href ?? siteData.url).replace(/\/$/, '');
 
   const listings = (await fetchAllListings().catch(() => [])).filter((l) => INDEXABLE.has(l.status));
 

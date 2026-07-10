@@ -26,8 +26,8 @@ Real estate website for a North Carolina full-service brokerage (Triangle / Wake
 src/
 ├── components/       # Astro components
 │   ├── BtnArrow.astro        # Animated three-piece arrow button (.btn-arrow)
+│   ├── EmbedForm.astro       # Office embed-form widget adapter (loads forms.js, bound to a form token)
 │   ├── FontSwitcher.astro    # Dev-only design panel (fonts/colors); inert in prod
-│   ├── Form.astro            # Generic form wrapper (calls submitForm())
 │   ├── ListingCard.astro     # Card view for a listing (grid) — beds/baths/sqft
 │   ├── ListingRow.astro      # Row view for a listing (list layout)
 │   ├── MiniContactForm.astro # Contact info + message form band
@@ -38,18 +38,20 @@ src/
 │   ├── buyerFaq.ts        # Buyer FAQ entries
 │   ├── counties.ts        # NC county data (areas served); ordered by descending population
 │   ├── countyShapes.ts    # Generated county silhouette SVG paths (About "Triangle Area")
-│   ├── forms.ts           # Form ID → backend Filament form mapping
 │   ├── keyTerms.ts        # Real estate glossary
 │   ├── movingTips.ts      # Relocation moving-tips content
-│   ├── site.ts            # Global site metadata (name, contact, etc.)
+│   ├── neighborhoodLogos.ts # slug → local brand-logo SVG (index grid + detail hero)
+│   ├── neighborhoodSites.ts  # slug → external community-site URL
+│   ├── site.ts            # Global site metadata (name, contact, service-area counties, embed-form tokens)
 │   └── stagingTips.ts     # Seller staging-tips content
+│   # NOTE: embed-form tokens live in site.ts (site.formTokens) — there is no forms.ts.
 │   # NOTE: team + neighborhoods are NOT static — they come from the office API
 │   #       (fetchTeam / fetchNeighborhoods). No src/data file for them.
 ├── layouts/
 │   └── BaseLayout.astro   # Shell: parallax topo bg + fixed flat nav + footer
 ├── lib/
 │   ├── api.ts             # Office API client — see ../../SHARED_FRONTEND_GUIDE.md
-│   └── formFields.ts      # Form field definitions
+│   └── source.ts          # Captures ref/utm_* landing params for form-submission attribution
 ├── pages/
 │   ├── about/             # Single consolidated About page (index) + team/[slug] agent profiles
 │   ├── resources/         # Hub (index) → buyers/ sellers/ relocation/ subsections
@@ -65,9 +67,11 @@ src/
 │   ├── neighborhood-map.astro
 │   ├── privacy.astro
 │   ├── property-organizer.astro
-│   └── property-search.astro
+│   └── search.astro          # Full Triangle MLS search (Flexmls iframe)
 └── styles/
-    └── global.css         # @import tailwindcss + @theme tokens + all component classes
+    └── global.css         # @import tailwindcss + shared tokens/components + self-hosted @font-face
+                           # + JWRG chrome classes (nav/footer/banner). Page- and component-level
+                           # classes (.hero, .listing-card, .filter-bar, …) live in @jw/shared/components.css.
 ```
 
 Logos live in `public/`: `JWRG_Full.svg` (footer/hero), `JWRG_Full_Gold.svg` /
@@ -205,19 +209,22 @@ Neighborhoods are managed in the office (Filament admin, or the `create-neighbor
 
 ### Adding a New Form
 
-1. Add a Filament form on the office side and note its form ID.
-2. Add an entry in `src/data/forms.ts` mapping a friendly name to the form ID.
-3. Use the `Form` or `MiniContactForm` component, passing the form ID.
+Forms are rendered by the office **embed-form widget** (`office.jwrgnc.com/js/forms.js`),
+not a local form component. To add one:
+
+1. Create the form in the office Filament admin (Marketing → Embed Forms) and copy its **form token**.
+2. Add the token to `site.formTokens` in **`src/data/site.ts`** (empty string = not yet wired → the page shows a phone/email fallback).
+3. Render it with **`EmbedForm.astro`** (or `MiniContactForm.astro`, which wraps it), passing the token.
 
 ## Image Handling
 
-Sharp is in `devDependencies` and powers Astro's built-in `<Image>` for **local assets only** (team photos, hero shots in `public/images/`). For listing photos coming from the API, use the URLs from `primary_photo.urls` / `photos[].urls` directly — see `../../SHARED_FRONTEND_GUIDE.md` §"Image handling" for why.
+Sharp is in `devDependencies` and powers Astro's built-in `<Image>` for **local assets only** (hero shots in `public/images/`). For listing photos coming from the API, use the URLs from `primary_photo.urls` / `photos[].urls` directly — see `../../SHARED_FRONTEND_GUIDE.md` §"Image handling" for why. Brand fonts are **self-hosted** in `public/fonts/` (`@font-face` in `global.css`, preloaded in `BaseLayout`) — no Google Fonts request.
 
 ## File Conventions
 
 - Static assets → `public/`
-- Team photos → `public/images/team/{firstname-lastname}.jpg`
-- All pages should `export const prerender = true` unless they genuinely need SSR.
+- **Team photos come from the office API** (`fetchTeam` → headshot URLs), not local files. (`public/images/team/*.jpg` are legacy/unused holdovers.)
+- Pages should `export const prerender = true` unless they need request-time data; SSR pages declare `export const prerender = false` explicitly, and the caching middleware (`src/middleware.ts`) gives their HTML a short edge cache.
 
 ## Backend Coordination
 

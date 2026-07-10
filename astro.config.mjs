@@ -14,9 +14,10 @@ export default defineConfig({
   site: 'https://stage.jwrgnc.com',
   output: 'server',
   // The old Dakno-era /property-search page was removed; send any lingering
-  // links/bookmarks to the listings page (which now has keyword search).
+  // links/bookmarks to /search — the full Triangle MLS search that replaced it
+  // (the closest equivalent; /listings only shows our own listings).
   redirects: {
-    '/property-search': '/listings',
+    '/property-search': '/search',
     // Buyers/Sellers/Relocation now live under the Resources hub (2026-07).
     // 301 the old top-level paths (and every deep page) to their new home.
     '/buyers': '/resources/buyers',

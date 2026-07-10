@@ -1,4 +1,7 @@
 ---
+// SSR: dynamic route with live listings + lots (short-cached by middleware).
+export const prerender = false;
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
@@ -14,17 +17,17 @@ if (!n) {
   return Astro.redirect('/neighborhoods');
 }
 
-// Homes published on JWRG that belong to this neighborhood. This is the
-// site-accurate count (active/public statuses, jwrg only) and may differ from
-// n.listings_count, which counts every listing in the neighborhood regardless
-// of site or status — so drive the page's listing UI off this.
-const nListings = await fetchListings({ neighborhood: n.slug, perPage: 100 });
+// Homes published on JWRG that belong to this neighborhood (site-accurate count:
+// active/public statuses, jwrg only — may differ from n.listings_count), and the
+// subdivision lots for the sidebar quick facts (available-lot count + a
+// "from the $X00s" starting price off the cheapest available lot's base_price).
+// Both key off the resolved neighborhood slug and are independent of each other,
+// so fetch them concurrently rather than in series.
+const [nListings, lots] = await Promise.all([
+  fetchListings({ neighborhood: n.slug, perPage: 100 }),
+  fetchNeighborhoodLots(n.slug),
+]);
 const listingCount = nListings.length;
-
-// Subdivision lots for the sidebar quick facts: the count of currently
-// available lots and a "from the $X00s" starting price off the cheapest
-// available lot's advertised base_price. Missing/empty data hides each line.
-const lots = await fetchNeighborhoodLots(n.slug);
 const availableLots = lots.filter((l) => l.status === 'available');
 const availableLotCount = availableLots.length;
 const availableBasePrices = availableLots
@@ -460,6 +463,9 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
       let trigger = null;
 
       const lightbox = document.getElementById('lightbox');
+      // Closed lightbox is only opacity:0/pointer-events:none — mark it inert so
+      // its Close/Prev/Next buttons leave the tab order until it's opened.
+      if (lightbox) lightbox.inert = true;
       const lbImage = document.getElementById('lb-image');
       const lbBg = document.getElementById('lb-bg');
       const lbCounter = document.getElementById('lb-counter');
@@ -491,6 +497,7 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
       function openLightbox(index, source) {
         trigger = source ?? null;
         setLightboxImage(index);
+        if (lightbox) lightbox.inert = false;
         lightbox?.classList.add('is-open');
         document.body.style.overflow = 'hidden';
         lbClose?.focus();
@@ -498,6 +505,7 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
 
       function closeLightbox() {
         lightbox?.classList.remove('is-open');
+        if (lightbox) lightbox.inert = true;
         document.body.style.overflow = '';
         trigger?.focus();
         trigger = null;

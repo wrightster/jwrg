@@ -6,6 +6,54 @@
    Tailwind ignores node_modules by default. */
 @source "../../node_modules/@jw/shared/src/**/*.astro";
 
+/* Self-hosted brand fonts — replaces the render-blocking Google Fonts <link>.
+   Faithful copy of the google css2 output (same variable-font subsets,
+   unicode-ranges, and font-display:swap), served from /public/fonts so there's
+   no cross-origin round trip in the critical path. Preloaded in BaseLayout. */
+@font-face {
+  font-family: 'Anek Latin';
+  font-style: normal;
+  font-weight: 100 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/anek-latin-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Anek Latin';
+  font-style: normal;
+  font-weight: 100 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/anek-latin-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Anek Latin';
+  font-style: normal;
+  font-weight: 100 800;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url('/fonts/anek-latin-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Gabarito';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fonts/gabarito-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Gabarito';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fonts/gabarito-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 @property --_btn-arrow-fill {
   syntax: "<color>";
   inherits: true;
@@ -163,7 +211,7 @@
     color: var(--color-earth-50);
   }
   .nav-search-input::placeholder {
-    color: color-mix(in srgb, var(--color-earth-50) 60%, transparent);
+    color: color-mix(in srgb, var(--color-earth-50) 80%, transparent);
   }
   .nav-search-icon {
     color: color-mix(in srgb, var(--color-earth-50) 70%, transparent);
@@ -258,11 +306,11 @@
   .footer-contact      { @apply not-italic space-y-3 text-sm text-earth-100; }
   .footer-contact-link { @apply hover:text-gold-300 transition-colors; }
   .footer-bottom    { @apply mt-16 pt-8 border-t border-earth-50/20 flex flex-col md:flex-row items-center justify-between gap-4; }
-  .footer-copyright { @apply text-xs text-earth-50/70; }
-  .footer-location  { @apply text-xs text-earth-50/70; }
+  .footer-copyright { @apply text-xs text-earth-50/90; }
+  .footer-location  { @apply text-xs text-earth-50/90; }
 
   /* Compliance / affiliation marks (Equal Housing Opportunity, REALTOR®) */
-  .footer-affiliations      { @apply mt-12 pt-8 border-t border-earth-50/15 flex flex-wrap items-center gap-x-8 gap-y-4 text-earth-50/65; }
+  .footer-affiliations      { @apply mt-12 pt-8 border-t border-earth-50/15 flex flex-wrap items-center gap-x-8 gap-y-4 text-earth-50/90; }
   .footer-affiliation       { @apply inline-flex items-center gap-2.5; }
   .footer-affiliation-mark  { @apply h-9 w-auto shrink-0; }
   .footer-affiliation-label { @apply text-xs leading-tight max-w-[7rem]; }

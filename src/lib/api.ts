@@ -54,14 +54,24 @@ export interface ApiLot {
   base_price: number | string | null;
 }
 
+// Small in-process memo mirroring @jw/shared's cachedJson TTL (60s), so the
+// neighborhoods index (one call per card) and the detail page don't re-hit the
+// office for the same slug within a request burst. Keyed by slug.
+const LOTS_TTL_MS = 60_000;
+const _lotsMemo = new Map<string, { at: number; data: ApiLot[] }>();
+
 export async function fetchNeighborhoodLots(slug: string): Promise<ApiLot[]> {
+  const hit = _lotsMemo.get(slug);
+  if (hit && Date.now() - hit.at < LOTS_TTL_MS) return hit.data;
   try {
     const res = await fetch(`${BASE_URL}/neighborhoods/${slug}/lots`, {
       headers: { Accept: 'application/json' },
     });
     if (!res.ok) return [];
     const json = await res.json();
-    return (json?.data ?? []) as ApiLot[];
+    const data = (json?.data ?? []) as ApiLot[];
+    _lotsMemo.set(slug, { at: Date.now(), data });
+    return data;
   } catch {
     return [];
   }

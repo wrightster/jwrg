@@ -1,4 +1,8 @@
 ---
+// Effectively static (a neighborhood name list + a map iframe). Prerender it;
+// the fetch degrades to [] at build time if the office is unreachable.
+export const prerender = true;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageBanner from '../components/PageBanner.astro';
 import MiniContactForm from '../components/MiniContactForm.astro';

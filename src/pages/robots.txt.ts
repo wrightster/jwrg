@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { site as siteData } from '../data/site';
 
 // Environment-aware robots.txt. Production (Astro.site === the real host) allows
 // all crawlers and points to the sitemap; any non-production build (today JWRG
@@ -6,13 +7,13 @@ import type { APIRoute } from 'astro';
 // indexed. Flips automatically when the launch switch repoints astro.config
 // `site:` to the production host.
 
-const PROD_HOST = 'juliewrightrealtygroup.com';
+const PROD_HOST = new URL(siteData.url).host;
 
 export const GET: APIRoute = ({ site }) => {
   const isProduction = site?.host === PROD_HOST;
 
   const body = isProduction
-    ? `User-agent: *\nAllow: /\n\nSitemap: https://${PROD_HOST}/sitemap.xml\n`
+    ? `User-agent: *\nAllow: /\n\nSitemap: ${siteData.url}/sitemap.xml\n`
     : `User-agent: *\nDisallow: /\n`;
 
   return new Response(body, {

@@ -8,10 +8,11 @@ import { formatBedsBaths, formatSqft, type ApiListing } from '../lib/api';
 
 interface Props {
   listing: ApiListing;
+  index?: number;
 }
 
-const { listing } = Astro.props;
+const { listing, index } = Astro.props;
 const headline = formatBedsBaths(listing) || formatSqft(listing.sqft);
 ---
 
-<SharedListingRow listing={listing} headline={headline} />
+<SharedListingRow listing={listing} index={index} headline={headline} />

@@ -1,12 +1,12 @@
 ---
+// SSR (like the /about team grid) so a newly-added agent's bio page resolves
+// without a site rebuild. The caching middleware gives it a short edge cache.
+// (The previous getStaticPaths was dead code — Astro ignores it in server mode.)
+export const prerender = false;
+
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
-import { fetchTeam, fetchTeamMember, photoSrc, type ApiTeamMember } from '../../../lib/api';
-
-export async function getStaticPaths() {
-  const team = await fetchTeam();
-  return team.map((m) => ({ params: { slug: m.slug } }));
-}
+import { fetchTeamMember, photoSrc, type ApiTeamMember } from '../../../lib/api';
 
 const { slug } = Astro.params;
 const member: ApiTeamMember | null = slug ? await fetchTeamMember(slug) : null;

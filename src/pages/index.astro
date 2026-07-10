@@ -1,4 +1,7 @@
 ---
+// SSR: the featured strip reflects live listings (short-cached by middleware).
+export const prerender = false;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ListingCard from '../components/ListingCard.astro';
 import BtnArrow from '../components/BtnArrow.astro';
@@ -19,12 +22,12 @@ const helpLinks = [
   { href: '/resources/buyers', label: 'Buying a Home', desc: 'Guides, financing, and a search built around how you live.' },
   { href: '/resources/sellers', label: 'Selling a Home', desc: 'Pricing strategy, staging, and full-service marketing.' },
   { href: '/resources/relocation', label: 'Relocating', desc: 'Moving to the Triangle? We make the landing soft.' },
-  { href: '/neighborhoods', label: 'Neighborhoods', desc: 'Explore communities across six counties.' },
+  { href: '/neighborhoods', label: 'Neighborhoods', desc: 'Explore communities across the Triangle.' },
   { href: '/about#team', label: 'Meet the Team', desc: 'Five decades of local expertise, one trusted group.' },
 ];
 ---
 
-<BaseLayout title="Julie Wright Realty Group — Triangle Area Real Estate">
+<BaseLayout title="Julie Wright Realty Group | Triangle Area Real Estate">
 
   <!-- ═══════════════════════════════════ HERO ═══════════════════════════════════ -->
   <section class="hero">
@@ -73,8 +76,8 @@ const helpLinks = [
             in the <span class="home-about-accent">Triangle</span>
           </h2>
           <p class="home-about-body">
-            Julie Wright Realty Group is a full-service residential brokerage serving Wake, Granville,
-            Franklin, Johnston, Harnett, and Durham counties. For five decades we've paired easy-to-use
+            Julie Wright Realty Group is a full-service residential brokerage serving the greater
+            Triangle region and surrounding counties. For five decades we've paired easy-to-use
             search tools with deep local knowledge to help families buy and sell with confidence.
           </p>
           <a href="/about" class="home-about-link">

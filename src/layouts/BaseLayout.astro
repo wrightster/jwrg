@@ -26,7 +26,10 @@ const {
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
-const canonicalUrl = `${Astro.url.origin}${Astro.url.pathname}`;
+// Canonical from the configured site host (astro.config `site`), NOT the request
+// origin — so the canonical never floats to whatever hostname a crawler used and
+// always agrees with og:image/og:url below. Query strings are dropped by design.
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
 
 // Social share image. Pages pass a root-relative path or an absolute URL
 // (listing detail passes the listing's primary photo); both are resolved to an
@@ -41,7 +44,7 @@ const ogImageUrl = new URL(image ?? DEFAULT_OG_IMAGE, Astro.site ?? Astro.url).h
 // stable. Page-provided JSON-LD is appended after it.
 const brokerage = brokerageJsonLd({
   name: 'Julie Wright Realty Group LLC',
-  url: 'https://juliewrightrealtygroup.com',
+  url: site.url,
   licenseNumber: 'C29156',
   street: `${site.address.street1}, ${site.address.street2}`,
   city: site.address.city,
@@ -69,7 +72,6 @@ const footerNav = [
   { href: '/resources', label: 'Resources' },
   { href: '/about', label: 'About' },
   { href: '/about#team', label: 'Our Team' },
-  { href: '/about#testimonials', label: 'Testimonials' },
   { href: '/contact', label: 'Contact' },
 ];
 ---
@@ -90,9 +92,11 @@ const footerNav = [
       ogType={ogType}
       jsonLd={jsonLdBlocks}
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&family=Anek+Latin:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet" />
+    <!-- Self-hosted brand fonts (@font-face lives in global.css). Preload the two
+         above-the-fold latin variable faces so headings/body paint without a flash
+         and with no third-party font request in the critical path. -->
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/gabarito-latin.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/anek-latin-latin.woff2" crossorigin />
   </head>
   <body class="site-body">
     <!-- Skip to main content -->
@@ -205,7 +209,7 @@ const footerNav = [
             </a>
             <p class="footer-tagline">
               Five decades guiding Triangle-area families home — full-service residential real estate
-              across Wake, Granville, Franklin, Johnston, Harnett, and Durham counties.
+              across the greater Triangle region and surrounding counties.
             </p>
           </div>
 
@@ -282,6 +286,12 @@ const footerNav = [
       // Stash ref/utm_* landing params for form-submission attribution.
       captureSource();
 
+      // Respect the user's reduced-motion preference for every JS-driven motion
+      // below (topo parallax, nav press animation, smooth scroll). CSS-level
+      // transitions are already zeroed by the shared reduced-motion block, but
+      // scroll-driven transforms can only be stopped here.
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
       // Topo width — zoom-independent
       // outerWidth is in layout pixels (unaffected by zoom); innerWidth is in CSS pixels (zoom-dependent).
       // We size the SVG in layout pixels, then convert to CSS pixels so it stays physically constant.
@@ -300,7 +310,7 @@ const footerNav = [
         clearTimeout(resizeTimer!);
         resizeTimer = setTimeout(() => {
           updateTopoWidth();
-          updateParallax();
+          if (!reduceMotion.matches) updateParallax();
           document.querySelectorAll<HTMLElement>('.topo-bg').forEach(el => el.style.visibility = '');
           resizeTimer = null;
         }, 150);
@@ -345,13 +355,20 @@ const footerNav = [
         }
       }
 
-      updateParallax();
-      window.addEventListener('scroll', scheduleParallax, { passive: true });
+      if (!reduceMotion.matches) {
+        updateParallax();
+        window.addEventListener('scroll', scheduleParallax, { passive: true });
+      }
 
-      // Nav click animations
+      // Nav press animation. We do NOT hijack navigation — the browser handles
+      // the click natively, so Cmd/Ctrl/Shift-click (open in new tab/window),
+      // middle-click, and keyboard Enter all behave correctly and without delay.
+      // The press animation just plays over the top while the next page loads.
       document.querySelectorAll<HTMLAnchorElement>('.nav-desktop-link').forEach(link => {
         link.addEventListener('click', (e) => {
-          e.preventDefault();
+          // Let the browser own modified / non-primary clicks and reduced-motion.
+          if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          if (reduceMotion.matches) return;
 
           // Deactivate current active link
           const activeLink = document.querySelector<HTMLElement>('.nav-link-active');
@@ -375,7 +392,6 @@ const footerNav = [
           }
 
           link.classList.add('nav-link-clicking');
-          setTimeout(() => { window.location.href = link.href; }, 100);
         });
       });
 
@@ -383,11 +399,33 @@ const footerNav = [
       const menuBtn = document.getElementById('mobile-menu-btn');
       const mobileMenu = document.getElementById('mobile-menu');
 
-      menuBtn?.addEventListener('click', () => {
-        const open = menuBtn.classList.toggle('open');
+      function setMenuOpen(open: boolean) {
+        menuBtn?.classList.toggle('open', open);
         mobileMenu?.classList.toggle('open', open);
-        menuBtn.setAttribute('aria-expanded', String(open));
+        menuBtn?.setAttribute('aria-expanded', String(open));
         mobileMenu?.setAttribute('aria-hidden', String(!open));
+        // `inert` keeps the collapsed panel's search + links out of the tab order
+        // (it's only visually hidden via clip-path, not display:none).
+        if (mobileMenu) mobileMenu.inert = !open;
+      }
+
+      // Start collapsed: not tabbable, not exposed to AT.
+      if (mobileMenu) mobileMenu.inert = true;
+
+      menuBtn?.addEventListener('click', () => {
+        const open = !menuBtn.classList.contains('open');
+        setMenuOpen(open);
+        // Move focus into the panel on open; restore it to the button on close.
+        if (open) mobileMenu?.querySelector<HTMLElement>('a, input, button')?.focus();
+        else menuBtn.focus();
+      });
+
+      // Escape closes the menu and returns focus to the toggle.
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && menuBtn?.classList.contains('open')) {
+          setMenuOpen(false);
+          menuBtn.focus();
+        }
       });
     </script>
   </body>

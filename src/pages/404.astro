@@ -1,4 +1,6 @@
 ---
+export const prerender = true;
+
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
@@ -13,7 +15,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         The page you're looking for doesn't exist or has been moved. Use the links below to get back on track.
       </p>
       <div class="flex flex-wrap justify-center gap-4">
-        <a href="/" class="px-8 py-3.5 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-sm transition-all">
+        <a href="/" class="px-8 py-3.5 bg-red-600 hover:bg-red-700 text-earth-50 font-semibold rounded-sm transition-all">
           Back to Home
         </a>
         <a href="/listings" class="px-8 py-3.5 border-2 border-navy-900 text-navy-900 hover:bg-navy-900 hover:text-white font-semibold rounded-sm transition-all">
