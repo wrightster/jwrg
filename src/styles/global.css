@@ -135,7 +135,10 @@
     mask-size: contain;
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
+    transform-origin: center center;
+    transition: transform 200ms ease;
   }
+  .nav-logo:hover .nav-logo-icon { transform: scale(1.1111); }
 
   /* Desktop nav */
   .nav-desktop      { @apply hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2; }
