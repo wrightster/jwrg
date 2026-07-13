@@ -165,6 +165,18 @@ old `text-earth-100` utility was removed so the dark override wins over Tailwind
 utilities layer). Relatedly, the top **`.page-banner`** is a solid `bg-red-600`
 band with gold title/label and light description — not the old gold gradient.
 
+**Homepage "How we help" cards (`.home-help-*`, JWRG-local).** The homepage's
+about-and-services section is one row of five 3:4 photo cards (buying, selling,
+relocating, neighborhoods, team) — the intro copy block is gone. The classes live
+in `global.css`, *not* `@jw/shared`: the shared `.home-about-*` / `.home-service-*`
+classes still drive **JWLC's** homepage, so don't repurpose them. Two details worth
+knowing before editing: the card border is an `::after` overlay rather than a
+`ring-inset`, because an inset box-shadow paints *under* the card's children and the
+photo would cover its top and side edges; and the fixed 3:4 ratio only applies from
+`sm` up — below that the cards go two-up and size to their content, since a portrait
+box that narrow clips the copy. Photos are CC0 (StockSnap) in `public/images/home/`,
+served as plain `<img>` WebP (no `<Image>` — see "Image Handling").
+
 ### Migration alias bridge (temporary)
 
 `@theme` contains a commented block aliasing the **legacy** `navy-*`/`warm-*`

@@ -18,12 +18,18 @@ try {
   apiError = true;
 }
 
+// Photos are CC0 (StockSnap) — free for commercial use, no attribution required.
 const helpLinks = [
-  { href: '/resources/buyers', label: 'Buying a Home', desc: 'Guides, financing, and a search built around how you live.' },
-  { href: '/resources/sellers', label: 'Selling a Home', desc: 'Pricing strategy, staging, and full-service marketing.' },
-  { href: '/resources/relocation', label: 'Relocating', desc: 'Moving to the Triangle? We make the landing soft.' },
-  { href: '/neighborhoods', label: 'Neighborhoods', desc: 'Explore communities across the Triangle.' },
-  { href: '/about#team', label: 'Meet the Team', desc: 'Five decades of local expertise, one trusted group.' },
+  { href: '/resources/buyers', label: 'Buying a Home', desc: 'Guides, financing, and a search built around how you live.',
+    img: '/images/home/buying.webp', alt: 'House keys hanging from the lock of an open front door' },
+  { href: '/resources/sellers', label: 'Selling a Home', desc: 'Pricing strategy, staging, and full-service marketing.',
+    img: '/images/home/selling.webp', alt: 'Two-story home with lit windows at dusk' },
+  { href: '/resources/relocation', label: 'Relocating', desc: 'Moving to the Triangle? We make the landing soft.',
+    img: '/images/home/relocating.webp', alt: 'Highway running through a residential area at sunrise' },
+  { href: '/neighborhoods', label: 'Neighborhoods', desc: 'Explore communities across the Triangle.',
+    img: '/images/home/neighborhoods.webp', alt: 'Tree-lined neighborhood sidewalk in fall color' },
+  { href: '/about#team', label: 'Meet the Team', desc: 'Five decades of local expertise, one trusted group.',
+    img: '/images/home/team.webp', alt: 'Team working together around a table' },
 ];
 ---
 
@@ -65,40 +71,21 @@ const helpLinks = [
     </div>
   </section>
 
-  <!-- ═══════════════════════════════════ ABOUT + HOW WE HELP ═══════════════════════════════════ -->
+  <!-- ═══════════════════════════════════ HOW WE HELP ═══════════════════════════════════ -->
   <section class="home-about-services">
     <div class="content-wrap">
-      <div class="home-about-services-grid">
-        <!-- About -->
-        <div class="home-about-block">
-          <h2 class="home-about-heading">
-            Your resource for real estate<br />
-            in the <span class="home-about-accent">Triangle</span>
-          </h2>
-          <p class="home-about-body">
-            Julie Wright Realty Group is a full-service residential brokerage serving the greater
-            Triangle region and surrounding counties. For five decades we've paired easy-to-use
-            search tools with deep local knowledge to help families buy and sell with confidence.
-          </p>
-          <a href="/about" class="home-about-link">
-            Our Story
-            <svg class="home-link-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
+      <div class="home-help-grid">
+        {helpLinks.map((item) => (
+          <a href={item.href} class="home-help-card group">
+            <div class="home-help-media">
+              <img src={item.img} alt={item.alt} class="home-help-img" loading="lazy" decoding="async" />
+            </div>
+            <div class="home-help-body">
+              <h3 class="home-help-title">{item.label}</h3>
+              <p class="home-help-desc">{item.desc}</p>
+            </div>
           </a>
-        </div>
-
-        <!-- How we help -->
-        <div class="home-services-block">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {helpLinks.map((item) => (
-              <a href={item.href} class="group block bg-white rounded-sm p-5 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300">
-                <h3 class="font-display text-base text-earth-900 group-hover:text-red-600 transition-colors">{item.label}</h3>
-                <p class="text-earth-600 text-sm mt-2 leading-snug">{item.desc}</p>
-              </a>
-            ))}
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   </section>

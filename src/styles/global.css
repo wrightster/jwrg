@@ -355,4 +355,32 @@
   .cta-feature .btn-arrow--inverted:hover     { color: var(--color-red-600); --_btn-arrow-fill: var(--color-gold-300); }
   .cta-feature .btn-arrow--inverted:hover svg { fill: var(--color-gold-300); }
   .cta-feature .btn-arrow--inverted:hover .btn-arrow__shaft { border-top-color: var(--color-red-600); border-bottom-color: var(--color-red-600); }
+
+  /* ══════════════════════════════════════════════════
+     HOMEPAGE — HOW WE HELP
+     JWRG-local: one row of five 3:4 photo cards, replacing the shared
+     about-block + services-block split. The shared .home-about-* and
+     .home-service-* classes are still live on JWLC — leave them alone.
+     Below sm the cards go two-up and drop the fixed 3:4 ratio — at that width
+     a portrait box leaves the copy nowhere to go, so the card grows to fit
+     instead and the photo holds a 4:3 crop.
+  ══════════════════════════════════════════════════ */
+  .home-help-grid { @apply grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-5; }
+  .home-help-card {
+    @apply relative flex flex-col overflow-hidden rounded-sm bg-white sm:aspect-[3/4];
+  }
+  /* The border rides on an overlay rather than a ring/border on the card itself:
+     an inset box-shadow paints under the card children, so the photo would cover
+     the top and side edges of it. */
+  .home-help-card::after {
+    content: '';
+    @apply absolute inset-0 z-10 pointer-events-none rounded-sm transition-shadow duration-300;
+    box-shadow: inset 0 0 0 1px var(--color-earth-100);
+  }
+  .home-help-card:hover::after { box-shadow: inset 0 0 0 2px var(--color-red-600); }
+  .home-help-media { @apply relative overflow-hidden aspect-[4/3] sm:aspect-auto sm:shrink-0 sm:basis-[62%]; }
+  .home-help-img   { @apply w-full h-full object-cover transition-transform duration-500 group-hover:scale-105; }
+  .home-help-body  { @apply flex-1 p-3 sm:p-4; }
+  .home-help-title { @apply font-display text-sm sm:text-base text-earth-900 transition-colors group-hover:text-red-600; }
+  .home-help-desc  { @apply text-earth-600 text-xs sm:text-sm mt-1 sm:mt-1.5 leading-snug; }
 }
