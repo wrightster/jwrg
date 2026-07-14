@@ -13,32 +13,32 @@ export const movingSections: MovingSection[] = [
   {
     heading: 'Plan eight weeks out',
     body: [
-      'Start a moving binder or shared note. Track moving-company quotes, school registration deadlines, utility transfers, and forwarding addresses in one place.',
-      'Order moving supplies in bulk online — boxes, tape, packing paper, and labels. Buying piecemeal at hardware stores is more expensive and slower.',
+      'Keep one list, wherever you will actually look at it. Mover quotes, school registration deadlines, utility transfer dates, and who still has your old address all belong in the same place.',
+      'Order supplies in bulk online rather than buying boxes and tape by the armful at the hardware store. It is cheaper, and you stop losing evenings to supply runs.',
     ],
   },
   {
     heading: 'Declutter aggressively',
     body: [
-      'Don\'t pay to move what you won\'t keep. Walk room by room and sort items into Keep, Sell, Donate, and Discard piles before any boxes are packed.',
-      'Sell what has resale value through Facebook Marketplace, Nextdoor, or a yard sale. The proceeds offset moving costs.',
-      'Donate the rest. Local charities — Salvation Army, Goodwill, and Habitat for Humanity ReStore — accept furniture, clothing, kitchenware, and building materials. Several offer free pickup for larger items.',
+      'You are paying by weight and by hour to move things you do not want. Go room by room and sort into keep, sell, donate, and discard before a single box gets packed.',
+      'Sell what has real resale value on Facebook Marketplace or Nextdoor, or in a yard sale, and put the proceeds toward the movers.',
+      'Donate the rest. Salvation Army, Goodwill, and Habitat for Humanity ReStore take furniture, clothing, kitchenware, and building materials, and several will pick up the large pieces at no charge.',
     ],
   },
   {
     heading: 'Pack smart',
     body: [
-      'Label each box with its destination room and a brief contents summary. "Kitchen — Pantry" beats "Kitchen 4 of 12."',
-      'Pack a "first night" box for each family member: pajamas, toothbrush, phone charger, change of clothes, and a few favorites for the kids.',
-      'Photograph the back of your TV and electronics before unplugging anything — reassembly is dramatically faster.',
+      'Label every box with the room it lands in and roughly what is inside. "Kitchen, pantry" is worth something on the far end. "Kitchen 4 of 12" is not.',
+      'Pack a first-night box for each person: pajamas, toothbrush, phone charger, a change of clothes, and whatever a small child will ask for at bedtime.',
+      'Photograph the back of the TV and anything else with more than two cables before you unplug it. Reassembly stops being a puzzle.',
     ],
   },
   {
     heading: 'Take care of those you love',
     body: [
-      'Bring kids into the planning early. Walk them through the new neighborhood, schools, and parks before the move. Give them a role on moving day.',
-      'Pets feel the disruption acutely. Arrange a sitter or boarding for the moving day itself, and keep their food, bowls, and bedding in an easy-to-reach box at the new home.',
-      'Update your driver\'s license, voter registration, and all subscriptions. The USPS forwarding service catches what you miss for the first year.',
+      'Bring kids in early. Walk the new neighborhood, the school, and the park before moving day, and give them an actual job when it arrives.',
+      'Pets take it harder than anyone. Board them or hand them to a sitter for the day itself, and unpack their food, bowls, and bed first at the other end.',
+      'Change your address at the source: driver\'s license, voter registration, bank, insurance, subscriptions. USPS forwarding is a backstop, not a fix. It moves First-Class mail for twelve months, stops forwarding magazines after 60 days, and does not forward most advertising mail at all.',
     ],
   },
 ];

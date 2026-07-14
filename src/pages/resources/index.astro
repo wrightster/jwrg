@@ -10,21 +10,21 @@ const sections = [
     title: 'For Buyers',
     href: '/resources/buyers',
     description:
-      'Everything you need to buy with confidence — from understanding financing to running the numbers before you make an offer.',
-    inside: ['Real Estate 101', 'Buyer FAQs', 'Mortgage Calculator', 'Free Buying Guide'],
+      'How financing works, what the language in the contract means, and what the monthly payment would actually come to.',
+    inside: ['Buyer FAQs', 'Mortgage Calculator', 'Free Buying Guide'],
   },
   {
     title: 'For Sellers',
     href: '/resources/sellers',
     description:
-      'Price it right, show it well, and know your market. The tools and guidance to sell for the best result.',
+      'What your home is worth, what to fix before it goes on the market, and what comparable houses nearby have sold for.',
     inside: ['Staging Tips', 'Home Value Estimate', 'List Your Property', 'Neighborhood Sold Report'],
   },
   {
     title: 'Relocating',
     href: '/resources/relocation',
     description:
-      'Moving to the Triangle? Get oriented to the area and make the transition smooth, whatever your timeline.',
+      'Coming to the Triangle from out of state, or from the next county over. The area, the counties, and the move itself.',
     inside: ['Relocation Package', 'Moving Tips', 'About the Triangle'],
   },
 ];
@@ -37,11 +37,31 @@ const sections = [
   <PageBanner
     label="Resources"
     title="Resources"
-    description="Guides, calculators, and local knowledge for every stage of your move — whether you're buying, selling, or relocating to the Triangle."
+    description="Financing, pricing, staging, moving, and what the Triangle is actually like to live in. Start wherever your move is."
   />
 
-  <section class="py-16 lg:py-20">
+  <section class="pt-4 pb-16 lg:pt-5 lg:pb-20">
     <div class="content-wrap">
+      <a
+        href="/resources/real-estate-101"
+        class="group mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-5 bg-white rounded-sm p-8 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300"
+      >
+        <div class="md:max-w-2xl">
+          <h2 class="font-display text-2xl text-earth-900 group-hover:text-red-600 transition-colors">
+            Real Estate 101
+          </h2>
+          <p class="text-earth-600 mt-3 leading-relaxed">
+            The financing, valuation, legal, and insurance words that turn up in every contract, defined in plain language. Useful whichever side of the table you're on.
+          </p>
+        </div>
+        <span class="shrink-0 text-red-600 text-sm font-display flex items-center gap-1">
+          Browse the glossary
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      </a>
+
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         {sections.map((s) => (
           <a
@@ -52,7 +72,7 @@ const sections = [
               {s.title}
             </h2>
             <p class="text-earth-600 mt-3 leading-relaxed">{s.description}</p>
-            <ul class="mt-5 space-y-1.5">
+            <ul class="mt-5 mb-6 space-y-1.5">
               {s.inside.map((item) => (
                 <li class="flex items-start gap-2 text-sm text-earth-700">
                   <svg class="w-4 h-4 mt-0.5 shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +82,7 @@ const sections = [
                 </li>
               ))}
             </ul>
-            <span class="mt-6 pt-4 border-t border-earth-100 text-red-600 text-sm font-display flex items-center gap-1">
+            <span class="mt-auto pt-4 border-t border-earth-100 text-red-600 text-sm font-display flex items-center gap-1">
               Explore {s.title}
               <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -76,6 +96,6 @@ const sections = [
 
   <MiniContactForm
     heading="Not sure where to start?"
-    description="Tell us a little about your move and we'll point you to the right resources — or just answer your questions directly."
+    description="Tell us where you are in the process. We'll point you to the right page, or just answer the question."
   />
 </BaseLayout>

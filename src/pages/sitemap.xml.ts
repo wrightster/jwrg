@@ -18,6 +18,7 @@ const STATIC_PATHS = [
   '/resources/buyers',
   '/resources/sellers',
   '/resources/relocation',
+  '/resources/real-estate-101',
   '/about',
   '/areas/granville-vs-wake',
   '/contact',

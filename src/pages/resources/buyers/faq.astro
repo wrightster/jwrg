@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 import { buyerFaq } from '../../../data/buyerFaq';
 
@@ -11,18 +12,20 @@ export const prerender = true;
   <PageBanner
     label="Frequently Asked"
     title="Buyer Questions, Answered"
-    description="Honest, plain-language answers to the questions buyers ask us most often."
+    description="The questions buyers ask us most, answered plainly, including the ones about what representation costs."
   />
 
-  <section class="py-16">
+  <ResourceNav href="/resources/buyers" label="For Buyers" glossary />
+
+  <section class="pt-4 pb-16">
     <div class="max-w-3xl mx-auto px-6 space-y-4">
       {buyerFaq.map((item, idx) => (
-        <details class="group bg-white border border-warm-200/50 rounded-sm overflow-hidden hover:shadow-md transition-shadow" open={idx === 0}>
-          <summary class="cursor-pointer p-6 font-serif text-lg font-semibold text-navy-900 list-none flex items-start justify-between gap-4">
+        <details class="group bg-white rounded-sm ring-1 ring-inset ring-earth-100 overflow-hidden hover:ring-red-600 transition-all duration-300" open={idx === 0}>
+          <summary class="cursor-pointer p-6 font-display text-lg text-earth-900 list-none flex items-start justify-between gap-4">
             <span>{item.q}</span>
-            <svg class="w-5 h-5 text-gold-600 mt-1 shrink-0 transition-transform group-open:rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <svg class="w-5 h-5 text-red-600 mt-1 shrink-0 transition-transform group-open:rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           </summary>
-          <div class="px-6 pb-6 text-navy-700 leading-relaxed">{item.a}</div>
+          <div class="px-6 pb-6 text-earth-700 leading-relaxed">{item.a}</div>
         </details>
       ))}
     </div>
@@ -30,6 +33,6 @@ export const prerender = true;
 
   <MiniContactForm
     heading="Still have questions?"
-    description="Reach out and we'll get back to you the same business day with a real, considered answer."
+    description="Ask us directly. We'll get back to you within one business day."
   />
 </BaseLayout>

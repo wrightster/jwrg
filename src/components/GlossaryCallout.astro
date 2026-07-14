@@ -1,0 +1,33 @@
+---
+// Compact shortcut to the Real Estate 101 glossary. Sits at the right end of the
+// ResourceNav row, opposite the back link. Sized to its content — deliberately
+// not full-width.
+//
+// Not rendered on the Resources hub (which leads with a taller band linking the
+// glossary) or on the glossary page itself.
+//
+// This was briefly a card fixed to the right gutter. It is now in the normal
+// flow, so it needs no lane cut out of .content-wrap and imposes no minimum
+// viewport width.
+---
+
+<a
+  href="/resources/real-estate-101"
+  class="group inline-flex items-center gap-2.5 bg-white rounded-sm px-4 py-2.5 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300"
+>
+  <span class="text-[0.65rem] uppercase tracking-[0.2em] text-red-600 font-semibold">
+    Reference
+  </span>
+  <span class="font-display text-sm text-earth-900 group-hover:text-red-600 transition-colors">
+    Real Estate 101
+  </span>
+  <svg
+    class="w-4 h-4 shrink-0 text-red-600 transition-transform group-hover:translate-x-1"
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+  >
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+  </svg>
+</a>

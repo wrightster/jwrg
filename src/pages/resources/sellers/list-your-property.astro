@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import EmbedForm from '../../../components/EmbedForm.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 import { site } from '../../../data/site';
@@ -14,10 +15,12 @@ const formToken = site.formTokens.listYourHome;
   <PageBanner
     label="For Sellers"
     title="List Your Property with Julie Wright Realty Group"
-    description="Tell us about your property and we'll schedule an in-person consultation to discuss pricing, timing, and a marketing plan tailored to your home."
+    description="Tell us about the property and we'll set up a consultation in person to talk through pricing, timing, and how we would market it."
   />
 
-  <section class="py-16">
+  <ResourceNav href="/resources/sellers" label="For Sellers" glossary />
+
+  <section class="pt-4 pb-16">
     <div class="max-w-3xl mx-auto px-6">
       <div class="bg-white rounded-sm p-8 md:p-10">
         <h2 class="contact-form-heading">Tell Us About Your Property</h2>

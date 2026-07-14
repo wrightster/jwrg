@@ -25,7 +25,9 @@ Real estate website for a North Carolina full-service brokerage (Triangle / Wake
 ```
 src/
 ├── components/       # Astro components
+│   ├── BackLink.astro        # "Back to X" up-one-level link (Resources pages; href/label = the PARENT)
 │   ├── BtnArrow.astro        # Animated three-piece arrow button (.btn-arrow)
+│   ├── GlossaryCallout.astro # Short full-width card → Real Estate 101 (top of Resources pages)
 │   ├── EmbedForm.astro       # Office embed-form widget adapter (loads forms.js, bound to a form token)
 │   ├── FontSwitcher.astro    # Dev-only design panel (fonts/colors); inert in prod
 │   ├── ListingCard.astro     # Card view for a listing (grid) — beds/baths/sqft
@@ -176,6 +178,32 @@ photo would cover its top and side edges; and the fixed 3:4 ratio only applies f
 `sm` up — below that the cards go two-up and size to their content, since a portrait
 box that narrow clips the copy. Photos are CC0 (StockSnap) in `public/images/home/`,
 served as plain `<img>` WebP (no `<Image>` — see "Image Handling").
+
+### Resources section (hub, back links, glossary aside)
+
+`/resources` is a hub over three audience sections (`buyers/`, `sellers/`,
+`relocation/`) plus **`/resources/real-estate-101`** — the glossary, which sits at
+the **top level**, not under Buyers, because it serves both sides of a deal. The
+hub leads with a full-width band linking it, above the three cards. Old URLs
+(`/resources/buyers/real-estate-101`, `/buyers/real-estate-101`) are 301'd in
+`astro.config.mjs`; both hops are listed explicitly so the oldest link resolves in
+one redirect instead of chaining.
+
+Every Resources page *below* the hub carries a **`BackLink`** to its parent (leaf →
+section hub → `/resources`). The hub itself has none — its parent is the home page,
+which the nav already covers. All of them except the hub and the glossary itself
+also render **`GlossaryCallout`**, a short full-width card above the section
+heading.
+
+**Keep the callout in the normal flow.** It was briefly a card fixed to the right
+gutter, and that does not work on this layout: a centered `.content-wrap` is 80rem
+wide, so no gutter exists to hold a card until the viewport is ~1800px, and below
+that it lands on top of the content — the card grids, and the `MiniContactForm`
+band every page ends with. Making it fit meant clamping `.content-wrap` narrower on
+those pages and hiding the card entirely under 1440px. All of that is gone: the
+callout is an ordinary block, the content column is a full 80rem at every width,
+and there is no breakpoint arithmetic to maintain. Don't reintroduce a floating
+version without re-deriving it.
 
 ### Migration alias bridge (temporary)
 

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import EmbedForm from '../../../components/EmbedForm.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 import { site } from '../../../data/site';
@@ -17,11 +18,13 @@ const formToken = site.formTokens.relocation;
 <BaseLayout title="Free Relocation Package | Julie Wright Realty Group">
   <PageBanner
     label="Relocating to the Triangle"
-    title="Complimentary Relocation Package"
-    description="Tell us about your move and we'll send a customized Triangle area relocation package — at no cost to you."
+    title="Free Relocation Package"
+    description="Tell us about your move and we'll build a Triangle package around it: the counties, the schools, the commutes. It costs you nothing."
   />
 
-  <section class="py-16">
+  <ResourceNav href="/resources/relocation" label="Relocating" glossary />
+
+  <section class="pt-4 pb-16">
     <div class="max-w-3xl mx-auto px-6">
       <div class="bg-white rounded-sm p-8 md:p-10">
         <h2 class="contact-form-heading">Request Your Relocation Package</h2>

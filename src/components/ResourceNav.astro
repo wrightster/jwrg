@@ -1,0 +1,26 @@
+---
+// The top row of a Resources page, under the page banner: the up-one-level link
+// on the left, and (where it applies) the Real Estate 101 shortcut on the right.
+//
+// `href`/`label` name the PARENT page. Pass `glossary` to show the shortcut —
+// omit it on the glossary page itself, which would link to itself. The Resources
+// hub renders no ResourceNav at all: its parent is the home page, which the nav
+// already covers, and it leads with its own full-width glossary band.
+import BackLink from './BackLink.astro';
+import GlossaryCallout from './GlossaryCallout.astro';
+
+interface Props {
+  href: string;
+  label: string;
+  glossary?: boolean;
+}
+
+const { href, label, glossary = false } = Astro.props;
+---
+
+<div class="content-wrap pt-8">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <BackLink href={href} label={label} />
+    {glossary && <GlossaryCallout />}
+  </div>
+</div>

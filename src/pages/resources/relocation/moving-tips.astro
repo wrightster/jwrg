@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 import { movingSections, donationLinks } from '../../../data/movingTips';
 
@@ -11,34 +12,36 @@ export const prerender = true;
   <PageBanner
     label="Moving Tips"
     title="Help with Moving to the Triangle"
-    description="Practical advice from fifty years of helping families settle into their new Triangle homes."
+    description="What we've learned from fifty years of helping families land here, from eight weeks out to the first night in the house."
   />
 
-  <section class="py-16">
+  <ResourceNav href="/resources/relocation" label="Relocating" glossary />
+
+  <section class="pt-4 pb-16">
     <div class="max-w-3xl mx-auto px-6 space-y-12">
       {movingSections.map((s) => (
         <div>
-          <h2 class="font-serif text-2xl md:text-3xl text-navy-900 font-medium mb-4 pb-3 border-b border-warm-200">
+          <h2 class="font-display text-2xl md:text-3xl text-earth-900 mb-4 pb-3 border-b border-earth-200">
             {s.heading}
           </h2>
-          <div class="space-y-4 text-navy-700 leading-relaxed">
+          <div class="space-y-4 text-earth-700 leading-relaxed">
             {s.body.map((p) => <p>{p}</p>)}
           </div>
         </div>
       ))}
 
       <div>
-        <h2 class="font-serif text-2xl md:text-3xl text-navy-900 font-medium mb-6 pb-3 border-b border-warm-200">
-          Taking Care of Those You Love — Donation Resources
+        <h2 class="font-display text-2xl md:text-3xl text-earth-900 mb-6 pb-3 border-b border-earth-200">
+          Where to Donate What You're Leaving
         </h2>
-        <p class="text-navy-700 leading-relaxed mb-6">
-          Don't pay to move what you won't use. These local and national charities accept donations and put your gently used items to good work in the community.
+        <p class="text-earth-700 leading-relaxed mb-6">
+          Don't pay to move what you won't use. These three take furniture, clothes, kitchenware, and building materials, and several will collect the large pieces from the house.
         </p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           {donationLinks.map((l) => (
-            <a href={l.url} target="_blank" rel="noopener" class="block p-6 bg-warm-100/60 border border-warm-200 rounded-sm hover:border-gold-500 hover:bg-warm-50 transition-all">
-              <div class="font-semibold text-navy-900">{l.name}</div>
-              <p class="text-navy-500 text-sm mt-1">{l.description}</p>
+            <a href={l.url} target="_blank" rel="noopener" class="group block p-6 bg-white rounded-sm ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300">
+              <div class="font-display text-earth-900 group-hover:text-red-600 transition-colors">{l.name}</div>
+              <p class="text-earth-600 text-sm mt-1">{l.description}</p>
             </a>
           ))}
         </div>

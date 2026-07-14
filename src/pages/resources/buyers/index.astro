@@ -1,29 +1,25 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 
 export const prerender = true;
 
 const resources = [
   {
-    title: 'Real Estate 101',
-    description: 'Master the vocabulary of buying. Glossary of financing, valuation, legal, and transaction terms.',
-    href: '/resources/buyers/real-estate-101',
-  },
-  {
     title: 'Buyer FAQs',
-    description: 'Honest answers to the questions every first-time and seasoned buyer asks.',
+    description: 'The questions buyers actually ask us, including what buyer agency costs in North Carolina now that the rules have changed.',
     href: '/resources/buyers/faq',
   },
   {
     title: 'Mortgage Calculator',
-    description: 'Estimate monthly payments — principal, interest, taxes, and insurance — in seconds.',
+    description: 'Estimate a monthly payment: principal, interest, taxes, and insurance.',
     href: '/resources/buyers/mortgage-calculator',
   },
   {
     title: 'Free Buying Guide',
-    description: 'Request our complimentary guide for a step-by-step walkthrough of the home-buying process.',
+    description: 'A step-by-step walkthrough of the buying process, start to closing. We send it at no charge.',
     href: '/resources/buyers/buying-guide',
   },
 ];
@@ -32,41 +28,43 @@ const resources = [
 <BaseLayout title="Buyer Resources | Julie Wright Realty Group">
   <PageBanner
     label="For Buyers"
-    title="Your Real Estate Buying Resource"
-    description="Buying a home is one of the largest financial decisions you'll make. We give you the tools, knowledge, and support to do it confidently."
+    title="Buyer Resources"
+    description="Most people buy a handful of houses in a lifetime, and the rules changed recently. Here's what's worth knowing before you start."
   />
 
-  <section class="py-20">
-    <div class="max-w-5xl mx-auto px-6 text-center mb-12">
-      <h2 class="font-serif text-3xl md:text-4xl text-navy-900 font-medium mb-4">
-        Buying Real Estate in the Triangle Area
-      </h2>
-      <p class="text-navy-500 leading-relaxed max-w-3xl mx-auto">
-        Whether this is your first home or your tenth, the Triangle market rewards preparation. We help you understand financing, evaluate properties, and negotiate with confidence — all without pressure or guesswork.
-      </p>
-    </div>
+  <ResourceNav href="/resources" label="Resources" glossary />
 
-    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-      {resources.map((r) => (
-        <a
-          href={r.href}
-          class="group bg-white border border-warm-200/50 rounded-sm p-8 hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1"
-        >
-          <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors mb-2">
-            {r.title}
-          </h3>
-          <p class="text-navy-500 mb-4 leading-relaxed">{r.description}</p>
-          <div class="text-gold-600 text-sm font-medium flex items-center gap-1">
-            Learn More
-            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </div>
-        </a>
-      ))}
+  <section class="pt-4 pb-16 lg:pt-5 lg:pb-20">
+    <div class="content-wrap">
+      <div class="max-w-3xl mx-auto text-center mb-12">
+        <h2 class="section-heading">Buying Real Estate in the Triangle</h2>
+        <p class="text-earth-600 leading-relaxed mt-4">
+          This market rewards preparation. Buyers who show up pre-approved, who know which school district they need, and who understand what the due diligence period is really for tend to get better houses on better terms than buyers still working it out as they go. Most of our job is getting you ready before it counts.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {resources.map((r) => (
+          <a
+            href={r.href}
+            class="group flex flex-col bg-white rounded-sm p-8 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300"
+          >
+            <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors">
+              {r.title}
+            </h3>
+            <p class="text-earth-600 mt-3 mb-6 leading-relaxed">{r.description}</p>
+            <span class="mt-auto pt-4 border-t border-earth-100 text-red-600 text-sm font-display flex items-center gap-1">
+              Learn More
+              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </a>
+        ))}
+      </div>
     </div>
   </section>
 
   <MiniContactForm
     heading="Ready to start your search?"
-    description="Tell us what you're looking for and we'll set up tailored property alerts at no cost."
+    description="Tell us what you're looking for and we'll set up property alerts that match it. No charge, no obligation."
   />
 </BaseLayout>

@@ -10,7 +10,7 @@ export const keyTermSections: KeyTermSection[] = [
       {
         term: 'Adjustable-Rate Mortgage (ARM)',
         definition:
-          'A mortgage with an interest rate that may change periodically based on a financial index. Initial rates are typically lower than fixed-rate mortgages.',
+          'A mortgage whose interest rate can change periodically, tracking a financial index. The opening rate is usually lower than a comparable fixed-rate loan, and it can rise later.',
       },
       {
         term: 'Annual Percentage Rate (APR)',
@@ -155,7 +155,7 @@ export const keyTermSections: KeyTermSection[] = [
       {
         term: 'Home Warranty',
         definition:
-          'A service contract covering repairs or replacement of major home systems and appliances during the first year of ownership.',
+          'A service contract that pays to repair or replace major systems and appliances when they fail. Usually sold in one-year terms and renewable after that. A seller sometimes buys one for the buyer as part of the deal.',
       },
     ],
   },

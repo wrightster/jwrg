@@ -18,6 +18,12 @@ export default defineConfig({
   // (the closest equivalent; /listings only shows our own listings).
   redirects: {
     '/property-search': '/search',
+    // Real Estate 101 moved out from under Buyers to the top of Resources
+    // (2026-07) — it's a glossary for everyone, not buyer-only. Both hops are
+    // listed explicitly so the oldest URL still resolves in a single 301
+    // rather than chaining through /resources/buyers/.
+    '/resources/buyers/real-estate-101': '/resources/real-estate-101',
+    '/buyers/real-estate-101': '/resources/real-estate-101',
     // Buyers/Sellers/Relocation now live under the Resources hub (2026-07).
     // 301 the old top-level paths (and every deep page) to their new home.
     '/buyers': '/resources/buyers',

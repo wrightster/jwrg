@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import EmbedForm from '../../../components/EmbedForm.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 import { site } from '../../../data/site';
@@ -12,12 +13,14 @@ const formToken = site.formTokens.buyingGuide;
 
 <BaseLayout title="Free Buying Guide | Julie Wright Realty Group">
   <PageBanner
-    label="Complimentary"
+    label="Free"
     title="Free Real Estate Buying Guide"
-    description="Tell us a little about what you're looking for and we'll send our complimentary buying guide along with a curated list of properties that fit."
+    description="Tell us what you're looking for. We'll send the guide, plus a list of properties that actually fit what you described."
   />
 
-  <section class="py-16">
+  <ResourceNav href="/resources/buyers" label="For Buyers" glossary />
+
+  <section class="pt-4 pb-16">
     <div class="max-w-3xl mx-auto px-6">
       <div class="bg-white rounded-sm p-8 md:p-10">
         <h2 class="contact-form-heading">Request Your Free Guide</h2>

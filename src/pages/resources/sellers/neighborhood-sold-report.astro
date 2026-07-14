@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import EmbedForm from '../../../components/EmbedForm.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 import { site } from '../../../data/site';
@@ -14,10 +15,12 @@ const formToken = site.formTokens.soldReport;
   <PageBanner
     label="For Sellers"
     title="Neighborhood Sold Report"
-    description="See what comparable homes in your neighborhood have recently sold for. We'll prepare a custom report based on your address and send it within one business day."
+    description="What comparable homes near you have actually sold for, not what they were listed at. We build the report from your address and send it within one business day."
   />
 
-  <section class="py-16">
+  <ResourceNav href="/resources/sellers" label="For Sellers" glossary />
+
+  <section class="pt-4 pb-16">
     <div class="max-w-3xl mx-auto px-6">
       <div class="bg-white rounded-sm p-8 md:p-10">
         <h2 class="contact-form-heading">Request Your Sold Report</h2>

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 
 export const prerender = true;
@@ -8,17 +9,17 @@ export const prerender = true;
 const resources = [
   {
     title: 'Free Relocation Package',
-    description: 'A complimentary, customized package of Triangle area information sent to your door.',
+    description: 'Triangle area information put together around your move and sent to your door, at no cost.',
     href: '/resources/relocation/relocation-package',
   },
   {
     title: 'Moving Tips',
-    description: 'Practical advice to make moving less stressful for you, your family, and your pets.',
+    description: 'Eight weeks out to moving day: what to sort, what to sell, and how to make it easier on the kids and the dog.',
     href: '/resources/relocation/moving-tips',
   },
   {
     title: 'About the Triangle Area',
-    description: 'Learn about the counties, cities, and communities that make up the Triangle.',
+    description: 'The counties and towns we serve, and what living in each of them is like.',
     href: '/about#triangle-area',
   },
 ];
@@ -27,41 +28,43 @@ const resources = [
 <BaseLayout title="Relocation Resources | Julie Wright Realty Group">
   <PageBanner
     label="Relocating to the Triangle"
-    title="Your Triangle Area Gateway"
-    description="Moving across the country or across the state, we make the transition smooth — from selecting the right neighborhood to handing over the keys."
+    title="Relocating Resources"
+    description="Coming from across the country, or from two counties over. We'll help you work out where to land, and handle the rest from there."
   />
 
-  <section class="py-20">
-    <div class="max-w-5xl mx-auto px-6 text-center mb-16">
-      <h2 class="font-serif text-3xl md:text-4xl text-navy-900 font-medium mb-4">
-        Your Triangle Area Information Guide
-      </h2>
-      <p class="text-navy-500 leading-relaxed max-w-3xl mx-auto">
-        We've helped thousands of families relocate to the Triangle. Tell us a little about your timeline and what matters most — schools, commute, lifestyle — and we'll send the information that maps to your needs.
-      </p>
-    </div>
+  <ResourceNav href="/resources" label="Resources" glossary />
 
-    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-      {resources.map((r) => (
-        <a
-          href={r.href}
-          class="group bg-white border border-warm-200/50 rounded-sm p-8 hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1"
-        >
-          <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors mb-2">
-            {r.title}
-          </h3>
-          <p class="text-navy-500 mb-4 leading-relaxed">{r.description}</p>
-          <div class="text-gold-600 text-sm font-medium flex items-center gap-1">
-            Learn More
-            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </div>
-        </a>
-      ))}
+  <section class="pt-4 pb-16 lg:pt-5 lg:pb-20">
+    <div class="content-wrap">
+      <div class="max-w-3xl mx-auto text-center mb-12">
+        <h2 class="section-heading">Getting Oriented</h2>
+        <p class="text-earth-600 leading-relaxed mt-4">
+          The hard part of moving here isn't the boxes. It's choosing where to live before you know the place: which school district, how long a commute you can actually stand, whether you want sidewalks or a few acres. Tell us your timeline and what you're weighing, and we'll send you the information that bears on it.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {resources.map((r) => (
+          <a
+            href={r.href}
+            class="group flex flex-col bg-white rounded-sm p-8 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300"
+          >
+            <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors">
+              {r.title}
+            </h3>
+            <p class="text-earth-600 mt-3 mb-6 leading-relaxed">{r.description}</p>
+            <span class="mt-auto pt-4 border-t border-earth-100 text-red-600 text-sm font-display flex items-center gap-1">
+              Learn More
+              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </a>
+        ))}
+      </div>
     </div>
   </section>
 
   <MiniContactForm
     heading="Have a relocation question?"
-    description="Tell us about your timeline and we'll get back to you with personalized guidance."
+    description="Tell us your timeline and where you're coming from, and we'll come back with something specific."
   />
 </BaseLayout>

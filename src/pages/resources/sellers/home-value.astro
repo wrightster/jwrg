@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import EmbedForm from '../../../components/EmbedForm.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 import { site } from '../../../data/site';
@@ -14,14 +15,16 @@ const formToken = site.formTokens.cma;
   <PageBanner
     label="For Sellers"
     title="What's Your Property Worth?"
-    description="Get a no-obligation, locally informed market valuation. We use comparable sales, current market trends, and 50 years of Triangle insight — not a generic algorithm."
+    description="A valuation from someone who sells in your neighborhood, built from comparable sales and what buyers are doing this month. Free, with no obligation to list."
   />
 
-  <section class="py-16">
+  <ResourceNav href="/resources/sellers" label="For Sellers" glossary />
+
+  <section class="pt-4 pb-16">
     <div class="max-w-3xl mx-auto px-6">
       <div class="bg-white rounded-sm p-8 md:p-10">
         <h2 class="contact-form-heading">Request a Free Valuation</h2>
-        <p class="text-earth-600 mb-6">Tell us about your property and we'll get back to you within one business day.</p>
+        <p class="text-earth-600 mb-6">Tell us about the property and we'll come back to you within one business day. Automated estimates work off public records, so they don't know that you redid the kitchen or that the house backs onto a greenway. We look at the property itself.</p>
         {formToken ? (
           <EmbedForm id="jwrg-cma-form" token={formToken} />
         ) : (

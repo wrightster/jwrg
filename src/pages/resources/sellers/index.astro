@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PageBanner from '../../../components/PageBanner.astro';
+import ResourceNav from '../../../components/ResourceNav.astro';
 import MiniContactForm from '../../../components/MiniContactForm.astro';
 
 export const prerender = true;
@@ -8,22 +9,22 @@ export const prerender = true;
 const resources = [
   {
     title: 'Staging Tips',
-    description: 'Low-cost, high-impact ways to prepare your home so it shows beautifully and sells faster.',
+    description: 'What to fix, clean, and pack away before the photographer arrives. Most of it costs a weekend, not a contractor.',
     href: '/resources/sellers/staging-tips',
   },
   {
     title: 'Home Value Estimate',
-    description: 'Get a no-obligation comparative market analysis of your property from a local expert.',
+    description: 'A comparative market analysis of your property, done by someone who sells in your neighborhood. No obligation.',
     href: '/resources/sellers/home-value',
   },
   {
     title: 'List Your Property',
-    description: 'Ready to list? Tell us about your home and we\'ll set up an in-person consultation.',
+    description: 'Ready to list? Tell us about the house and we\'ll set up a consultation in person.',
     href: '/resources/sellers/list-your-property',
   },
   {
     title: 'Neighborhood Sold Report',
-    description: 'See what comparable homes in your neighborhood have recently sold for.',
+    description: 'What comparable homes near you have actually sold for, not what they were listed at.',
     href: '/resources/sellers/neighborhood-sold-report',
   },
 ];
@@ -32,42 +33,46 @@ const resources = [
 <BaseLayout title="Seller Resources | Julie Wright Realty Group">
   <PageBanner
     label="For Sellers"
-    title="Selling Your Home with Confidence"
-    description="In any market, sellers want to know two things: what is my property worth, and how do I get the best result? We answer both with up-to-date data and a tailored strategy."
+    title="Seller Resources"
+    description="Two questions matter: what the house is worth, and what it will take to get that. Both have real answers, and they come from the comps and the condition of the property."
   />
 
-  <section class="py-20">
-    <div class="max-w-5xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center mb-16">
-      <div>
-        <h2 class="font-serif text-3xl text-navy-900 font-medium mb-4">The Challenge: Selling Real Estate</h2>
-        <p class="text-navy-700 leading-relaxed">
-          Selling a home is rarely just a transaction. It is timing, pricing, presentation, and negotiation — all at once. Mistakes at any step cost real money.
-        </p>
-      </div>
-      <div>
-        <h2 class="font-serif text-3xl text-navy-900 font-medium mb-4">The Answer: A Tailored Strategy</h2>
-        <p class="text-navy-700 leading-relaxed">
-          We pair five decades of Triangle market knowledge with a marketing plan built specifically for your property. From pricing through closing, we manage every step with you, not for you.
-        </p>
-      </div>
-    </div>
+  <ResourceNav href="/resources" label="Resources" glossary />
 
-    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-      {resources.map((r) => (
-        <a
-          href={r.href}
-          class="group bg-white border border-warm-200/50 rounded-sm p-8 hover:shadow-xl hover:shadow-navy-900/8 transition-all hover:-translate-y-1"
-        >
-          <h3 class="font-serif text-xl font-semibold text-navy-900 group-hover:text-gold-700 transition-colors mb-2">
-            {r.title}
-          </h3>
-          <p class="text-navy-500 mb-4 leading-relaxed">{r.description}</p>
-          <div class="text-gold-600 text-sm font-medium flex items-center gap-1">
-            Learn More
-            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-          </div>
-        </a>
-      ))}
+  <section class="pt-4 pb-16 lg:pt-5 lg:pb-20">
+    <div class="content-wrap">
+      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-start mb-16">
+        <div>
+          <h2 class="font-display text-3xl text-earth-900 mb-4">Where sellers lose money</h2>
+          <p class="text-earth-700 leading-relaxed">
+            Price a house too high and it sits, and a house that has sat draws offers below what it would have brought in its first week. Price it too low and you have simply handed the difference to the buyer. Timing, condition, and how the negotiation gets handled each move the final number too, which is several places in one sale for a few thousand dollars to quietly change hands.
+          </p>
+        </div>
+        <div>
+          <h2 class="font-display text-3xl text-earth-900 mb-4">What we do about it</h2>
+          <p class="text-earth-700 leading-relaxed">
+            We have been selling in the Triangle since the 1970s, which in practice means we know what your house will fetch and where a buyer's agent will push. You get a price built from comparable sales, a marketing plan for this property rather than a template, and someone who explains each decision to you before it gets made.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {resources.map((r) => (
+          <a
+            href={r.href}
+            class="group flex flex-col bg-white rounded-sm p-8 ring-1 ring-inset ring-earth-100 hover:ring-2 hover:ring-red-600 transition-all duration-300"
+          >
+            <h3 class="font-display text-xl text-earth-900 group-hover:text-red-600 transition-colors">
+              {r.title}
+            </h3>
+            <p class="text-earth-600 mt-3 mb-6 leading-relaxed">{r.description}</p>
+            <span class="mt-auto pt-4 border-t border-earth-100 text-red-600 text-sm font-display flex items-center gap-1">
+              Learn More
+              <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </span>
+          </a>
+        ))}
+      </div>
     </div>
   </section>
 
