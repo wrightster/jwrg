@@ -61,7 +61,7 @@ Red clay + earth + gold, as of the 2026 rebrand. Gabarito (display) + Anek Latin
 
 Tokens and component classes are canonical in [`@jw/shared`](https://github.com/wrightster/jw-shared) (`styles/tokens.css`, `styles/components.css`), imported at the top of `src/styles/global.css`. JWRG shares those tokens, fonts, and class names with JWLC; it does **not** share its logo or its chrome — nav, footer, and the top page banner use an inverted solid red/gold treatment, where JWLC keeps a lighter gold→sand gradient.
 
-`global.css` also defines JWRG-only `@theme` aliases mapping the retired `navy-*` / `warm-*` names onto the shared `earth-*` palette, so pages not yet rewritten to the new classes stay coherent. Don't add new `navy-*` usages — the block goes away once the last page is migrated.
+The rebrand is fully landed as of 2026-07: every page uses the `earth-*` / `red-*` / `gold-*` tokens and `font-display` / `font-body` directly, and the `@theme` block that used to alias the retired `navy-*` / `warm-*` / `font-serif` names onto them has been deleted. Those names are dead — a page using one now gets no style rather than a silently-aliased one.
 
 ## Deploy
 

@@ -60,39 +60,6 @@
   initial-value: transparent;
 }
 
-@theme {
-  /* JWRG-only migration aliases from the 2026 rebrand. Layered atop the
-   * @jw/shared tokens.css palette: legacy navy and warm color names and
-   * sans / serif font roles aliased onto the shared earth / brand tokens,
-   * so pages not yet rewritten to the new component classes stay coherent.
-   * Remove this block once every page uses the new tokens directly. */
-  --color-navy-50:  var(--color-earth-50);
-  --color-navy-100: var(--color-earth-100);
-  --color-navy-200: var(--color-earth-200);
-  --color-navy-300: var(--color-earth-400);
-  --color-navy-400: var(--color-earth-500);
-  --color-navy-500: var(--color-earth-600);
-  --color-navy-600: var(--color-earth-700);
-  --color-navy-700: var(--color-earth-700);
-  --color-navy-800: var(--color-earth-800);
-  --color-navy-900: var(--color-earth-900);
-  --color-navy-950: var(--color-earth-950);
-
-  --color-warm-50:  var(--color-earth-50);
-  --color-warm-100: var(--color-earth-100);
-  --color-warm-200: var(--color-earth-200);
-  --color-warm-300: var(--color-earth-300);
-  --color-warm-400: var(--color-earth-400);
-  --color-warm-500: var(--color-earth-500);
-  --color-warm-600: var(--color-earth-600);
-  --color-warm-700: var(--color-earth-700);
-  --color-warm-800: var(--color-earth-800);
-  --color-warm-900: var(--color-earth-900);
-
-  --font-sans:  'Anek Latin', system-ui, sans-serif;
-  --font-serif: 'Gabarito', Georgia, serif;
-}
-
 /* Nav accent/menu are runtime-switchable via FontSwitcher; default to brand tokens */
 :root {
   --color-nav-accent: var(--color-gold-300);

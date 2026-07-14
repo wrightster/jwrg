@@ -205,14 +205,22 @@ callout is an ordinary block, the content column is a full 80rem at every width,
 and there is no breakpoint arithmetic to maintain. Don't reintroduce a floating
 version without re-deriving it.
 
-### Migration alias bridge (temporary)
+### Migration alias bridge (removed — 2026-07)
 
-`@theme` contains a commented block aliasing the **legacy** `navy-*`/`warm-*`
-colors and `--font-sans`/`--font-serif` onto the new earth/brand tokens, so
-pages not yet rewritten to the new classes stay visually coherent. **Remove this
-block once every page uses the new tokens directly.** See `PLAN.md` for which
-pages remain. When rewriting a page, prefer the new tokens/classes over the
-aliases.
+The 2026 rebrand is fully landed: every page uses the earth/red/gold tokens and
+`font-display`/`font-body` directly, and the `@theme` block that aliased the
+legacy `navy-*`/`warm-*` colors and `--font-sans`/`--font-serif` onto them **is
+gone**. `navy-*`, `warm-*`, `font-serif`, and `font-sans` are now dead names — a
+page using one gets no style at all rather than a quietly-aliased one, so don't
+reintroduce them.
+
+The retired mapping, for reading old diffs: `navy-900`→`earth-900`,
+`navy-500`→`earth-600`, `navy-400`→`earth-500`, `navy-300`→`earth-400` (the rest
+of `navy-*` and all of `warm-*` map to the same-numbered `earth-*`),
+`font-serif`→`font-display`, `font-sans`→`font-body`. Gold accents on light
+backgrounds became `red-600`/`red-700`, since red is the JWRG primary; gold
+survives only where it's genuinely decorative (the 404 numeral, the neighborhood
+placeholder icon).
 
 ### Tailwind v4 gotcha
 
