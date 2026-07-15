@@ -7,7 +7,6 @@
 // `website_url` field, which is meant for a community's own/legacy site.
 export const neighborhoodSites: Record<string, string> = {
   'yancey-farms': 'https://yanceyfarms.jwrgnc.com',
-  'aubrie-place': 'https://aubrieplace.jwrgnc.com',
   'preserve-west': 'https://preservewest.jwrgnc.com',
   'tennyson': 'https://tennyson.jwrgnc.com',
 };
