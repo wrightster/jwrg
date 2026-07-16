@@ -82,6 +82,13 @@ const footerNav = [
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/JWRG_Icon_Inset.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Warm the connection to the office host up front: every listing, team, and
+         neighborhood photo is served from office.jwrgnc.com, so opening the TLS
+         handshake early shaves it off the first image request (the island grids
+         paint their images as soon as the fragment arrives). dns-prefetch is the
+         fallback for browsers that ignore preconnect. -->
+    <link rel="preconnect" href="https://office.jwrgnc.com" crossorigin />
+    <link rel="dns-prefetch" href="https://office.jwrgnc.com" />
     <Seo
       title={title}
       description={description}

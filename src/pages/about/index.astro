@@ -1,18 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
-import TeamCard from '../../components/TeamCard.astro';
+import TeamGrid from '../../components/TeamGrid.astro';
 import EmbedForm from '../../components/EmbedForm.astro';
-import { fetchTeam } from '../../lib/api';
 import { counties } from '../../data/counties';
 import { countyShapes } from '../../data/countyShapes';
 import { site } from '../../data/site';
 
-// SSR (not prerendered) so the team grid stays live — team members are managed
-// in the office and change without a site rebuild.
-export const prerender = false;
-
-const team = await fetchTeam();
+// Prerendered: the only request-time data on this page was the team grid, which
+// now renders in a deferred server island (<TeamGrid server:defer>). The shell
+// is fully static and paints instantly; the live team streams in behind its
+// skeleton fallback. Team members are still managed in the office and appear
+// without a site rebuild — the island is server-rendered on demand.
+export const prerender = true;
 
 const testimonialToken = site.formTokens.testimonial;
 
@@ -75,13 +75,19 @@ const directoryCategories = [
           Brokers and agents who know the Triangle. Their specialties run from new construction and equestrian properties to land, relocation, and estate planning.
         </p>
       </div>
-      {team.length === 0 ? (
-        <p class="text-center text-earth-500 py-12">Our team will be listed here shortly. Please check back soon.</p>
-      ) : (
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {team.map((m) => <TeamCard member={m} />)}
+      <TeamGrid server:defer>
+        <div slot="fallback" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" aria-hidden="true">
+          {Array.from({ length: 8 }).map(() => (
+            <div class="bg-white rounded-sm ring-1 ring-inset ring-earth-100 overflow-hidden">
+              <div class="aspect-square bg-earth-100 animate-pulse"></div>
+              <div class="p-4 space-y-2">
+                <div class="h-4 w-2/3 bg-earth-100 rounded animate-pulse"></div>
+                <div class="h-3 w-1/2 bg-earth-100 rounded animate-pulse"></div>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      </TeamGrid>
     </div>
   </section>
 

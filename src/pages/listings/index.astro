@@ -1,27 +1,16 @@
 ---
+// Prerendered shell: the search/filter chrome + results grid render live from
+// the office API in a deferred server island (<ListingsBrowser server:defer>),
+// so the banner + CTA paint instantly and the data-heavy grid (fetchAllListings
+// walks every page) streams in behind its skeleton. The interactive controller
+// stays on THIS page (the <script> below) and initializes when the island's
+// content arrives — scripts placed inside a server island run unreliably
+// (withastro/astro#12294), so the DOM-querying controller must live here.
+export const prerender = true;
+
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
-import ListingCard from '../../components/ListingCard.astro';
-import ListingRow from '../../components/ListingRow.astro';
-import { fetchAllListings, type ApiListing } from '../../lib/api';
-export const prerender = false;
-
-let apiError = false;
-let listings: ApiListing[] = [];
-try {
-  // Walk every page — the API caps per_page at 50, so a single fetch would
-  // silently truncate the index once we publish more than 50 listings.
-  listings = await fetchAllListings({ perPage: 50 });
-} catch {
-  apiError = true;
-}
-
-const counties = [...new Set(listings.map(l => l.county))].filter(Boolean).sort();
-const cities   = [...new Set(listings.map(l => l.city))].filter(Boolean).sort();
-// [slug, name] pairs for neighborhoods that actually have listings, sorted by name.
-const neighborhoods = [...new Map(
-  listings.filter(l => l.neighborhood).map(l => [l.neighborhood!.slug, l.neighborhood!.name] as const)
-)].sort((a, b) => a[1].localeCompare(b[1]));
+import ListingsBrowser from '../../components/ListingsBrowser.astro';
 ---
 
 <BaseLayout title="Listings | Julie Wright Realty Group" description="Browse homes for sale across the greater Triangle region and surrounding counties.">
@@ -38,208 +27,28 @@ const neighborhoods = [...new Map(
   <!-- Listings Grid -->
   <section class="listings-section">
     <div class="content-wrap">
-      {apiError ? (
-        <div class="py-16 text-center">
-          <p class="text-earth-700">Our listings are temporarily unavailable — please try again shortly.</p>
-          <p class="text-earth-500 text-sm mt-2">Or <a href="/contact" class="text-red-600 underline underline-offset-2">contact us</a> directly and we'll be happy to help.</p>
-        </div>
-      ) : (
-        <>
-      <!-- Keyword search (always visible, above the collapsible filters) -->
-      <div class="relative mb-4">
-        <svg class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-earth-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input
-          id="keyword-search"
-          type="search"
-          autocomplete="off"
-          placeholder="Search by address, city, or keyword…"
-          aria-label="Search listings by address, city, or keyword"
-          class="w-full rounded-sm border border-earth-200 bg-white py-3 pl-12 pr-4 text-earth-900 placeholder:text-earth-400 focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-colors"
-        />
+      <div id="listings-mount">
+        <ListingsBrowser server:defer>
+          <div slot="fallback" aria-hidden="true">
+            <!-- Keyword search + filter bar placeholders -->
+            <div class="h-12 mb-4 rounded-sm bg-earth-100 animate-pulse"></div>
+            <div class="h-12 mb-6 rounded-sm bg-earth-100 animate-pulse"></div>
+            <!-- Results grid placeholder -->
+            <div class="listings-grid" data-view="grid">
+              {Array.from({ length: 6 }).map(() => (
+                <div class="rounded-sm overflow-hidden ring-1 ring-inset ring-earth-100 bg-white">
+                  <div class="aspect-[4/3] bg-earth-100 animate-pulse"></div>
+                  <div class="p-4 space-y-2">
+                    <div class="h-4 w-1/2 bg-earth-100 rounded animate-pulse"></div>
+                    <div class="h-3 w-3/4 bg-earth-100 rounded animate-pulse"></div>
+                    <div class="h-3 w-2/3 bg-earth-100 rounded animate-pulse"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </ListingsBrowser>
       </div>
-
-      <!-- Filter bar -->
-      <div class="filter-bar" id="filter-bar">
-        <button class="filter-toggle-btn" id="filter-toggle" type="button" aria-expanded="false" aria-controls="filter-collapse">
-          <svg class="filter-toggle-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          <span class="filter-toggle-label">Filters</span>
-          <span class="filter-toggle-count" id="filter-active-count" aria-live="polite"></span>
-          <svg class="filter-toggle-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="filter-collapse" id="filter-collapse">
-          <div class="filter-collapse-inner">
-            <div class="filter-controls-row">
-
-          <!-- County dropdown -->
-          <div class="filter-select-wrap">
-            <span class="filter-select-label">County</span>
-            <div class="custom-select" data-filter="county">
-              <button class="custom-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-                <span class="custom-select-val">All Counties</span>
-                <svg class="custom-select-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-              </button>
-              <ul class="custom-select-list" role="listbox">
-                <li class="custom-select-option is-selected" data-value="all" role="option" aria-selected="true">All Counties</li>
-                {counties.map((county) => (
-                  <li class="custom-select-option" data-value={county} role="option" aria-selected="false">{county}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <!-- City dropdown -->
-          <div class="filter-select-wrap">
-            <span class="filter-select-label">City</span>
-            <div class="custom-select" data-filter="city">
-              <button class="custom-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-                <span class="custom-select-val">All Cities</span>
-                <svg class="custom-select-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-              </button>
-              <ul class="custom-select-list" role="listbox">
-                <li class="custom-select-option is-selected" data-value="all" role="option" aria-selected="true">All Cities</li>
-                {cities.map((city) => (
-                  <li class="custom-select-option" data-value={city} role="option" aria-selected="false">{city}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <!-- Status dropdown -->
-          <div class="filter-select-wrap">
-            <span class="filter-select-label">Status</span>
-            <div class="custom-select" data-filter="status">
-              <button class="custom-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-                <span class="custom-select-val">All Statuses</span>
-                <svg class="custom-select-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-              </button>
-              <ul class="custom-select-list" role="listbox">
-                <li class="custom-select-option is-selected" data-value="all" role="option" aria-selected="true">All Statuses</li>
-                <li class="custom-select-option" data-value="active" role="option" aria-selected="false">Available</li>
-                <li class="custom-select-option" data-value="coming_soon" role="option" aria-selected="false">Coming Soon</li>
-                <li class="custom-select-option" data-value="pending" role="option" aria-selected="false">Pending</li>
-                <li class="custom-select-option" data-value="under_contract" role="option" aria-selected="false">Under Contract</li>
-                <li class="custom-select-option" data-value="sold" role="option" aria-selected="false">Sold</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Neighborhood dropdown -->
-          {neighborhoods.length > 0 && (
-          <div class="filter-select-wrap">
-            <span class="filter-select-label">Neighborhood</span>
-            <div class="custom-select" data-filter="neighborhood">
-              <button class="custom-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-                <span class="custom-select-val">All Neighborhoods</span>
-                <svg class="custom-select-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-              </button>
-              <ul class="custom-select-list" role="listbox">
-                <li class="custom-select-option is-selected" data-value="all" role="option" aria-selected="true">All Neighborhoods</li>
-                {neighborhoods.map(([slug, name]) => (
-                  <li class="custom-select-option" data-value={slug} role="option" aria-selected="false">{name}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          )}
-
-          <!-- Price slider -->
-          <div class="filter-range-wrap">
-            <p class="filter-select-label" id="price-range-label">Price Range</p>
-            <div class="range-slider">
-              <div class="range-track"><div class="range-fill" id="price-fill"></div></div>
-              <input type="range" id="price-min" min="0" max="2000000" step="25000" value="0" class="range-input" aria-label="Minimum price" aria-labelledby="price-range-label" />
-              <input type="range" id="price-max" min="0" max="2000000" step="25000" value="2000000" class="range-input" aria-label="Maximum price" />
-            </div>
-            <div class="filter-range-display" aria-hidden="true">
-              <span id="price-min-display" class="filter-range-val">$0</span>
-              <span class="filter-range-sep">–</span>
-              <span id="price-max-display" class="filter-range-val">$2,000,000+</span>
-            </div>
-          </div>
-
-          <!-- Square footage slider -->
-          <div class="filter-range-wrap">
-            <p class="filter-select-label" id="sqft-range-label">Square Feet</p>
-            <div class="range-slider">
-              <div class="range-track"><div class="range-fill" id="sqft-fill"></div></div>
-              <input type="range" id="sqft-min" min="0" max="6000" step="100" value="0" class="range-input" aria-label="Minimum square feet" aria-labelledby="sqft-range-label" />
-              <input type="range" id="sqft-max" min="0" max="6000" step="100" value="6000" class="range-input" aria-label="Maximum square feet" />
-            </div>
-            <div class="filter-range-display" aria-hidden="true">
-              <span id="sqft-min-display" class="filter-range-val">0</span>
-              <span class="filter-range-sep">–</span>
-              <span id="sqft-max-display" class="filter-range-val">6,000+ sqft</span>
-            </div>
-          </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Results count + per-page + view toggle -->
-      <div class="results-bar">
-        <p class="results-count" id="results-count" aria-live="polite" aria-atomic="true">
-          Showing <span class="results-count-val">{listings.length}</span> propert{listings.length === 1 ? 'y' : 'ies'}
-        </p>
-        <div class="per-page-select">
-          <span class="per-page-label">Per page</span>
-          {([12, 24, 48, 96] as const).map(n => (
-            <button class:list={['per-page-btn', n === 24 && 'is-active']} data-pp={n} type="button" aria-pressed={n === 24 ? 'true' : 'false'}>{n}</button>
-          ))}
-        </div>
-        <div class="view-toggle" id="view-toggle" role="group" aria-label="Toggle view">
-          <button class="view-toggle-btn is-active" id="btn-grid" type="button" aria-label="Grid view" title="Grid view" aria-pressed="true">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/>
-              <rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>
-            </svg>
-          </button>
-          <button class="view-toggle-btn" id="btn-list" type="button" aria-label="List view" title="List view" aria-pressed="false">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="3" y="4" width="18" height="3" rx="1"/><rect x="3" y="10.5" width="18" height="3" rx="1"/><rect x="3" y="17" width="18" height="3" rx="1"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Listings container -->
-      <div class="listings-grid" id="listings-grid">
-        {listings.map((listing, i) => (
-          <div
-            class="listing-item"
-            data-county={listing.county}
-            data-city={listing.city}
-            data-neighborhood={listing.neighborhood?.slug ?? ''}
-            data-status={listing.status}
-            data-price={Math.round(parseFloat(listing.list_price))}
-            data-sqft={listing.sqft ?? 0}
-            data-search={[
-              listing.address, listing.city, listing.county, listing.zip,
-              listing.marketing_title, listing.property_type,
-              ...(listing.features ?? []),
-              (listing.description ?? '').slice(0, 300),
-            ].filter(Boolean).join(' ').toLowerCase()}
-            id={listing.slug}
-          >
-            <ListingCard listing={listing} index={i} />
-            <ListingRow listing={listing} index={i} />
-          </div>
-        ))}
-      </div>
-
-      <!-- Pagination -->
-      <div class="pagination" id="pagination" style="display:none">
-        <button id="pg-prev" class="pg-btn" type="button" aria-label="Previous page" disabled>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <span id="pg-info" class="pg-info">Page 1 of 1</span>
-        <button id="pg-next" class="pg-btn" type="button" aria-label="Next page">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-        </>
-      )}
     </div>
   </section>
 
@@ -256,8 +65,11 @@ const neighborhoods = [...new Map(
     </div>
   </section>
 
-  {!apiError && (
   <script>
+    // The full controller body lives in initListings(); it is invoked only once
+    // the <ListingsBrowser server:defer> island has injected its DOM (see the
+    // gating logic after the closing brace).
+    function initListings() {
     const items         = document.querySelectorAll('.listing-item');
     const resultsCountEl = document.getElementById('results-count')!;
     const filterCountEl = document.getElementById('filter-active-count')!;
@@ -660,6 +472,25 @@ const neighborhoods = [...new Map(
 
     btnGrid.addEventListener('click', () => setView('grid'));
     btnList.addEventListener('click', () => setView('list'));
+    }
+
+    // The interactive controller lives on this (prerendered) page, but the DOM
+    // it drives is rendered by the <ListingsBrowser server:defer> island and
+    // injected after page load. Wait for the island's `data-listings-ready`
+    // sentinel before wiring up — scripts placed INSIDE a server island run
+    // unreliably (withastro/astro#12294), so the controller stays here and
+    // observes the mount instead. `ok` means the grid rendered; `error` means
+    // the island rendered its failure state (nothing to wire up).
+    const mount = document.getElementById('listings-mount');
+    function tryInit(): boolean {
+      const sentinel = mount?.querySelector('[data-listings-ready]');
+      if (!sentinel) return false; // island not resolved yet — keep waiting
+      if (sentinel.getAttribute('data-listings-ready') === 'ok') initListings();
+      return true; // resolved (ok or error) — stop waiting
+    }
+    if (mount && !tryInit()) {
+      const mo = new MutationObserver(() => { if (tryInit()) mo.disconnect(); });
+      mo.observe(mount, { childList: true, subtree: true });
+    }
   </script>
-  )}
 </BaseLayout>
