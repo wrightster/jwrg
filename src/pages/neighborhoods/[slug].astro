@@ -6,7 +6,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
-import { fetchNeighborhood, fetchListings, fetchNeighborhoodLots, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
+import { fetchNeighborhood, fetchListings, fetchNeighborhoodLots, groupDocuments, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
 import { neighborhoodSites } from '../../data/neighborhoodSites';
 
 const { slug } = Astro.params;
@@ -91,6 +91,14 @@ const hoaLine = (() => {
   if (fee && freq) return `${fee} / ${freq}`;
   return fee ?? null;
 })();
+
+// Public documents grouped by their office-managed folder (display group):
+// groups ordered by folder sort_order, folderless docs in a trailing
+// "Documents" bucket. Only docs with a resolvable URL render.
+const documentGroups = groupDocuments((n.documents ?? []).filter((d) => d.url));
+// When everything is folderless there's just the default bucket — skip its
+// redundant "Documents" subheading under the section title.
+const onlyDefaultGroup = documentGroups.length === 1 && documentGroups[0].id === 'ungrouped';
 
 const location = [n.city, n.county && `${n.county} County`].filter(Boolean).join(' · ');
 // marketing_description is rich HTML (office RichEditor); description is legacy plain text.
@@ -254,6 +262,39 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
           <div>
             <h2 class="font-display text-2xl text-earth-900 mb-2">Deed Restrictions</h2>
             <p class="text-earth-700 leading-relaxed text-sm">{n.deed_restrictions_summary}</p>
+          </div>
+        )}
+
+        {documentGroups.length > 0 && (
+          <div>
+            <h2 class="font-display text-2xl text-earth-900 mb-4">Documents &amp; Resources</h2>
+            <div class="space-y-6">
+              {documentGroups.map((group) => (
+                <div>
+                  {!onlyDefaultGroup && (
+                    <h3 class="font-display text-lg text-earth-900 mb-2">{group.name}</h3>
+                  )}
+                  <ul class="space-y-1.5">
+                    {group.documents.map((doc) => (
+                      <li>
+                        <a
+                          href={doc.url}
+                          target="_blank"
+                          rel="noopener"
+                          class="inline-flex items-start gap-2 text-red-600 hover:text-red-700 text-sm"
+                        >
+                          <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                          <span>{doc.title}</span>
+                        </a>
+                        {doc.description && (
+                          <p class="text-earth-500 text-xs ml-6 mt-0.5">{doc.description}</p>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
