@@ -8,17 +8,11 @@
 // `fetchNeighborhoodLots()` per lot-based neighborhood. No client script here,
 // so it's safe inside an island.
 import { fetchNeighborhoods, fetchNeighborhoodLots, photoSrc, photoSrcSet } from '../lib/api';
-import { neighborhoodLogos } from '../data/neighborhoodLogos';
 
 // The office API returns neighborhoods in their manual display order (the
 // `sort` column — editable by drag-and-drop or a number field in the back
 // office; see the office NeighborhoodController index). Render in that order.
 const neighborhoods = await fetchNeighborhoods().catch(() => []);
-
-// Neighborhoods that display a local brand logo (over the site background)
-// instead of an API photo. Shared with the detail page — see
-// src/data/neighborhoodLogos.ts.
-const localLogos = neighborhoodLogos;
 
 // Each card carries a single lifecycle tag — "Active" (red) or "Planned"
 // (gold) — plus one inventory number. Office statuses that mean "not yet
@@ -76,13 +70,12 @@ const cards = await Promise.all(
       // card background instead.
       const heroWebp = photoSrcSet(n.primary_photo, 'webp');
       // Some neighborhoods display a brand logo (over the site background)
-      // instead of an API photo. The office-managed featured image wins — it
+      // instead of an API photo — the office-managed featured image, which
       // rides on the neighborhood record, so slug renames can't orphan it.
-      // The slug-keyed local map is a legacy fallback until every mark is
-      // migrated into the office.
+      // Manage it on the office's neighborhood Details tab (or via MCP).
       const logo = n.featured_image
         ? { src: n.featured_image.url, scale: n.featured_image.scale ?? undefined }
-        : localLogos[n.slug];
+        : undefined;
       const logoPct = `${(logo?.scale ?? 1) * 100}%`;
       return (
         <Fragment>

@@ -7,7 +7,6 @@ import MiniContactForm from '../../components/MiniContactForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
 import { fetchNeighborhood, fetchListings, fetchNeighborhoodLots, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
-import { neighborhoodLogos } from '../../data/neighborhoodLogos';
 import { neighborhoodSites } from '../../data/neighborhoodSites';
 
 const { slug } = Astro.params;
@@ -43,10 +42,10 @@ const priceFromLabel = (p: number): string => {
 };
 const startingPriceLabel = startingPrice != null ? priceFromLabel(startingPrice) : null;
 
-// A neighborhood with a local brand logo shows that mark as the hero (mirroring
-// the neighborhoods grid) instead of its API photos — which for these are
-// themselves logos that would crop badly in the gallery tiles. See
-// src/data/neighborhoodLogos.ts.
+// A neighborhood with a brand mark (the office-managed featured image) shows
+// it as the hero (mirroring the neighborhoods grid) instead of its API photos
+// — which for these are themselves logos that would crop badly in the gallery
+// tiles. Manage the mark on the office's neighborhood Details tab (or MCP).
 //
 // Sizing keeps the grid's *relative* sizing: each logo fits (object-contain) into
 // a `scale`-fraction of a cap box whose aspect matches the grid card's content
@@ -56,16 +55,13 @@ const startingPriceLabel = startingPrice != null ? priceFromLabel(startingPrice)
 // the logo's OWN box so it hugs the mark with no empty top/bottom space: width =
 // the mark's fitted width, height follows via `aspect-ratio`. See index.astro
 // for the grid side.
-// The office-managed featured image wins (it rides on the neighborhood
-// record, so slug renames can't orphan it); the slug-keyed local map is a
-// legacy fallback until every mark is migrated into the office.
 const logo = n.featured_image
   ? {
       src: n.featured_image.url,
       scale: n.featured_image.scale ?? undefined,
       aspect: n.featured_image.aspect ?? undefined,
     }
-  : neighborhoodLogos[n.slug];
+  : undefined;
 const logoScale = logo?.scale ?? 1;
 const logoAspect = logo?.aspect ?? 1;
 // Cap box = grid content box (226×153.5) × ~2.18. A wide mark is width-capped,
