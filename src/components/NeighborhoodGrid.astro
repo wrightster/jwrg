@@ -76,8 +76,13 @@ const cards = await Promise.all(
       // card background instead.
       const heroWebp = photoSrcSet(n.primary_photo, 'webp');
       // Some neighborhoods display a brand logo (over the site background)
-      // instead of an API photo — see localLogos above.
-      const logo = localLogos[n.slug];
+      // instead of an API photo. The office-managed featured image wins — it
+      // rides on the neighborhood record, so slug renames can't orphan it.
+      // The slug-keyed local map is a legacy fallback until every mark is
+      // migrated into the office.
+      const logo = n.featured_image
+        ? { src: n.featured_image.url, scale: n.featured_image.scale ?? undefined }
+        : localLogos[n.slug];
       const logoPct = `${(logo?.scale ?? 1) * 100}%`;
       return (
         <Fragment>
