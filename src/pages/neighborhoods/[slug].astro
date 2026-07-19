@@ -76,11 +76,13 @@ const neighborhoodSite = neighborhoodSites[n.slug];
 
 const photos = n.photos ?? (n.primary_photo ? [n.primary_photo] : []);
 const totalImages = photos.length;
-// The gallery renders whenever the neighborhood has photos. Without a brand
-// mark it doubles as the hero; with one, it sits below the logo hero under a
-// "Photos" heading so attached images (site plans, streetscapes, marketing
-// maps) still surface.
-const showGallery = totalImages > 0;
+// Without a brand mark, the photo grid doubles as the page hero. With one,
+// photos render instead as a compact inline carousel beside the documents
+// (cycle through marketing maps, streetscapes, site plans there) — the mark
+// keeps the hero to itself.
+const showHeroGallery = !logo && totalImages > 0;
+const showInlineGallery = Boolean(logo) && totalImages > 0;
+const igCaptions = photos.map((p) => p.caption ?? '');
 const heroSrcs = photos.slice(0, 5).map((p, i) => photoSrc(p, i === 0 ? 1600 : 800));
 // Alpha-preserving webp so transparent logos used as neighborhood images sit on
 // the light tile background instead of the jpg's black matte.
@@ -161,10 +163,9 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
     </section>
   )}
 
-  {showGallery && (
+  {showHeroGallery && (
     <section class="pb-12">
       <div class="max-w-7xl mx-auto px-6">
-        {logo && <h2 class="font-display text-2xl text-earth-900 mb-4">Photos</h2>}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           {heroSrcs.slice(0, 1).map((src, i) => (
             <button
@@ -269,35 +270,81 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
           </div>
         )}
 
-        {documentGroups.length > 0 && (
+        {(documentGroups.length > 0 || showInlineGallery) && (
           <div>
-            <h2 class="font-display text-2xl text-earth-900 mb-4">Documents &amp; Resources</h2>
-            <div class="space-y-6">
-              {documentGroups.map((group) => (
-                <div>
-                  {!onlyDefaultGroup && (
-                    <h3 class="font-display text-lg text-earth-900 mb-2">{group.name}</h3>
-                  )}
-                  <ul class="space-y-1.5">
-                    {group.documents.map((doc) => (
-                      <li>
-                        <a
-                          href={doc.url}
-                          target="_blank"
-                          rel="noopener"
-                          class="inline-flex items-start gap-2 text-red-600 hover:text-red-700 text-sm"
-                        >
-                          <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                          <span>{doc.title}</span>
-                        </a>
-                        {doc.description && (
-                          <p class="text-earth-500 text-xs ml-6 mt-0.5">{doc.description}</p>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+            <h2 class="font-display text-2xl text-earth-900 mb-4">
+              {documentGroups.length > 0 ? 'Documents & Resources' : 'Photos'}
+            </h2>
+            <div class={documentGroups.length > 0 && showInlineGallery ? 'grid md:grid-cols-2 gap-8 items-start' : ''}>
+              {documentGroups.length > 0 && (
+                <div class="space-y-6">
+                  {documentGroups.map((group) => (
+                    <div>
+                      {!onlyDefaultGroup && (
+                        <h3 class="font-display text-lg text-earth-900 mb-2">{group.name}</h3>
+                      )}
+                      <ul class="space-y-1.5">
+                        {group.documents.map((doc) => (
+                          <li>
+                            <a
+                              href={doc.url}
+                              target="_blank"
+                              rel="noopener"
+                              class="inline-flex items-start gap-2 text-red-600 hover:text-red-700 text-sm"
+                            >
+                              <svg class="w-4 h-4 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                              <span>{doc.title}</span>
+                            </a>
+                            {doc.description && (
+                              <p class="text-earth-500 text-xs ml-6 mt-0.5">{doc.description}</p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+              {showInlineGallery && (
+                <div id="inline-gallery" class="md:sticky md:top-28">
+                  <div class="relative aspect-[4/3] rounded-sm overflow-hidden bg-earth-100/60 border border-earth-200/60">
+                    {photos.map((p, i) => (
+                      <button
+                        type="button"
+                        class={`ig-slide absolute inset-0 w-full h-full cursor-pointer ${i === 0 ? '' : 'hidden'}`}
+                        data-lb-index={i}
+                        aria-label={`View photo ${i + 1} of ${totalImages} full screen`}
+                      >
+                        <picture class="contents">
+                          {photoSrcSet(p, 'webp') && (
+                            <source type="image/webp" srcset={photoSrcSet(p, 'webp')} sizes="(min-width:768px) 33vw, 100vw" />
+                          )}
+                          <img
+                            src={photoSrc(p, 800) ?? undefined}
+                            alt={p.alt ?? p.caption ?? n.name}
+                            class="w-full h-full object-contain"
+                            loading="lazy"
+                          />
+                        </picture>
+                      </button>
+                    ))}
+                    {totalImages > 1 && (
+                      <>
+                        <button type="button" id="ig-prev" aria-label="Previous photo" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-earth-50/95 text-earth-900 hover:bg-red-600 hover:text-earth-50 flex items-center justify-center shadow transition-colors">
+                          <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                        </button>
+                        <button type="button" id="ig-next" aria-label="Next photo" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-earth-50/95 text-earth-900 hover:bg-red-600 hover:text-earth-50 flex items-center justify-center shadow transition-colors">
+                          <svg class="w-5 h-5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  <div class="flex items-center justify-between gap-4 mt-2 text-xs text-earth-500">
+                    <span id="ig-caption">{igCaptions[0]}</span>
+                    {totalImages > 1 && <span id="ig-counter" class="tabular-nums shrink-0">1 / {totalImages}</span>}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -393,7 +440,7 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
 
   <MiniContactForm neighborhoodId={n.id} />
 
-  {showGallery && (
+  {(showHeroGallery || showInlineGallery) && (
     <div
       id="lightbox"
       class="lightbox"
@@ -507,8 +554,8 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
     }
   </style>
 
-  {showGallery && (
-    <script define:vars={{ lightboxSrcs, totalImages }}>
+  {(showHeroGallery || showInlineGallery) && (
+    <script define:vars={{ lightboxSrcs, totalImages, igCaptions }}>
       let currentIndex = 0;
       let trigger = null;
 
@@ -615,6 +662,31 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
           if (dx < 0) next(); else prev();
         }
       }, { passive: true });
+
+      // Inline carousel (beside the documents): cycle slides in place; a
+      // click on the visible slide opens the shared lightbox at that photo.
+      const igSlides = Array.from(document.querySelectorAll('.ig-slide'));
+      if (igSlides.length > 0) {
+        const igCaption = document.getElementById('ig-caption');
+        const igCounter = document.getElementById('ig-counter');
+        let igIndex = 0;
+
+        function showSlide(i) {
+          igIndex = (i + igSlides.length) % igSlides.length;
+          igSlides.forEach((slide, j) => slide.classList.toggle('hidden', j !== igIndex));
+          if (igCaption) igCaption.textContent = igCaptions[igIndex] ?? '';
+          if (igCounter) igCounter.textContent = `${igIndex + 1} / ${igSlides.length}`;
+        }
+
+        document.getElementById('ig-prev')?.addEventListener('click', () => showSlide(igIndex - 1));
+        document.getElementById('ig-next')?.addEventListener('click', () => showSlide(igIndex + 1));
+
+        igSlides.forEach((slide) => {
+          slide.addEventListener('click', () => {
+            openLightbox(parseInt(slide.getAttribute('data-lb-index') ?? '0', 10), slide);
+          });
+        });
+      }
     </script>
   )}
 </BaseLayout>
