@@ -76,8 +76,11 @@ const neighborhoodSite = neighborhoodSites[n.slug];
 
 const photos = n.photos ?? (n.primary_photo ? [n.primary_photo] : []);
 const totalImages = photos.length;
-// Only show the API photo gallery when there's no local logo taking the hero.
-const showGallery = !logo && totalImages > 0;
+// The gallery renders whenever the neighborhood has photos. Without a brand
+// mark it doubles as the hero; with one, it sits below the logo hero under a
+// "Photos" heading so attached images (site plans, streetscapes, marketing
+// maps) still surface.
+const showGallery = totalImages > 0;
 const heroSrcs = photos.slice(0, 5).map((p, i) => photoSrc(p, i === 0 ? 1600 : 800));
 // Alpha-preserving webp so transparent logos used as neighborhood images sit on
 // the light tile background instead of the jpg's black matte.
@@ -161,6 +164,7 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
   {showGallery && (
     <section class="pb-12">
       <div class="max-w-7xl mx-auto px-6">
+        {logo && <h2 class="font-display text-2xl text-earth-900 mb-4">Photos</h2>}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
           {heroSrcs.slice(0, 1).map((src, i) => (
             <button
