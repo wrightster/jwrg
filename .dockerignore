@@ -1,0 +1,14 @@
+# Keep the build context small and reproducible — deps + build output are
+# generated inside the image, never copied from the host.
+node_modules
+dist
+.astro
+.git
+.github
+.vscode
+*.log
+npm-debug.log*
+.DS_Store
+.env
+.env.*
+deploy
