@@ -8,7 +8,7 @@ from where the last one stopped.
 
 JWRG has been moved onto the unified 2026 brand — the same red·earth·gold +
 Gabarito/Anek-Latin system JWLC uses — keeping JWRG's own logo (from the
-`wrightster/JWRG-JWLC-Design` repo) and all residential content. Nav is now a
+`wrightster/JW-Brand-Assets` repo) and all residential content. Nav is now a
 flat top-level bar (deeper pages reached from section landing pages).
 
 **Done**
