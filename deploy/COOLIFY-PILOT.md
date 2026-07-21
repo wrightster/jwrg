@@ -19,28 +19,73 @@ the pilot renders live (read-only) against `office.jwrgnc.com`.
 
 ---
 
+## Security model — two planes
+
+Coolify has two surfaces that need **opposite** treatment. Get this right before
+exposing anything; most Coolify compromises are an open `:8000` or `:22`, not the
+apps.
+
+- **App plane (public):** `80`/`443` serving the actual sites — *should* be public.
+- **Management plane (private):** the dashboard (`:8000`), the REST API, and SSH
+  (`:22`) — must **not** be on the public internet. We reach these over Tailscale.
+
+---
+
 ## Runbook
 
 ### 1. Droplet
 - DigitalOcean, **4 GB / 2 vCPU** (Ubuntu 24.04). 4 GB gives Dockerized Astro
   builds headroom; on 2 GB add a swap file or builds may OOM.
-- Open firewall: **22, 80, 443, 8000** (8000 = Coolify dashboard).
 
-### 2. Install Coolify
+### 2. Lock the public surface + private management (do this FIRST)
+- **DO Cloud Firewall** (managed, off-box — cleaner than `ufw`): inbound allow
+  **`80` and `443` only**. Do **not** open `22` or `8000` to the world.
+  - Bootstrap access without public SSH: use DigitalOcean's **web console**, or
+    temporarily allow `22` from your current IP and remove that rule once
+    Tailscale (below) is up.
+- **Tailscale** on the droplet **and** your Mac. SSH and the dashboard are then
+  reachable only over the WireGuard tailnet at `http://<droplet-tailscale-ip>:8000`
+  — zero public exposure, no public TLS cert needed for the dashboard. Tailscale
+  traverses NAT via outbound/DERP, so the locked-down inbound firewall doesn't
+  block it.
+- **Harden:** enable **2FA** on the Coolify admin account (step 3); SSH key-only
+  with root password login disabled; leave Coolify auto-update on.
+
+### 3. Install Coolify
 ```bash
 curl -fsSL https://cdn.coollabs.io/coolify/install.sh | sudo bash
 ```
-Open `http://<DROPLET_IP>:8000`, create the admin account, finish onboarding.
+Reach the dashboard **over the tailnet** at `http://<droplet-tailscale-ip>:8000`,
+create the admin account, **enable 2FA**, finish onboarding.
 
-### 3. DNS
-- `A  main.juliewrightrealtygroup.com  ->  <DROPLET_IP>`  (low TTL, e.g. 300).
-- Must resolve before you set the domain in Coolify, or Let's Encrypt can't issue.
+### 4. Scoped API token (for Claude / automation)
+- Coolify → **Keys & Tokens → API Tokens** → new token scoped to **deploy +
+  write** on this team/project — **not** the `root` scope. Enough to create,
+  configure, deploy, and read logs; can't delete the server or touch other
+  projects. Revocable in one click; every call is attributed in the audit log.
+- Store it on your Mac **outside any git repo**: `~/.config/coolify/token`,
+  `chmod 600`. It's never committed or written into a repo file.
+- How Claude uses it — runs in Bash on your Mac, so it reaches the private API
+  directly over the tailnet:
+  ```bash
+  curl -s -H "Authorization: Bearer $(cat ~/.config/coolify/token)" \
+    http://<droplet-tailscale-ip>:8000/api/v1/applications
+  ```
+  Routine deploys still fire automatically on git push (GitHub webhook); the
+  token is for setup, config, and observability. SSH over Tailscale only for the
+  rare thing the API can't do. Destructive/outward ops (delete app, move DNS)
+  stay gated on your explicit go-ahead.
 
-### 4. Connect GitHub
+### 5. DNS
+- `A  main.juliewrightrealtygroup.com  ->  <DROPLET_PUBLIC_IP>`  (low TTL, e.g. 300).
+- Must resolve before you set the domain in Coolify, or Let's Encrypt (HTTP-01 on
+  the public `80`) can't issue.
+
+### 6. Connect GitHub
 - Coolify → **Sources → GitHub App** → install on the `wrightster` account and
   grant access to the **`jwrg`** repo.
 
-### 5. Create the application
+### 7. Create the application
 - New **Application** → from the GitHub source → repo **`jwrg`**, branch
   **`coolify-pilot`**.
 - **Build Pack: Dockerfile** (root `./Dockerfile`).
@@ -51,7 +96,7 @@ Open `http://<DROPLET_IP>:8000`, create the admin account, finish onboarding.
   container once this returns 200 → that's the zero-downtime gate).
 - Env vars: none required.
 
-### 6. Deploy & verify
+### 8. Deploy & verify
 - Click **Deploy**; watch build logs (first build pulls the base image + `npm ci`
   — a few minutes).
 - Smoke test:
@@ -61,7 +106,7 @@ Open `http://<DROPLET_IP>:8000`, create the admin account, finish onboarding.
   Then load `/`, `/listings`, `/neighborhoods`, and a listing detail — confirm
   **live** office data renders (the server-island sections stream in).
 
-### 7. Prove zero-downtime (the whole point)
+### 9. Prove zero-downtime (the whole point)
 In one terminal, poll continuously:
 ```bash
 while true; do \
