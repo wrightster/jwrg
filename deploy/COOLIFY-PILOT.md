@@ -10,7 +10,7 @@ auto-deploys `main`.
 
 | File | Purpose |
 |---|---|
-| `Dockerfile` | Multi-stage build of the `@astrojs/node` standalone server. Binds `0.0.0.0:4321` (the repo's `npm start` binds `127.0.0.1`, which containers can't expose). |
+| `Dockerfile` | Multi-stage build of the `@astrojs/node` standalone server. Binds `0.0.0.0:4321` (the repo's `npm start` binds `127.0.0.1`, which containers can't expose). Installs `curl` in the runtime image — Coolify's health check runs `curl` *inside* the container and `node:22-slim` ships neither curl nor wget (without it the container builds + starts fine but is marked unhealthy and rolled back). |
 | `.dockerignore` | Keeps the build context lean; deps/build output are generated in-image. |
 | `src/pages/healthz.ts` | `GET /healthz` → `200 ok`, SSR, no API dependency. Health-check target. |
 
@@ -93,7 +93,9 @@ create the admin account, **enable 2FA**, finish onboarding.
 - **Domain (FQDN): `https://main.juliewrightrealtygroup.com`** — Coolify's
   Traefik proxy provisions Let's Encrypt automatically.
 - **Health check**: path `/healthz`, port `4321` (Coolify only swaps traffic to a
-  container once this returns 200 → that's the zero-downtime gate).
+  container once this returns 200 → that's the zero-downtime gate). The probe runs
+  `curl` **inside** the container, so the runtime image must contain `curl`/`wget`
+  — the Dockerfile installs `curl` for exactly this reason.
 - Env vars: none required.
 
 ### 8. Deploy & verify
