@@ -24,6 +24,13 @@ RUN npm run build
 # ---- runtime --------------------------------------------------------------
 FROM node:22-slim AS runtime
 WORKDIR /app
+# curl is required by Coolify's health check, which runs INSIDE the container
+# (`curl http://localhost:PORT/healthz`). node:22-slim ships neither curl nor
+# wget, so without this the container is marked unhealthy and rolled back even
+# though the server started fine. Keep it.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 # Astro's node adapter reads HOST/PORT. Bind all interfaces so Coolify's proxy
 # can reach the container; keep the port in sync with Coolify's "Ports Exposes".
