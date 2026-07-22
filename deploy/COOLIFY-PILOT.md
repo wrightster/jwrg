@@ -1,5 +1,13 @@
 # Coolify pilot — jwrg on `main.juliewrightrealtygroup.com`
 
+> **STATUS (2026-07-22): LIVE IN PRODUCTION.** This began as a pilot on
+> `main.juliewrightrealtygroup.com`, but jwrg is now fully cut over — the apex
+> `juliewrightrealtygroup.com` (+ `www`) is served by Coolify with a Let's Encrypt
+> cert and zero-downtime deploys; the old Ploi box no longer receives its traffic.
+> Treat this as **the jwrg deploy doc**, not a proposal. Still open (manual):
+> retire the old Ploi jwrg + `search.*` sites, and set the push-to-deploy secrets
+> for `.github/workflows/deploy-coolify.yml` (see §"Cutover notes").
+
 Goal: prove out zero-downtime deploys for the Astro fleet by running **jwrg** on
 a **new droplet + Coolify**, on the throwaway subdomain
 `main.juliewrightrealtygroup.com`. Production (Ploi, `juliewrightrealtygroup.com`)
