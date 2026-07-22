@@ -1,0 +1,42 @@
+name: Deploy to Coolify
+
+# Coolify's API is reachable only over Tailscale (locked down — no public
+# exposure), so GitHub's webhooks can't reach it. Instead, on push to main this
+# workflow joins the tailnet as an ephemeral node and calls the Coolify deploy
+# API directly.
+#
+# To ENABLE (currently no-ops until the repo variable below is set):
+#   Repo → Settings → Secrets and variables → Actions
+#   Variables:
+#     COOLIFY_HOST     = 100.94.121.24:8000              (the box's tailscale addr)
+#     COOLIFY_APP_UUID = ieunvd3nlxbnv1chvg3ghc3n        (the jwrg app)
+#   Secrets:
+#     TS_OAUTH_CLIENT_ID / TS_OAUTH_SECRET  - a Tailscale OAuth client scoped to
+#                                             tag:ci (define tag:ci in the tailnet
+#                                             ACL and authorize the OAuth client)
+#     COOLIFY_TOKEN                          - the scoped Coolify API token
+#
+# Also: set Coolify's "Allowed IPs for API Access" to the tailnet range
+# 100.64.0.0/10 (CI joins with a dynamic tailnet IP, not the Mac's fixed one).
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # No-op until configured, so pushes never fail before the secrets exist.
+    if: ${{ vars.COOLIFY_APP_UUID != '' }}
+    steps:
+      - name: Join Tailscale (ephemeral)
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - name: Trigger Coolify deploy
+        run: |
+          curl -fsS -X GET \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
+            "http://${{ vars.COOLIFY_HOST }}/api/v1/deploy?uuid=${{ vars.COOLIFY_APP_UUID }}&force=false"
