@@ -1,22 +1,13 @@
 ---
-// SSR: the featured strip reflects live listings (short-cached by middleware).
-export const prerender = false;
+// Prerendered shell: the only request-time data was the featured strip, which
+// now renders in a deferred server island (<FeaturedListings server:defer>). The
+// shell (hero + how-we-help + CTA) is static and paints instantly; the live
+// strip streams in behind its skeleton fallback.
+export const prerender = true;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ListingCard from '../components/ListingCard.astro';
 import BtnArrow from '../components/BtnArrow.astro';
-import { fetchListings, type ApiListing } from '../lib/api';
-
-let apiError = false;
-let featuredListings: ApiListing[] = [];
-try {
-  featuredListings = await fetchListings({ featured: true, perPage: 6 });
-  if (featuredListings.length === 0) {
-    featuredListings = (await fetchListings({ perPage: 6 }));
-  }
-} catch {
-  apiError = true;
-}
+import FeaturedListings from '../components/FeaturedListings.astro';
 
 // Photos are CC0 (StockSnap) — free for commercial use, no attribution required.
 const helpLinks = [
@@ -57,17 +48,20 @@ const helpLinks = [
         </div>
         <BtnArrow href="/listings" variant="primary">View All</BtnArrow>
       </div>
-      {apiError ? (
-        <p class="text-earth-600 text-center py-8">Listings are temporarily unavailable — please try again shortly.</p>
-      ) : featuredListings.length === 0 ? (
-        <p class="text-earth-600 text-center py-8">New listings are on the way. Check back soon.</p>
-      ) : (
-        <div class="featured-grid">
-          {featuredListings.slice(0, 6).map((listing, i) => (
-            <ListingCard listing={listing} index={i} />
+      <FeaturedListings server:defer>
+        <div slot="fallback" class="featured-grid" aria-hidden="true">
+          {Array.from({ length: 6 }).map(() => (
+            <div class="rounded-sm overflow-hidden ring-1 ring-inset ring-earth-100 bg-white">
+              <div class="aspect-[4/3] bg-earth-100 animate-pulse"></div>
+              <div class="p-4 space-y-2">
+                <div class="h-4 w-1/2 bg-earth-100 rounded animate-pulse"></div>
+                <div class="h-3 w-3/4 bg-earth-100 rounded animate-pulse"></div>
+                <div class="h-3 w-2/3 bg-earth-100 rounded animate-pulse"></div>
+              </div>
+            </div>
           ))}
         </div>
-      )}
+      </FeaturedListings>
     </div>
   </section>
 

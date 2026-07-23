@@ -1,0 +1,32 @@
+---
+// Server island (used with `server:defer`): the home "Current Listings" strip,
+// live from the office API. Deferring it lets the home shell (hero + how-we-help
+// + CTA) prerender and paint instantly; the strip streams in behind its skeleton
+// fallback. No client script here, so it's safe inside an island (see the
+// listings page for the script-in-island caveat, withastro/astro#12294).
+import ListingCard from './ListingCard.astro';
+import { fetchListings, type ApiListing } from '../lib/api';
+
+let apiError = false;
+let featuredListings: ApiListing[] = [];
+try {
+  featuredListings = await fetchListings({ featured: true, perPage: 6 });
+  if (featuredListings.length === 0) {
+    featuredListings = await fetchListings({ perPage: 6 });
+  }
+} catch {
+  apiError = true;
+}
+---
+
+{apiError ? (
+  <p class="text-earth-600 text-center py-8">Listings are temporarily unavailable — please try again shortly.</p>
+) : featuredListings.length === 0 ? (
+  <p class="text-earth-600 text-center py-8">New listings are on the way. Check back soon.</p>
+) : (
+  <div class="featured-grid">
+    {featuredListings.slice(0, 6).map((listing, i) => (
+      <ListingCard listing={listing} index={i} />
+    ))}
+  </div>
+)}

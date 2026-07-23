@@ -11,7 +11,7 @@ Real estate website for a North Carolina full-service brokerage (Triangle / Wake
 - **Local dev**: `npm run dev` → localhost:4321
 - **Backend**: `https://office.jwrgnc.com` (Laravel/Filament at `~/Herd/jwrg_office`)
 - **Site slug for API filtering**: `jwrg` (set in `src/lib/api.ts` as `SITE_SLUG`)
-- **Production**: juliewrightrealtygroup.com (rebuild in progress; legacy site still live)
+- **Production**: **https://juliewrightrealtygroup.com** (apex + www) — **live on Coolify** (its own DO droplet, zero-downtime deploys) since 2026-07. See §"Deployment" below and `deploy/COOLIFY-PILOT.md`.
 
 ## Commands
 
@@ -19,6 +19,30 @@ Real estate website for a North Carolina full-service brokerage (Triangle / Wake
 - `npm run build` — Production build to `./dist/`
 - `npm run start` — Run production server (`HOST=127.0.0.1 PORT=4342 node ./dist/server/entry.mjs`)
 - `npm run preview` — Astro preview
+
+## Deployment (Coolify, since 2026-07)
+
+Production `juliewrightrealtygroup.com` (apex + www) runs on **Coolify** on its own
+DigitalOcean droplet — **not** the shared Ploi box — with **zero-downtime** rolling
+deploys. Full runbook + operational IDs (project/app/server UUIDs, API access) in
+**`deploy/COOLIFY-PILOT.md`**. Essentials:
+
+- **Container**: `Dockerfile` (multi-stage) builds the `@astrojs/node` standalone
+  server. It binds `0.0.0.0:4321` (the `npm run start` `127.0.0.1` bind is local-only
+  and fatal in a container) and installs `curl` for Coolify's in-container health
+  check (`GET /healthz` → `src/pages/healthz.ts`). Don't remove either.
+- **Deploys**: triggered via the Coolify API (the app was created from the public
+  repo, so no GitHub webhook). `.github/workflows/deploy-coolify.yml` adds
+  push-to-deploy but is inert until its repo secrets/vars are set. A push to `main`
+  still triggers a now-pointless Ploi build until the old Ploi jwrg site is retired.
+- **Management plane is Tailscale-only** — Coolify's dashboard/API is not public.
+- **Legacy redirects live in the app** so they travel with it onto Traefik: exact
+  Dakno→new-site 301s are in `astro.config.mjs` `redirects`; prefix fallbacks
+  (`/staff`, `/neighborhood`, `/area`, `/property`) are SSR catch-all routes at
+  `src/pages/<prefix>/[...slug].ts` — **not** middleware (node-standalone serves the
+  prerendered 404 before middleware runs, so a 404-gated fallback silently never
+  fires). `search.*` redirects at the Cloudflare edge. Reference map:
+  `deploy/jwrg-legacy-redirects.conf`.
 
 ## Architecture
 
@@ -86,7 +110,7 @@ Also present but unused by the current chrome: `JWRG_Icon.svg`, `JWRG_Icon_Red.s
 - **SSR mode** via `@astrojs/node` standalone adapter (`output: 'server'` in `astro.config.mjs`). Most pages should set `export const prerender = true` for static output unless they genuinely need request-time rendering.
 - **Listings via API** — fetched from `office.jwrgnc.com/api/v1` filtered by `?site=jwrg`. See `../../SHARED_FRONTEND_GUIDE.md` for the contract.
 - **Team & neighborhoods via API** — fetched from the office (`fetchTeam` / `fetchNeighborhoods` in `src/lib/api.ts`), same as listings. They are *not* static — but see "Server islands" below: as of 2026-07 the `/listings`, `/neighborhoods`, and `/about` **pages** are prerendered shells and the actual API fetch happens inside a deferred island component, not the page.
-- **Server islands (perceived-perf, 2026-07)** — `/listings`, `/neighborhoods`, and `/about` were flipped from full SSR to a **prerendered static shell** whose data-bound section is a `server:defer` island that fetches its own data: `ListingsBrowser.astro`, `NeighborhoodGrid.astro`, `TeamGrid.astro` in `src/components/`. The shell + banner paint instantly; the section streams in behind a `slot="fallback"` skeleton (`animate-pulse`). **Caveat that shaped the design:** a client `<script>` placed *inside* a server island runs unreliably ([withastro/astro#12294](https://github.com/withastro/astro/issues/12294)) — so the listings filter/pagination/view-toggle controller stays on the **page** (`listings/index.astro`), wrapped in `initListings()` and gated on the island arriving: the island root carries `data-listings-ready`, and a `MutationObserver` on `#listings-mount` fires the controller once it appears. Islands with no client script (team, neighborhoods) need no gating. Mirrored on JWLC (`listings.astro`, `about.astro`). `BaseLayout` also `preconnect`s to `office.jwrgnc.com` (photo host).
+- **Server islands (perceived-perf, 2026-07)** — the home page (`index.astro`), `/listings`, `/neighborhoods`, and `/about` were flipped from full SSR to a **prerendered static shell** whose data-bound section is a `server:defer` island that fetches its own data: `FeaturedListings.astro`, `ListingsBrowser.astro`, `NeighborhoodGrid.astro`, `TeamGrid.astro` in `src/components/`. The shell + banner paint instantly; the section streams in behind a `slot="fallback"` skeleton (`animate-pulse`). **Caveat that shaped the design:** a client `<script>` placed *inside* a server island runs unreliably ([withastro/astro#12294](https://github.com/withastro/astro/issues/12294)) — so the listings filter/pagination/view-toggle controller stays on the **page** (`listings/index.astro`), wrapped in `initListings()` and gated on the island arriving: the island root carries `data-listings-ready`, and a `MutationObserver` on `#listings-mount` fires the controller once it appears. Islands with no client script (featured strip, team, neighborhoods) need no gating — only the listings page has one. Mirrored on JWLC (`index.astro`, `listings.astro`, `about.astro`). `BaseLayout` also `preconnect`s to `office.jwrgnc.com` (photo host).
 - **Static content** (FAQs, glossary, moving/staging tips, counties, site metadata) lives in `src/data/*.ts`.
 - **No React/Vue** — pure Astro components.
 
