@@ -147,3 +147,44 @@ Not part of the pilot — captured so we don't forget:
    move `juliewrightrealtygroup.com` apex/www DNS to the Coolify box, and retire
    the jwrg Node deploy on Ploi. Then repeat the pattern for jwlc + the
    neighborhood sites.
+
+---
+
+## Auto-deploy: GitHub Actions secrets (public vs private repos)
+
+Coolify's API is Tailscale-only, so GitHub webhooks can't reach it —
+`.github/workflows/deploy-coolify.yml` instead joins the tailnet on push and
+calls the deploy API. It needs 3 secrets + 2 variables:
+
+| Kind | Name | Value | Same for every site? |
+|---|---|---|---|
+| secret | `TS_OAUTH_CLIENT_ID` | Tailscale trust-credential (OAuth) client id, scope `Auth Keys:write`, tag `tag:ci` | ✅ |
+| secret | `TS_OAUTH_SECRET` | …its secret | ✅ |
+| secret | `COOLIFY_TOKEN` | scoped Coolify API token (`~/.config/coolify/token`) | ✅ |
+| variable | `COOLIFY_HOST` | `100.94.121.24:8000` | ✅ |
+| variable | `COOLIFY_APP_UUID` | the site's Coolify app uuid (jwrg = `ieunvd3nlxbnv1chvg3ghc3n`) | ❌ per-site |
+
+Fleet-wide, set-once prerequisites (not per repo): the Tailscale `tag:ci`
+tagOwner + OAuth trust credential, and Coolify's **API Allowed-IPs widened to the
+tailnet range `100.64.0.0/10`** (CI joins with a *dynamic* tailnet IP, so a
+single-IP allowlist would 403 it).
+
+**The GitHub Free gotcha — org secrets don't reach private repos.** On the Free
+org plan, **organization** secrets can be used by **public** repos only (the
+"Private repositories" scope is greyed out: *"Organization secrets cannot be used
+by private repositories with your plan"*). So:
+
+- **Public repos** (`jwrg`, `jwlc`, `jw-shared`) → set the 3 secrets + `COOLIFY_HOST`
+  **once as org-level** secrets/variables; only `COOLIFY_APP_UUID` is per-repo.
+- **Private repos** (the 4 neighborhood sites + `jwrg-brochures`) → org secrets
+  won't apply. Use **repository-level** secrets instead — paste the same 3 values
+  into each private repo's own Settings → Secrets → Actions. Repo secrets work on
+  private repos on Free; the only cost is re-pasting per repo. Do it per site at
+  migration time (they're all still on Ploi until then, where push = deploy with
+  no secrets).
+- **Upgrading to GitHub Team** (~$4/mo, one solo seat) lifts this — org secrets
+  then reach private repos. Optional convenience once several private Coolify
+  sites exist; not required.
+
+Note: GitHub **Actions itself** on private repos is free (2,000 min/mo; this
+job runs seconds). The only thing gated is org-secret *scope*, not running Actions.
