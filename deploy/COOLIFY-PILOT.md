@@ -188,3 +188,47 @@ by private repositories with your plan"*). So:
 
 Note: GitHub **Actions itself** on private repos is free (2,000 min/mo; this
 job runs seconds). The only thing gated is org-secret *scope*, not running Actions.
+
+---
+
+## Staging tier
+
+Each Coolify site gets a staging deployment from a **`staging` branch** at
+`<site>.stage.jwrgnc.com`. jwrg's staging pilot (2026-07-24) is the reference.
+
+**Structure**
+- Coolify project `julie-wright-sites` → **`staging` environment** (uuid
+  `pepwi1f4hxiqtasyxrkm1zbb`) alongside `production`.
+- App **`jwrg-staging`** (uuid `m11r2gz1cimucnayzszpuf6k`), tracks branch
+  **`staging`**, domain **`jwrg.stage.jwrgnc.com`**, Dockerfile build, health
+  check `/healthz`.
+- DNS: `jwrg.stage.jwrgnc.com` A → the droplet (dns-only). Intended fleet
+  convention is a **`*.stage.jwrgnc.com` wildcard** so new staging sites need no
+  per-site DNS — not yet created (the wildcard write was blocked by the safety
+  classifier; approve it to enable zero-DNS staging).
+
+**Noindex (`SITE_ENV`)** — the staging app sets env var **`SITE_ENV=staging`**
+(`is_buildtime` + `is_runtime`). It drives two signals so staging is never indexed:
+- `src/pages/robots.txt.ts` is SSR → returns `Disallow: /` at runtime when
+  `SITE_ENV=staging`.
+- `src/layouts/BaseLayout.astro` emits `<meta name="robots" content="noindex,
+  nofollow">` — baked at **build** time (pages are prerendered), so the Dockerfile
+  takes `SITE_ENV` as a build **ARG** (defaults `production`; the staging env var
+  is passed as a build arg). Prod builds (no `SITE_ENV`) are unaffected.
+
+**Data & forms** — staging reads the **same prod office API** (realistic data).
+Forms submit to the prod office, so when testing a staging form use a **`+test`
+email** (`you+test@…`) — the office marks `+test` submissions as test, tags them,
+and does **not** notify agents (`FormController::isTestSubmission`). No sink form
+or code needed.
+
+**Promotion flow** — work → push `staging` → preview at `jwrg.stage.jwrgnc.com`
+→ fast-forward `staging` into `main` (→ prod auto-deploys). The `SITE_ENV`/noindex
+infra lives on `staging`; it's backwards-compatible (defaults to production) so it
+flows to `main` harmlessly on first promotion.
+
+**Adding staging for another site** — create a `staging` branch, add the
+`SITE_ENV` ARG to its Dockerfile + the robots/meta gates (copy jwrg), create a
+Coolify app in the `staging` environment on the `staging` branch at
+`<site>.stage.jwrgnc.com`, set `SITE_ENV=staging`, and add a `<site>.stage` DNS
+record (or rely on the wildcard once it exists).
