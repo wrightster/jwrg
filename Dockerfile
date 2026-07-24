@@ -19,6 +19,12 @@ RUN apt-get update \
 COPY package*.json ./
 RUN npm ci
 COPY . .
+# SITE_ENV drives env-aware output baked at build time (the noindex meta on
+# prerendered pages — see src/layouts/BaseLayout.astro). Defaults to production,
+# so prod builds are unaffected; the Coolify staging app passes --build-arg
+# SITE_ENV=staging. (robots.txt is SSR and reads SITE_ENV at runtime instead.)
+ARG SITE_ENV=production
+ENV SITE_ENV=$SITE_ENV
 RUN npm run build
 
 # ---- runtime --------------------------------------------------------------

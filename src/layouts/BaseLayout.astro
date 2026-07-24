@@ -26,6 +26,11 @@ const {
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
+// Staging builds (SITE_ENV=staging) emit a noindex meta so search engines never
+// index the staging host. These pages are prerendered, so this is read at BUILD
+// time — the Coolify staging app passes SITE_ENV as a build arg (see Dockerfile).
+// Belt-and-suspenders with the SSR robots.txt, which blocks crawling at runtime.
+const isStaging = process.env.SITE_ENV === 'staging';
 // Canonical from the configured site host (astro.config `site`), NOT the request
 // origin — so the canonical never floats to whatever hostname a crawler used and
 // always agrees with og:image/og:url below. Query strings are dropped by design.
@@ -80,6 +85,7 @@ const footerNav = [
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    {isStaging && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" type="image/svg+xml" href="/JWRG_Icon_Inset.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Warm the connection to the office host up front: every listing, team, and
