@@ -31,10 +31,17 @@ deploys. Full runbook + operational IDs (project/app/server UUIDs, API access) i
   server. It binds `0.0.0.0:4321` (the `npm run start` `127.0.0.1` bind is local-only
   and fatal in a container) and installs `curl` for Coolify's in-container health
   check (`GET /healthz` → `src/pages/healthz.ts`). Don't remove either.
-- **Deploys**: triggered via the Coolify API (the app was created from the public
-  repo, so no GitHub webhook). `.github/workflows/deploy-coolify.yml` adds
-  push-to-deploy but is inert until its repo secrets/vars are set. A push to `main`
-  still triggers a now-pointless Ploi build until the old Ploi jwrg site is retired.
+- **Deploys**: **push to `main` auto-deploys** — `.github/workflows/deploy-coolify.yml`
+  joins the tailnet and calls the Coolify deploy API (org-level secrets +
+  `COOLIFY_APP_UUID` repo variable). You can also deploy manually via the Coolify
+  API/dashboard. The old Ploi jwrg site no longer receives traffic; retire it when
+  convenient.
+- **Staging**: a `staging` branch deploys to **`jwrg.stage.jwrgnc.com`** (Coolify
+  `staging` environment, app `jwrg-staging`). Staging sets `SITE_ENV=staging`,
+  which emits `noindex` (robots.txt is SSR + reads it at runtime; the `<meta
+  name="robots">` bakes at build via the Dockerfile `SITE_ENV` ARG). It reads the
+  **same prod office API** — test forms with a `+test` email so the office skips
+  agent notification. Flow: push `staging` → preview → fast-forward into `main`.
 - **Management plane is Tailscale-only** — Coolify's dashboard/API is not public.
 - **Legacy redirects live in the app** so they travel with it onto Traefik: exact
   Dakno→new-site 301s are in `astro.config.mjs` `redirects`; prefix fallbacks
