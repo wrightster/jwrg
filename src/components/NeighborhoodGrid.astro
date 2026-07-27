@@ -23,15 +23,25 @@ const plannedStatuses = new Set(['planning', 'under_development']);
 // Enrich each neighborhood with its display tag + inventory count. Available
 // listings win; only fall back to a live lot count for neighborhoods that have
 // no available listings (so lot-based communities still show a number).
+//
+// The lot count now rides on the index payload as `available_lots_count`
+// (OFFICE_MCP_REQUESTS §13), so the whole grid is a single `fetchNeighborhoods()`
+// round-trip. The per-card `fetchNeighborhoodLots()` fan-out remains only as a
+// fallback for older office builds that predate the field — it drops out entirely
+// once the office deploy lands.
 const cards = await Promise.all(
   neighborhoods.map(async (n) => {
     const listings = n.listings_count ?? 0;
     let count = listings;
     let unit: 'listing' | 'lot' = 'listing';
     if (listings === 0) {
-      const lots = await fetchNeighborhoodLots(n.slug).catch(() => []);
-      count = lots.filter((l) => l.status === 'available').length;
       unit = 'lot';
+      if (typeof n.available_lots_count === 'number') {
+        count = n.available_lots_count;
+      } else {
+        const lots = await fetchNeighborhoodLots(n.slug).catch(() => []);
+        count = lots.filter((l) => l.status === 'available').length;
+      }
     }
     const planned = plannedStatuses.has(n.status ?? '');
     return { n, count, unit, planned };
