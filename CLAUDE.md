@@ -43,6 +43,7 @@ deploys. Full runbook + operational IDs (project/app/server UUIDs, API access) i
   **same prod office API** — test forms with a `+test` email so the office skips
   agent notification. Flow: push `staging` → preview → fast-forward into `main`.
 - **Management plane is Tailscale-only** — Coolify's dashboard/API is not public.
+- **Analytics**: a self-hosted Umami snippet (`is:inline`) is in `BaseLayout.astro` `<head>` → `analytics.jwrgnc.com` (cookieless). Form conversions are tracked by the office widget (`forms.js`), not here. See `../../SHARED_FRONTEND_GUIDE.md` §"Analytics".
 - **Legacy redirects live in the app** so they travel with it onto Traefik: exact
   Dakno→new-site 301s are in `astro.config.mjs` `redirects`; prefix fallbacks
   (`/staff`, `/neighborhood`, `/area`, `/property`) are SSR catch-all routes at
