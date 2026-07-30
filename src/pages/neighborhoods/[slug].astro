@@ -6,6 +6,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import DocumentViewerModal from '../../components/DocumentViewerModal.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
+import LotCard from '../../components/LotCard.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
 import { fetchNeighborhood, fetchListings, fetchNeighborhoodLots, groupDocuments, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
 import { neighborhoodSites } from '../../data/neighborhoodSites';
@@ -30,6 +31,10 @@ const [nListings, lots] = await Promise.all([
 const listingCount = nListings.length;
 const availableLots = lots.filter((l) => l.status === 'available');
 const availableLotCount = availableLots.length;
+// Lots to show as cards: everything except common-area parcels (roads, open
+// space) — a full inventory board, with status pills distinguishing what's
+// still for sale. Keeps the office's lot-number sort.
+const displayLots = lots.filter((l) => l.status !== 'common_area');
 const availableBasePrices = availableLots
   .map((l) => Number(l.base_price))
   .filter((p) => Number.isFinite(p) && p > 0);
@@ -396,7 +401,13 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
             {availableLotCount > 0 && (
               <div>
                 <dt class="text-earth-500 text-xs uppercase tracking-wider">Available Lots</dt>
-                <dd class="text-earth-900 mt-0.5">{availableLotCount}</dd>
+                <dd class="text-earth-900 mt-0.5">
+                  {displayLots.length > 0 ? (
+                    <a href="#homesites" class="text-red-600 hover:text-red-700">{availableLotCount}</a>
+                  ) : (
+                    availableLotCount
+                  )}
+                </dd>
               </div>
             )}
             {startingPriceLabel && (
@@ -419,6 +430,28 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
       </aside>
     </div>
   </section>
+
+  {displayLots.length > 0 && (
+    <section id="homesites" class="pb-16 scroll-mt-28">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+          <div>
+            <h2 class="font-display text-3xl text-earth-900">Homesites in {n.name}</h2>
+          </div>
+          {availableLotCount > 0 && (
+            <p class="text-sm text-earth-500">
+              <span class="font-semibold text-earth-800">{availableLotCount}</span> available
+            </p>
+          )}
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {displayLots.map((lot, i) => (
+            <LotCard lot={lot} neighborhoodSlug={n.slug} neighborhoodName={n.name} index={i} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
   {listingCount > 0 && (
     <section id="homes" class="pb-16 scroll-mt-28">

@@ -10,6 +10,7 @@ import {
   fetchNeighborhoods as sharedFetchNeighborhoods,
   fetchTeam as sharedFetchTeam,
   fetchTeamMember as sharedFetchTeamMember,
+  formatPrice,
   normalizeListingLabel,
   type ApiListing,
   type ListingsQuery,
@@ -43,16 +44,109 @@ export const fetchNeighborhoods = () => sharedFetchNeighborhoods(SITE_SLUG);
 // (`GET /neighborhoods/{slug}/lots`, served by LotResource). Marketing-safe
 // fields only; `base_price` is the advertised asking price (decimal string).
 // JWRG-local for now — promote to @jw/shared if JWLC needs it too.
+export type LotStatus =
+  | 'available'
+  | 'reserved'
+  | 'under_contract'
+  | 'sold'
+  | 'not_released'
+  | 'common_area';
+
+export interface ApiLotBuilder {
+  name: string;
+  short_name: string | null;
+  slug: string | null;
+  website_url: string | null;
+  brand_color: string | null;
+}
+
+export interface ApiLotAgent {
+  name: string;
+  slug: string | null;
+}
+
+export interface ApiLotDocument {
+  id: string | number;
+  title: string;
+  document_type: string | null;
+  url: string | null;
+}
+
 export interface ApiLot {
   id: string;
   lot_number: string;
-  status: 'available' | 'reserved' | 'under_contract' | 'sold' | 'not_released' | 'common_area';
+  status: LotStatus;
   lot_type: string | null;
   address: string | null;
   size_acres: number | string | null;
   size_sqft: number | string | null;
   base_price: number | string | null;
+  // The office LotResource also returns these; older office builds omit them,
+  // so treat as optional. See LotResource@toArray.
+  builder?: ApiLotBuilder | null;
+  agent?: ApiLotAgent | null;
+  documents?: ApiLotDocument[];
 }
+
+// ---------- Lot presentation helpers (shared by LotCard + the detail page) ----------
+
+// The lot map/card colors reuse the listing status-pill palette (keyed by
+// `data-status` in @jw/shared components.css): available→red, gold for the
+// in-between states, dark for sold, gray for coming-soon. `colorKey` is the
+// listing status whose color we borrow; `label` is the human text shown.
+const LOT_STATUS_META: Record<LotStatus, { label: string; colorKey: string }> = {
+  available: { label: 'Available', colorKey: 'available' },
+  reserved: { label: 'Reserved', colorKey: 'under_contract' },
+  under_contract: { label: 'Under Contract', colorKey: 'under_contract' },
+  sold: { label: 'Sold', colorKey: 'sold' },
+  not_released: { label: 'Coming Soon', colorKey: 'coming_soon' },
+  common_area: { label: 'Common Area', colorKey: 'coming_soon' },
+};
+
+export const lotStatusMeta = (status: LotStatus): { label: string; colorKey: string } =>
+  LOT_STATUS_META[status] ?? { label: String(status), colorKey: 'coming_soon' };
+
+// Office LotType enum labels (mirror App\Enums\LotType::getLabel).
+const LOT_TYPE_LABELS: Record<string, string> = {
+  standard: 'Standard',
+  premium: 'Premium',
+  corner: 'Corner',
+  cul_de_sac: 'Cul-de-Sac',
+  waterfront: 'Waterfront',
+  wooded: 'Wooded',
+  common_area: 'Common Area',
+  commercial: 'Commercial',
+};
+
+export const lotTypeLabel = (lotType: string | null | undefined): string | null =>
+  lotType ? (LOT_TYPE_LABELS[lotType] ?? lotType.replace(/_/g, ' ')) : null;
+
+export const lotTitle = (lot: ApiLot): string => lot.address?.trim() || `Lot ${lot.lot_number}`;
+
+export const lotAcresLabel = (lot: ApiLot): string | null => {
+  const n = lot.size_acres != null ? Number(lot.size_acres) : NaN;
+  if (!Number.isFinite(n) || n <= 0) return null;
+  const v = n % 1 === 0 ? String(n) : String(Number(n.toFixed(2)));
+  return `${v} Acre${n === 1 ? '' : 's'}`;
+};
+
+export const lotSqftLabel = (lot: ApiLot): string | null => {
+  const n = lot.size_sqft != null ? Number(lot.size_sqft) : NaN;
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return `${Math.round(n).toLocaleString('en-US')} sq ft`;
+};
+
+// Advertised price, or a soft "inquire" when a lot has no public base_price.
+export const lotPriceLabel = (lot: ApiLot): string => {
+  const n = lot.base_price != null ? Number(lot.base_price) : NaN;
+  if (!Number.isFinite(n) || n <= 0) return 'Inquire for pricing';
+  return formatPrice(String(n));
+};
+
+// Path to a lot's detail page, nested under its neighborhood (lot_number is
+// only unique within a neighborhood, so the route must carry both).
+export const lotHref = (neighborhoodSlug: string, lot: ApiLot): string =>
+  `/neighborhoods/${neighborhoodSlug}/lots/${encodeURIComponent(lot.lot_number)}`;
 
 // Small in-process memo mirroring @jw/shared's cachedJson TTL (60s), so the
 // neighborhoods index (one call per card) and the detail page don't re-hit the
