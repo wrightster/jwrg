@@ -3,10 +3,9 @@
 > **STATUS (2026-07-22): LIVE IN PRODUCTION.** This began as a pilot on
 > `main.juliewrightrealtygroup.com`, but jwrg is now fully cut over — the apex
 > `juliewrightrealtygroup.com` (+ `www`) is served by Coolify with a Let's Encrypt
-> cert and zero-downtime deploys; the old Ploi box no longer receives its traffic.
-> Treat this as **the jwrg deploy doc**, not a proposal. Still open (manual):
-> retire the old Ploi jwrg + `search.*` sites, and set the push-to-deploy secrets
-> for `.github/workflows/deploy-coolify.yml` (see §"Cutover notes").
+> cert and zero-downtime deploys. The old Ploi jwrg site and the `search.*` site
+> were **deleted (2026-07-30)**, and push-to-deploy is live (org secrets + the repo
+> `COOLIFY_APP_UUID` variable). Treat this as **the jwrg deploy doc**, not a proposal.
 
 Goal: prove out zero-downtime deploys for the Astro fleet by running **jwrg** on
 a **new droplet + Coolify**, on the throwaway subdomain
@@ -71,12 +70,15 @@ create the admin account, **enable 2FA**, finish onboarding.
   write** on this team/project — **not** the `root` scope. Enough to create,
   configure, deploy, and read logs; can't delete the server or touch other
   projects. Revocable in one click; every call is attributed in the audit log.
-- Store it on your Mac **outside any git repo**: `~/.config/coolify/token`,
-  `chmod 600`. It's never committed or written into a repo file.
+- Store it on your Mac in the **login Keychain** (encrypted at rest):
+  `security add-generic-password -U -a "$USER" -s coolify-api-token -w`. A
+  `coolify-token` shell helper (in `~/.zshrc`) reads it back, falling back to a
+  legacy `~/.config/coolify/token` file (`chmod 600`). Either way it's never
+  committed or written into a repo file.
 - How Claude uses it — runs in Bash on your Mac, so it reaches the private API
   directly over the tailnet:
   ```bash
-  curl -s -H "Authorization: Bearer $(cat ~/.config/coolify/token)" \
+  curl -s -H "Authorization: Bearer $(coolify-token)" \
     http://<droplet-tailscale-ip>:8000/api/v1/applications
   ```
   Routine deploys still fire automatically on git push (GitHub webhook); the
@@ -160,7 +162,7 @@ calls the deploy API. It needs 3 secrets + 2 variables:
 |---|---|---|---|
 | secret | `TS_OAUTH_CLIENT_ID` | Tailscale trust-credential (OAuth) client id, scope `Auth Keys:write`, tag `tag:ci` | ✅ |
 | secret | `TS_OAUTH_SECRET` | …its secret | ✅ |
-| secret | `COOLIFY_TOKEN` | scoped Coolify API token (`~/.config/coolify/token`) | ✅ |
+| secret | `COOLIFY_TOKEN` | scoped Coolify API token (`coolify-token` helper / Keychain) | ✅ |
 | variable | `COOLIFY_HOST` | `100.94.121.24:8000` | ✅ |
 | variable | `COOLIFY_APP_UUID` | the site's Coolify app uuid (jwrg = `ieunvd3nlxbnv1chvg3ghc3n`) | ❌ per-site |
 
@@ -176,18 +178,49 @@ by private repositories with your plan"*). So:
 
 - **Public repos** (`jwrg`, `jwlc`, `jw-shared`) → set the 3 secrets + `COOLIFY_HOST`
   **once as org-level** secrets/variables; only `COOLIFY_APP_UUID` is per-repo.
-- **Private repos** (the 4 neighborhood sites + `jwrg-brochures`) → org secrets
-  won't apply. Use **repository-level** secrets instead — paste the same 3 values
-  into each private repo's own Settings → Secrets → Actions. Repo secrets work on
-  private repos on Free; the only cost is re-pasting per repo. Do it per site at
-  migration time (they're all still on Ploi until then, where push = deploy with
-  no secrets).
+- **Private repos** (the neighborhood sites + `jwrg-brochures`) → org secrets
+  won't apply. Use **repository-level** secrets instead — the same 3 values in each
+  private repo's own Settings → Secrets → Actions. Don't paste by hand: run the
+  **`enable-autodeploy.sh` helper** (see below), which sets all 5 for a repo from
+  the Keychain. Repo secrets work on private repos on Free; the only cost is
+  re-running per repo. Do it per site at migration time (they're all still on Ploi
+  until then, where push = deploy with no secrets).
 - **Upgrading to GitHub Team** (~$4/mo, one solo seat) lifts this — org secrets
   then reach private repos. Optional convenience once several private Coolify
   sites exist; not required.
 
 Note: GitHub **Actions itself** on private repos is free (2,000 min/mo; this
 job runs seconds). The only thing gated is org-secret *scope*, not running Actions.
+
+### Scripted setup + credential storage (macOS Keychain)
+
+Rather than paste secrets by hand, use **`~/.config/coolify/enable-autodeploy.sh`**
+(lives outside any git repo, next to the token). It sets all 3 secrets + 2
+variables on a repo via `gh secret set` / `gh variable set` — `COOLIFY_APP_UUID`
+**last**, so the workflow never fires half-configured:
+
+```bash
+~/.config/coolify/enable-autodeploy.sh [REPO] [APP_UUID]
+# defaults to preserve-west; e.g. for another site:
+~/.config/coolify/enable-autodeploy.sh wrightster/<repo> <coolify-app-uuid>
+```
+
+It resolves credentials from the **macOS login Keychain** (encrypted at rest),
+falling back to env vars / the token file — nothing lands in shell history. Store
+the three items once (each prompts hidden):
+
+```bash
+security add-generic-password -U -a "$USER" -s coolify-api-token         -w   # Coolify API token
+security add-generic-password -U -a "$USER" -s coolify-ts-oauth-client-id -w   # tag:ci OAuth client id
+security add-generic-password -U -a "$USER" -s coolify-ts-oauth-secret    -w   # …its secret
+```
+
+GitHub can't reveal existing secret values, so the Keychain is also the durable
+**backup of the `tag:ci` OAuth pair** — if it's lost, mint a fresh client
+(Tailscale admin → OAuth clients, scope `Auth Keys:write`, tag `tag:ci`; reuse
+across sites is fine). For manual Coolify API calls, the **`coolify-token`** shell
+helper (in `~/.zshrc`) reads the token back the same way:
+`curl -H "Authorization: Bearer $(coolify-token)" …`.
 
 ---
 
