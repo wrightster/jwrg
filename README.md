@@ -30,12 +30,12 @@ npm run dev              # http://localhost:4321
 
 ```
 src/
-├── components/     Astro components (ListingCard, EmbedForm, MiniContactForm, etc.)
+├── components/     Astro components (ListingCard, LotCard, EmbedForm, MiniContactForm, etc.)
 ├── data/           Static site content (counties, FAQ, glossary, site metadata)
 ├── layouts/        BaseLayout shell
 ├── lib/api.ts      Office API client + types — keep in sync with jwlc/src/lib/api.ts
 ├── middleware.ts   Short edge cache (Cache-Control) on SSR responses
-├── pages/          Routes (about, resources/{buyers,sellers,relocation,real-estate-101}, listings, neighborhoods, etc.)
+├── pages/          Routes (about, resources/{buyers,sellers,relocation,real-estate-101}, listings, neighborhoods + neighborhoods/[slug]/lots/[lot] homesite pages, etc.)
 └── styles/         global.css: Tailwind @theme tokens + self-hosted @font-face
 ```
 
