@@ -183,6 +183,7 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
                         target="_blank"
                         rel="noopener noreferrer"
                         data-doc-viewer
+                        data-doc-id={doc.id}
                         data-doc-title={doc.title}
                         data-doc-mime={doc.mime ?? ''}
                         class="listing-document-link"

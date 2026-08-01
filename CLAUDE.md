@@ -59,6 +59,7 @@ src/
 ├── components/       # Astro components
 │   ├── BackLink.astro        # "Back to X" up-one-level link (Resources pages; href/label = the PARENT)
 │   ├── BtnArrow.astro        # Animated three-piece arrow button (.btn-arrow)
+│   ├── DocumentViewerModal.astro # In-page doc viewer modal — PDFs via PDF.js (see "Document viewer")
 │   ├── GlossaryCallout.astro # Short full-width card → Real Estate 101 (top of Resources pages)
 │   ├── EmbedForm.astro       # Office embed-form widget adapter (loads forms.js, bound to a form token)
 │   ├── FontSwitcher.astro    # Dev-only design panel (fonts/colors); inert in prod
@@ -139,6 +140,30 @@ The raw `status` key stays `active`. Anything that keys off it — the
 `[data-status]` pill colors, the `?status=a` filter, `publicStatus()`, the
 sitemap's `INDEXABLE` set, JSON-LD availability — is unaffected. Don't "fix"
 those to `available`.
+
+### Document viewer (PDF.js — don't regress to an iframe)
+
+Document links on the listing + neighborhood detail pages open in
+`DocumentViewerModal.astro`. PDFs render through **PDF.js**
+(`pdfjs-viewer-element`, the same pairing as the back office's preview modal)
+— **not** a bare `<iframe>`: Android Chrome has no embeddable PDF plugin, so
+an iframe'd PDF degrades to a gray "Open this file" placeholder on every
+phone (desktop Chrome's native plugin masks the problem). Three parts:
+
+- **`public/vendor/pdfjs/`** — the vendored PDF.js generic viewer build,
+  copied from `jwrg_office/public/vendor/pdfjs` (minus `*.map`, the debugger,
+  and the sample PDF). Keep its version in step with the `pdfjs-viewer-element`
+  npm pin when upgrading either.
+- **`src/pages/documents/[id].ts`** — same-origin SSR proxy streaming the
+  office's `GET /api/v1/documents/{id}?inline=1`. Required because PDF.js's
+  viewer refuses files from another origin and the office API sends no CORS
+  headers; it also gives the URL a same-origin path. UUID-validated; only
+  office inline-safe mimes come back inline (scriptable types force download
+  upstream), so it can't serve HTML into our origin.
+- **`data-doc-id`** on every `data-doc-viewer` link (the modal builds the
+  proxy URL from it). A PDF link without an id falls back to the old iframe
+  — i.e. broken on mobile — so keep the attribute when adding new document
+  lists.
 
 ## Design System
 
