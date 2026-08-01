@@ -1,11 +1,21 @@
 ---
 // In-page document viewer (front-end port of the back office's preview
-// modal): any `<a data-doc-viewer data-doc-title="…" data-doc-mime="…">`
-// link on the page opens here instead of navigating. PDFs and images render
-// inline via `?inline=1` on the office download URL (the office only serves
-// inline-safe mimes that way — scriptable types always download); everything
-// else gets a download panel. Include the component once per page that
-// renders document links.
+// modal): any `<a data-doc-viewer data-doc-id="…" data-doc-title="…"
+// data-doc-mime="…">` link on the page opens here instead of navigating.
+//
+// PDFs render through PDF.js (`pdfjs-viewer-element` + the viewer build
+// vendored at public/vendor/pdfjs — same pairing as the back office). A bare
+// iframe is NOT enough here: Android Chrome has no embeddable PDF plugin, so
+// an iframe'd PDF degrades to a gray "Open" placeholder on mobile. PDF.js
+// draws on canvas and works everywhere. It also refuses cross-origin files,
+// so the src is the same-origin proxy `/documents/{id}` (src/pages/documents/
+// [id].ts), which needs data-doc-id — links without one fall back to an
+// iframe of the office URL (desktop-only rendering).
+//
+// Images render inline via `?inline=1` on the office download URL (the
+// office only serves inline-safe mimes that way — scriptable types always
+// download); everything else gets a download panel. Include the component
+// once per page that renders document links.
 ---
 
 <div
@@ -53,6 +63,8 @@
 </div>
 
 <script>
+  import 'pdfjs-viewer-element';
+
   const viewer = document.getElementById('doc-viewer');
   const dvBody = document.getElementById('dv-body');
   const dvTitle = document.getElementById('dv-title');
@@ -76,12 +88,28 @@
     dvBody.innerHTML = '';
 
     if (mime === 'application/pdf') {
-      if (dvOpen) dvOpen.href = inlineUrl(url);
-      const frame = document.createElement('iframe');
-      frame.src = inlineUrl(url);
-      frame.title = title;
-      frame.className = 'w-full h-full border-0';
-      dvBody.appendChild(frame);
+      const docId = link.getAttribute('data-doc-id');
+      if (docId) {
+        const proxied = `/documents/${docId}`;
+        if (dvOpen) dvOpen.href = proxied;
+        const pdf = document.createElement('pdfjs-viewer-element');
+        pdf.setAttribute('src', proxied);
+        pdf.setAttribute('viewer-path', '/vendor/pdfjs');
+        pdf.setAttribute('locale', 'en');
+        pdf.setAttribute(
+          'viewer-extra-styles',
+          '#openFile, #secondaryOpenFile, #editorFreeText, #editorInk, #editorStamp { display: none }',
+        );
+        pdf.className = 'block w-full h-full';
+        dvBody.appendChild(pdf);
+      } else {
+        if (dvOpen) dvOpen.href = inlineUrl(url);
+        const frame = document.createElement('iframe');
+        frame.src = inlineUrl(url);
+        frame.title = title;
+        frame.className = 'w-full h-full border-0';
+        dvBody.appendChild(frame);
+      }
     } else if (mime.startsWith('image/')) {
       if (dvOpen) dvOpen.href = inlineUrl(url);
       const wrap = document.createElement('div');
