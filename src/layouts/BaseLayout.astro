@@ -177,7 +177,7 @@ const footerNav = [
       </nav>
 
       <!-- Mobile Menu -->
-      <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+      <div class="mobile-menu" id="mobile-menu" aria-hidden="true" inert>
         <form action="/listings" method="get" role="search" class="px-4 pt-3 pb-1">
           <label for="nav-search-mobile" class="sr-only">Search listings</label>
           <div class="nav-search relative">
@@ -222,7 +222,7 @@ const footerNav = [
           <!-- Brand -->
           <div class="footer-brand">
             <a href="/" class="footer-logo">
-              <img src="/JWRG_Full_White.svg" class="footer-logo-img" alt={site.name} />
+              <img src="/JWRG_Full_White.svg" class="footer-logo-img" alt={`${site.name} — home`} />
             </a>
             <p class="footer-tagline">
               Five decades guiding Triangle-area families home — full-service residential real estate
@@ -244,7 +244,7 @@ const footerNav = [
 
           <!-- Quick Links -->
           <nav aria-label="Footer navigation">
-            <h4 class="footer-col-heading">Navigate</h4>
+            <h3 class="footer-col-heading">Navigate</h3>
             <ul class="footer-nav-list">
               {footerNav.map((link) => (
                 <li>
@@ -256,7 +256,7 @@ const footerNav = [
 
           <!-- Services -->
           <div>
-            <h4 class="footer-col-heading">How We Help</h4>
+            <h3 class="footer-col-heading">How We Help</h3>
             <ul class="footer-services-list">
               <li>Buying a Home</li>
               <li>Selling a Home</li>
@@ -269,7 +269,7 @@ const footerNav = [
 
           <!-- Contact -->
           <div>
-            <h4 class="footer-col-heading">Contact</h4>
+            <h3 class="footer-col-heading">Contact</h3>
             <address class="footer-contact">
               <p>{site.address.street1}{site.address.street2 ? `, ${site.address.street2}` : ''}<br />{site.address.city}, {site.address.state} {site.address.zip}</p>
               <p>
