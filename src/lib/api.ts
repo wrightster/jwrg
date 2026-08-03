@@ -30,8 +30,12 @@ export const fetchAllListings = async (q: ListingsQuery = {}): Promise<ApiListin
 
 export const fetchListing = async (slug: string): Promise<ApiListing | null> => {
   const listing = await sharedFetchListing(slug);
-
-  return listing ? normalizeListingLabel(listing) : null;
+  if (!listing) return null;
+  // The office's by-slug endpoint isn't site-scoped (unlike the index's ?site=
+  // filter), so a listing unpublished from this site still resolves by slug.
+  // Enforce publication here, in the shim that binds the site slug.
+  if (!listing.marketing_sites?.includes(SITE_SLUG)) return null;
+  return normalizeListingLabel(listing);
 };
 
 export const fetchTeam = () => sharedFetchTeam(SITE_SLUG);

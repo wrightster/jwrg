@@ -141,6 +141,13 @@ The raw `status` key stays `active`. Anything that keys off it — the
 sitemap's `INDEXABLE` set, JSON-LD availability — is unaffected. Don't "fix"
 those to `available`.
 
+`fetchListing` also enforces **site publication**: the office's by-slug
+endpoint isn't site-scoped (unlike the index's `?site=jwrg` filter), so a
+listing detached from JWRG still resolves by slug. The shim guards on
+`marketing_sites?.includes(SITE_SLUG)` and returns `null` when it doesn't —
+so the detail route redirects to `/listings` for a listing that isn't
+published here. Keep this guard when refactoring the shim.
+
 ### Document viewer (PDF.js — don't regress to an iframe)
 
 Document links on the listing + neighborhood detail pages open in
