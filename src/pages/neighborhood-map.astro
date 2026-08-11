@@ -1,7 +1,9 @@
 ---
-// Effectively static (a neighborhood name list + a map iframe). Prerender it;
-// the fetch degrades to [] at build time if the office is unreachable.
-export const prerender = true;
+// Live map of the communities JWRG serves. SSR (not prerendered) so a
+// newly-added neighborhood — or a coordinate corrected in the office — shows up
+// without a redeploy; the caching middleware gives the HTML a short edge cache.
+// The Leaflet map is drawn client-side from the JSON embedded below.
+export const prerender = false;
 
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageBanner from '../components/PageBanner.astro';
@@ -9,47 +11,289 @@ import MiniContactForm from '../components/MiniContactForm.astro';
 import { fetchNeighborhoods } from '../lib/api';
 
 const neighborhoods = await fetchNeighborhoods().catch(() => []);
+
+// Interim best-effort coordinates. The office neighborhood records are the
+// source of truth for lat/lng, but the office write path was unavailable when
+// this shipped, so these seed the map in the meantime. Office lat/lng, once set,
+// takes precedence (see the `n.latitude ?? seed` merge below). Delete this block
+// once every neighborhood carries coordinates in the office.
+// Confidence: cedar-knolls/aubrie-place/bragg-farm/cannady-mill = in-subdivision
+// geocodes; tennyson/kirkland/colvard/woodland = road/place-level; preserve-west
+// + yancey-farms = low-confidence offsets to verify.
+const SEED_COORDS: Record<string, [number, number]> = {
+  'cedar-knolls': [36.072282, -78.556095],
+  tennyson: [36.058341, -78.595311],
+  'preserve-west': [36.1, -78.56],
+  'aubrie-place': [36.075973, -78.573054],
+  'yancey-farms': [36.101816, -78.458054],
+  'kirkland-at-wilton': [36.142909, -78.577572],
+  'bragg-farm': [36.088441, -78.583083],
+  'cannady-mill-road-lots': [36.172495, -78.57346],
+  'colvard-farms': [35.866904, -78.95692],
+  'woodland-park': [36.319346, -78.573973],
+};
+
+// Lifecycle label mirrors the neighborhoods grid: planning / under_development
+// read "Planned"; everything else (incl. unset) reads "Active".
+const isPlanned = (status: string | null | undefined) =>
+  status === 'planning' || status === 'under_development';
+
+const townLine = (n: { county: string | null; city: string | null }) =>
+  [n.city, n.county && `${n.county} County`].filter(Boolean).join(' · ');
+
+// Only neighborhoods with coordinates can be plotted. The rest still list in the
+// sidebar (with a gentle "location coming soon") so nothing is hidden.
+const points = neighborhoods
+  .map((n) => {
+    const seed = SEED_COORDS[n.slug];
+    const lat = n.latitude ?? seed?.[0] ?? null;
+    const lng = n.longitude ?? seed?.[1] ?? null;
+    return { n, lat, lng };
+  })
+  .filter((p): p is { n: (typeof neighborhoods)[number]; lat: number; lng: number } => p.lat != null && p.lng != null)
+  .map(({ n, lat, lng }) => ({
+    slug: n.slug,
+    name: n.name,
+    lat,
+    lng,
+    logo: n.featured_image?.url ?? null,
+    aspect: n.featured_image?.aspect ?? 1,
+    town: townLine(n),
+    planned: isPlanned(n.status),
+  }));
+
+const mappedSlugs = new Set(points.map((p) => p.slug));
 ---
 
-<BaseLayout title="Neighborhood Map | Julie Wright Realty Group">
+<BaseLayout
+  title="Neighborhood Map | Julie Wright Realty Group"
+  description="An interactive map of the Triangle-area communities Julie Wright Realty Group serves — click a neighborhood to explore it."
+>
   <PageBanner
     label="Explore"
     title="Triangle Area Neighborhood Map"
-    description="An overview of the communities Julie Wright Realty Group serves across the Triangle and surrounding counties."
+    description="The communities we serve across Wake, Franklin, Granville, Durham, and the greater Triangle. Click a neighborhood on the map to explore it."
   />
 
-  <section class="py-20">
-    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-8">
-      <aside class="lg:col-span-1">
+  <section class="py-12 lg:py-20">
+    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-8 items-start">
+      <!-- Sidebar list — the accessible equivalent of the map, and the home for
+           any neighborhood that doesn't have coordinates yet. -->
+      <aside class="lg:col-span-1 lg:order-1 order-2">
         <h2 class="font-display text-2xl text-earth-900 mb-4">Neighborhoods</h2>
         {neighborhoods.length === 0 ? (
           <p class="text-earth-600 text-sm">No neighborhoods to display right now.</p>
         ) : (
-          <ul class="space-y-2">
-            {neighborhoods.map((n) => (
-              <li>
-                <a href={`/neighborhoods/${n.slug}`} class="block px-4 py-3 bg-white border border-earth-200/60 rounded-sm hover:border-red-600 hover:bg-earth-50 transition-all">
-                  <div class="font-semibold text-earth-900">{n.name}</div>
-                  <div class="text-earth-600 text-sm">{[n.county && `${n.county} County`, n.city].filter(Boolean).join(' · ')}</div>
-                </a>
-              </li>
-            ))}
+          <ul class="space-y-2" id="nbhd-list">
+            {neighborhoods.map((n) => {
+              const onMap = mappedSlugs.has(n.slug);
+              return (
+                <li>
+                  <a
+                    href={`/neighborhoods/${n.slug}`}
+                    class="nbhd-list-item block px-4 py-3 bg-white/90 border border-earth-200/70 rounded-sm transition-all hover:border-red-600 hover:bg-earth-50 focus-visible:border-red-600 focus-visible:bg-earth-50"
+                    data-slug={n.slug}
+                    data-on-map={onMap ? 'true' : undefined}
+                  >
+                    <div class="flex items-center justify-between gap-3">
+                      <div class="font-semibold text-earth-900">{n.name}</div>
+                      <span
+                        class="shrink-0 text-[0.7rem] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full"
+                        class:list={[isPlanned(n.status) ? 'bg-gold-100 text-earth-700' : 'bg-red-50 text-red-700']}
+                      >
+                        {isPlanned(n.status) ? 'Planned' : 'Active'}
+                      </span>
+                    </div>
+                    <div class="text-earth-600 text-sm mt-0.5">
+                      {townLine(n) || 'Triangle area'}
+                      {!onMap && <span class="text-earth-400"> · location coming soon</span>}
+                    </div>
+                  </a>
+                </li>
+              );
+            })}
           </ul>
         )}
       </aside>
 
-      <div class="lg:col-span-2 bg-earth-100/60 border border-earth-200 rounded-sm overflow-hidden aspect-[4/3] lg:aspect-auto">
-        <iframe
-          src="https://www.google.com/maps/embed/v1/search?key=&q=10931+Strickland+Rd+Raleigh+NC+27615&zoom=10"
-          class="w-full h-full"
-          style="border: 0; min-height: 500px;"
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          title="Triangle Area Neighborhood Map"
-        ></iframe>
+      <!-- Interactive map -->
+      <div class="lg:col-span-2 lg:order-2 order-1">
+        <div
+          id="nbhd-map"
+          class="w-full rounded-sm overflow-hidden border border-earth-200 bg-earth-100/60"
+          style="height: min(70vh, 620px); min-height: 420px;"
+          role="region"
+          aria-label="Interactive map of Julie Wright Realty Group neighborhoods"
+        >
+          <noscript>
+            <div class="p-6 text-earth-600 text-sm">
+              The interactive map needs JavaScript. Use the neighborhood list to explore each community.
+            </div>
+          </noscript>
+        </div>
+        <p class="text-earth-500 text-xs mt-2">
+          Click a neighborhood logo to open its page. Scroll to zoom after clicking the map, or use the + / − controls.
+        </p>
       </div>
     </div>
   </section>
 
   <MiniContactForm />
+
+  <!-- Map data for the client script. Kept as inert JSON so the bundled module
+       below can read it without re-fetching. -->
+  <script type="application/json" id="nbhd-map-data" set:html={JSON.stringify(points)}></script>
+
+  <script>
+    import L from 'leaflet';
+    import 'leaflet/dist/leaflet.css';
+
+    type Point = {
+      slug: string;
+      name: string;
+      lat: number;
+      lng: number;
+      logo: string | null;
+      aspect: number;
+      town: string;
+      planned: boolean;
+    };
+
+    const el = document.getElementById('nbhd-map');
+    const dataEl = document.getElementById('nbhd-map-data');
+    if (el && dataEl) {
+      const points: Point[] = JSON.parse(dataEl.textContent || '[]');
+
+      // Fallback view: the Triangle, roughly centered on Wake Forest, if we have
+      // nothing to plot.
+      const FALLBACK_CENTER: [number, number] = [36.0, -78.6];
+
+      const map = L.map(el, {
+        scrollWheelZoom: false, // enabled once the user clicks into the map
+        zoomControl: true,
+        attributionControl: true,
+      }).setView(FALLBACK_CENTER, 10);
+
+      // Muted light basemap (CARTO Positron) so the colored logos read clearly.
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        subdomains: 'abcd',
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      }).addTo(map);
+
+      // Don't hijack page scroll: wheel-zoom turns on only while the map has focus.
+      map.on('focus', () => map.scrollWheelZoom.enable());
+      map.on('blur', () => map.scrollWheelZoom.disable());
+
+      const markers = new Map<string, L.Marker>();
+      const bounds = L.latLngBounds([]);
+
+      for (const p of points) {
+        const aspect = Number.isFinite(p.aspect) && p.aspect > 0 ? p.aspect : 1;
+        const inner = p.logo
+          ? `<img src="${p.logo}" alt="" loading="lazy" style="height:34px;width:auto;max-width:120px;display:block" />`
+          : `<span class="nbhd-pin-fallback">${p.name}</span>`;
+
+        const icon = L.divIcon({
+          className: 'nbhd-pin-wrap',
+          iconSize: [0, 0],
+          html: `<a class="nbhd-pin${p.planned ? ' is-planned' : ''}" href="/neighborhoods/${p.slug}" title="${p.name} — view neighborhood" data-slug="${p.slug}">${inner}</a>`,
+        });
+
+        const marker = L.marker([p.lat, p.lng], { icon, riseOnHover: true }).addTo(map);
+        markers.set(p.slug, marker);
+        bounds.extend([p.lat, p.lng]);
+      }
+
+      if (points.length === 1) {
+        map.setView([points[0].lat, points[0].lng], 13);
+      } else if (points.length > 1) {
+        map.fitBounds(bounds, { padding: [48, 48], maxZoom: 12 });
+      }
+
+      // Sidebar ↔ map linking: hovering / focusing a list row pans to its marker
+      // and lifts it; the row is still a plain link, so a click navigates.
+      const listItems = document.querySelectorAll<HTMLAnchorElement>('.nbhd-list-item[data-on-map="true"]');
+      listItems.forEach((item) => {
+        const slug = item.dataset.slug || '';
+        const marker = markers.get(slug);
+        if (!marker) return;
+        const focusMarker = () => {
+          map.panTo(marker.getLatLng(), { animate: true });
+          const iconEl = marker.getElement()?.querySelector('.nbhd-pin');
+          iconEl?.classList.add('is-active');
+        };
+        const blurMarker = () => {
+          marker.getElement()?.querySelector('.nbhd-pin')?.classList.remove('is-active');
+        };
+        item.addEventListener('mouseenter', focusMarker);
+        item.addEventListener('focus', focusMarker);
+        item.addEventListener('mouseleave', blurMarker);
+        item.addEventListener('blur', blurMarker);
+      });
+
+      // Leaflet lays out against the container's size at init; if the container
+      // was still settling (fonts/topo), nudge it once everything paints.
+      requestAnimationFrame(() => map.invalidateSize());
+      window.addEventListener('load', () => map.invalidateSize());
+    }
+  </script>
+
+  <style is:global>
+    /* Leaflet markers render in an overflow:hidden pane; the pin chip is a 0×0
+       anchor point with its content translated to sit centered over the point. */
+    .nbhd-pin-wrap {
+      background: transparent;
+      border: none;
+    }
+    .nbhd-pin {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 8px;
+      background: #fff;
+      border: 1.5px solid var(--color-earth-200, #e2ddd3);
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(60, 40, 20, 0.18);
+      cursor: pointer;
+      transition:
+        border-color 140ms ease,
+        box-shadow 140ms ease,
+        transform 140ms ease;
+      pointer-events: auto;
+      white-space: nowrap;
+    }
+    .nbhd-pin:hover,
+    .nbhd-pin:focus-visible,
+    .nbhd-pin.is-active {
+      border-color: var(--color-red-600, #b52126);
+      box-shadow: 0 4px 14px rgba(181, 33, 38, 0.3);
+      transform: translate(-50%, -50%) scale(1.06);
+      outline: none;
+      z-index: 500;
+    }
+    .nbhd-pin.is-planned {
+      border-style: dashed;
+    }
+    .nbhd-pin-fallback {
+      font-family: var(--font-display, sans-serif);
+      font-weight: 700;
+      font-size: 0.8rem;
+      color: var(--color-earth-900, #2a2620);
+      padding: 0 2px;
+    }
+    /* Keep the attribution legible over the light basemap. */
+    .leaflet-container {
+      font-family: var(--font-body, sans-serif);
+      background: var(--color-earth-100, #f2ede3);
+    }
+    .leaflet-control-attribution {
+      font-size: 10px;
+    }
+  </style>
 </BaseLayout>

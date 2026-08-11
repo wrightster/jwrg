@@ -35,7 +35,7 @@ src/
 ├── layouts/        BaseLayout shell
 ├── lib/api.ts      Office API client + types — keep in sync with jwlc/src/lib/api.ts
 ├── middleware.ts   Short edge cache (Cache-Control) on SSR responses
-├── pages/          Routes (about, resources/{buyers,sellers,relocation,real-estate-101}, listings, neighborhoods + neighborhoods/[slug]/lots/[lot] homesite pages, etc.)
+├── pages/          Routes (about, resources/{buyers,sellers,relocation,real-estate-101}, listings, neighborhoods + neighborhoods/[slug]/lots/[lot] homesite pages, neighborhood-map (interactive Leaflet map of every neighborhood), etc.)
 └── styles/         global.css: Tailwind @theme tokens + self-hosted @font-face
 ```
 

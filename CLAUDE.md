@@ -321,6 +321,36 @@ Neighborhoods are managed in the office (Filament admin, or the `create-neighbor
 
 **Brand logo (optional):** the neighborhoods index cards are frameless (imagery/logos sit over the site topo background — no white card). The grid uses `flex flex-wrap justify-center` (not CSS grid) with **fixed-width cards** (`w-72` / 288px, plus `max-w-full` to shrink on tiny phones and `shrink-0` so flex never sizes cards unevenly) — so cards hold the same scale at any viewport width and surplus width becomes side margin (via `justify-center` + the `max-w-7xl` wrapper) rather than stretching them. Rows are **staggered** like brickwork: each row alternates between the breakpoint's column count and one less (xl 3/4, lg 2/3, md 1/2, base 1–2), so adjacent rows offset. Equal-width cards would otherwise just pack the max per row, so the wrap is forced by zero-height, full-width spacers inserted after each row's last card; break positions differ per breakpoint (the short/full cycle length is 3 / 5 / 7 for md / lg / xl) so each card renders up to three spacers, each scoped to one breakpoint band (`hidden md:block lg:hidden`, etc., so exactly one is active at a given width). Vertical rhythm comes from a per-card `mb-6` (with `gap-x-6`, not a row-gap) so the invisible spacer lines add no space; shorter/partial rows are **centered**. A neighborhood can render a brand logo instead of its API photo, and **this is now office-managed, not a repo file.** The mark lives on the neighborhood record as its `featured_image` (a single-file media collection), set in the office — the Filament neighborhood **Details** tab, or the `attach-neighborhood-featured-image-from-url` / `-from-upload` MCP tools (each attach replaces the prior one). Both the index grid (`NeighborhoodGrid.astro`) and the detail page (`[slug].astro`) read it from the API as `n.featured_image` (`{url, aspect, scale}`) and render it as a contained hero over the background instead of the API photo gallery — these neighborhoods' single API "photo" is itself a logo that crops badly as a cover tile. `aspect` (width/height) is derived from the artwork automatically (SVG viewBox or raster dimensions), so the hero sizes without fetching the file; the optional `scale` (~0.7–1.0) optically balances the marks so they read at a similar size (heavier/wider marks scale toward the lightest, ~1.0). **The old repo-side approach — a `src/data/neighborhoodLogos.ts` map plus SVGs in `public/images/neighborhoods/` — is retired; don't reintroduce it.** It moved onto the record precisely because a slug rename orphaned the local map. Guidance for the artwork still holds: use transparent, single/dark-ink marks (they display over the light `earth-50` background); masters live in the `JW-Brand-Assets` repo; when recoloring an Illustrator SVG export to 1-color, set a root `fill="…"` on the `<svg>` so unclassed paths don't default to **black**.
 
+### Neighborhood map (`/neighborhood-map`)
+
+`src/pages/neighborhood-map.astro` is an **interactive Leaflet map** of every
+neighborhood, plotted as its **`featured_image` logo in a clickable chip** that
+links to `/neighborhoods/{slug}`. Self-hosted `leaflet` dep (not a CDN/embed —
+the old page was a keyless, marker-less Google Maps iframe). It's **SSR
+(`prerender = false`)** so a new neighborhood or a corrected coordinate shows up
+without a redeploy; the client Leaflet script lives **on the page**, not in a
+`server:defer` island (the island-script caveat — see "Server islands").
+
+- **Coordinates come from the office record's `latitude`/`longitude`** (the
+  source of truth — set them in the office, e.g. `update-neighborhood`). A
+  neighborhood with null coords still lists in the sidebar, marked "location
+  coming soon," and simply isn't plotted.
+- **Interim `SEED_COORDS` seed:** the office coordinates weren't writable when
+  this shipped (the office `/mcp` route was rejecting writes), so the page
+  carries a best-effort `SEED_COORDS` map keyed by slug. The merge is
+  `n.latitude ?? seed`, so **office values always win** — **delete `SEED_COORDS`
+  once every neighborhood carries coordinates in the office.** Do *not* grow it
+  into a permanent static coords file (that's the office's job).
+- Basemap is CARTO Positron (muted, so the colored logos pop; attribution
+  required). Wheel-zoom engages only after the map gains focus (so it doesn't
+  hijack page scroll); `+`/`−` always work. Markers are `L.divIcon` chips (a 0×0
+  anchor with the logo translated to center on the point); planned neighborhoods
+  get a dashed border. The sidebar list is the accessible equivalent — hovering
+  a row pans the map to that marker and highlights it.
+- **Linked from** the footer nav (`BaseLayout.astro`) and a "See them on the
+  map" `BtnArrow` on `/neighborhoods`. Legacy `/area-neighborhood-map.php` still
+  301s here (`astro.config.mjs`).
+
 ### Adding a New Form
 
 Forms are rendered by the office **embed-form widget** (`office.jwrgnc.com/js/forms.js`),
