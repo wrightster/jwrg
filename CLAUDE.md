@@ -345,27 +345,37 @@ without a redeploy; the client Leaflet script lives **on the page**, not in a
   required). Wheel-zoom engages only after the map gains focus (so it doesn't
   hijack page scroll); `+`/`−` always work. Planned neighborhoods get a dashed
   border. The sidebar list is the accessible equivalent — hovering a row pans
-  the map to that marker (or the cluster it's folded into) and highlights it.
-- **Spiderfy / clustering (`leaflet.markercluster`):** most of these communities
-  cluster within a few miles of Wake Forest and their logo chips are large, so
-  they'd overlap at the default zoom. Nearby logos collapse into a **branded red
-  count badge**; clicking it **spiderfies** them out on leg lines (all logos
-  readable, none overlapping); zooming in splits the cluster back into individual
-  logos. Two non-obvious pieces, both load-bearing:
-    - `zoomToBoundsOnClick: false` alone does **not** spiderfy on click in
-      markercluster 1.5 (its default handler no-ops unless you're at max zoom).
-      An explicit `cluster.on('clusterclick', e => e.layer.spiderfy())` forces
-      fan-out at any zoom.
-    - The **pin** chips are `L.divIcon` with `iconSize:[0,0]` (a zero-size anchor,
-      logo translated to center) — fine, because they're `<a href>` and a native
-      anchor click follows the link regardless of Leaflet. The **cluster** badge
-      can't be `[0,0]`: it relies on Leaflet's JS click handler, and a physical
-      click on a zero-size hit target doesn't reach it. So the cluster icon has a
-      real **`iconSize:[38,38]` + `iconAnchor:[19,19]`** footprint. Because
-      Leaflet positions the marker element with its own `transform`, the hover
-      **`scale()` lives on a child** (`.nbhd-cluster`), never on the marker
-      element itself (that would fight Leaflet's positioning). If you touch either
-      icon, keep these two constraints.
+  the map to that marker and highlights it.
+- **Declutter / displacement (no clustering).** Most of these communities sit
+  within a few miles of Wake Forest and their logo chips are large, so at the
+  default zoom they'd overlap. Rather than hiding them behind a cluster badge,
+  **every logo stays visible and a displacement pass nudges overlapping ones
+  apart**, drawing a thin dashed leader line back to each chip's true point;
+  zoom in and the nudge relaxes to zero so each logo sits exactly on its
+  location. The pass (`relax()` / `separate()`) is a **circle-packing
+  relaxation** in Leaflet layer-pixel space (pan-invariant; re-runs on
+  `zoomend`/`moveend`): each chip is its circumscribed circle, overlapping
+  circles are pushed apart radially (phase A with a weak spring toward home, then
+  a spring-off cleanup that guarantees separation), then the whole spread is
+  rigidly recentred on the anchors' centroid. Four hard-won constraints — do not
+  regress these:
+    - **Circle (radial) separation, not rectangle least-penetration.** The
+      axis-aligned version settles with a permanently-overlapped core in a dense
+      pile (pushes from all sides cancel). Circle relaxation has no such jam.
+    - **Displacement is applied via `margin-left`/`margin-top`, NOT `transform`.**
+      The chip's `transform` is reserved for its `-50%/-50%` centring + hover
+      `scale`, and it's *transitioned* — animating the offset there makes every
+      re-run restart the 140ms transition so the chip never reaches its spot, and
+      the hover rule would wipe the offset. Margins aren't transitioned.
+    - **`separate()` is deterministic** (fixed per-pair nudge for coincident
+      centres, no `Math.random`) so repeated passes yield identical offsets and
+      the chips don't jitter.
+    - **The "wait for logos" guard scopes to `.nbhd-pin img`, not all `el` imgs**
+      — `el` also holds map tiles, which are perpetually mid-load and would block
+      the pass forever. The authoritative first pass runs from an `img.decode()`
+      gate, after the view is settled synchronously (`animate:false`) so it
+      computes against the final zoom's pixel grid. `relax()` **re-`collect()`s
+      the pin elements each pass** because Leaflet recreates marker DOM on zoom.
 - **Linked from** the footer nav (`BaseLayout.astro`) and a "See them on the
   map" `BtnArrow` on `/neighborhoods`. Legacy `/area-neighborhood-map.php` still
   301s here (`astro.config.mjs`).
