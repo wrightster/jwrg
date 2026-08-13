@@ -132,7 +132,7 @@ const mappedSlugs = new Set(points.map((p) => p.slug));
           </noscript>
         </div>
         <p class="text-earth-500 text-xs mt-2">
-          Click a neighborhood logo to open its page. Scroll to zoom after clicking the map, or use the + / − controls.
+          Click a neighborhood logo to open its page, or a grouped count to fan out the neighborhoods beneath it. Scroll to zoom after clicking the map, or use the + / − controls.
         </p>
       </div>
     </div>
@@ -147,6 +147,11 @@ const mappedSlugs = new Set(points.map((p) => p.slug));
   <script>
     import L from 'leaflet';
     import 'leaflet/dist/leaflet.css';
+    // Spiderfy: neighborhoods that stack at low zoom (the Wake Forest cluster)
+    // collapse into one branded count badge; clicking it fans the logos out on
+    // leg lines so none overlap. Zooming in splits the cluster back into logos.
+    import 'leaflet.markercluster';
+    import 'leaflet.markercluster/dist/MarkerCluster.css';
 
     type Point = {
       slug: string;
@@ -186,11 +191,29 @@ const mappedSlugs = new Set(points.map((p) => p.slug));
       map.on('focus', () => map.scrollWheelZoom.enable());
       map.on('blur', () => map.scrollWheelZoom.disable());
 
+      // Cluster group: overlapping logos merge into a branded count badge and
+      // spiderfy (fan out on leg lines) when clicked, instead of stacking.
+      const cluster = L.markerClusterGroup({
+        showCoverageOnHover: false, // no bounding polygon on hover
+        zoomToBoundsOnClick: false, // click a cluster to spiderfy in place, not zoom
+        spiderfyOnMaxZoom: true,
+        spiderfyDistanceMultiplier: 2.4, // fan wide — the logo chips are large
+        removeOutsideVisibleBounds: false, // tiny dataset; keep it all live
+        maxClusterRadius: 68,
+        spiderLegPolylineOptions: { weight: 1.5, color: '#b52126', opacity: 0.6 },
+        iconCreateFunction: (c) =>
+          L.divIcon({
+            className: 'nbhd-cluster-wrap', // real 38×38 footprint so clicks land on Leaflet's hit target
+            iconSize: [38, 38],
+            iconAnchor: [19, 19],
+            html: `<span class="nbhd-cluster" title="${c.getChildCount()} neighborhoods — click to expand">${c.getChildCount()}</span>`,
+          }),
+      });
+
       const markers = new Map<string, L.Marker>();
       const bounds = L.latLngBounds([]);
 
       for (const p of points) {
-        const aspect = Number.isFinite(p.aspect) && p.aspect > 0 ? p.aspect : 1;
         const inner = p.logo
           ? `<img src="${p.logo}" alt="" loading="lazy" style="height:34px;width:auto;max-width:120px;display:block" />`
           : `<span class="nbhd-pin-fallback">${p.name}</span>`;
@@ -201,10 +224,20 @@ const mappedSlugs = new Set(points.map((p) => p.slug));
           html: `<a class="nbhd-pin${p.planned ? ' is-planned' : ''}" href="/neighborhoods/${p.slug}" title="${p.name} — view neighborhood" data-slug="${p.slug}">${inner}</a>`,
         });
 
-        const marker = L.marker([p.lat, p.lng], { icon, riseOnHover: true }).addTo(map);
+        const marker = L.marker([p.lat, p.lng], { icon, riseOnHover: true });
+        cluster.addLayer(marker);
         markers.set(p.slug, marker);
         bounds.extend([p.lat, p.lng]);
       }
+
+      // Always fan a cluster out in place on click (at any zoom), rather than
+      // markercluster's default zoom-to-bounds. spiderfy() is a no-op-safe way
+      // to reveal every neighborhood folded under the badge.
+      cluster.on('clusterclick', (e: L.LeafletMouseEvent & { layer: L.MarkerCluster }) => {
+        e.layer.spiderfy();
+      });
+
+      map.addLayer(cluster);
 
       if (points.length === 1) {
         map.setView([points[0].lat, points[0].lng], 13);
@@ -220,9 +253,11 @@ const mappedSlugs = new Set(points.map((p) => p.slug));
         const marker = markers.get(slug);
         if (!marker) return;
         const focusMarker = () => {
-          map.panTo(marker.getLatLng(), { animate: true });
-          const iconEl = marker.getElement()?.querySelector('.nbhd-pin');
-          iconEl?.classList.add('is-active');
+          // Pan to whatever represents this marker on screen — its own logo, or
+          // the cluster badge it's currently folded into.
+          const visible = cluster.getVisibleParent(marker) ?? marker;
+          map.panTo(visible.getLatLng(), { animate: true });
+          marker.getElement()?.querySelector('.nbhd-pin')?.classList.add('is-active');
         };
         const blurMarker = () => {
           marker.getElement()?.querySelector('.nbhd-pin')?.classList.remove('is-active');
@@ -286,6 +321,37 @@ const mappedSlugs = new Set(points.map((p) => p.slug));
       font-size: 0.8rem;
       color: var(--color-earth-900, #2a2620);
       padding: 0 2px;
+    }
+    /* Branded cluster badge — a red disc showing how many neighborhoods are
+       folded together; click it to spiderfy them apart. The wrap IS the 38×38
+       Leaflet marker element (positioned by Leaflet's own transform — never set
+       `transform` on it), so the visible disc + hover scale live on the child. */
+    .nbhd-cluster-wrap {
+      background: transparent;
+      border: none;
+    }
+    .nbhd-cluster {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      border-radius: 9999px;
+      background: var(--color-red-600, #b52126);
+      color: #fff;
+      font-family: var(--font-display, sans-serif);
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 10px rgba(181, 33, 38, 0.4);
+      cursor: pointer;
+      transition:
+        transform 140ms ease,
+        box-shadow 140ms ease;
+    }
+    .nbhd-cluster-wrap:hover .nbhd-cluster {
+      transform: scale(1.08);
+      box-shadow: 0 4px 16px rgba(181, 33, 38, 0.5);
     }
     /* Keep the attribution legible over the light basemap. */
     .leaflet-container {

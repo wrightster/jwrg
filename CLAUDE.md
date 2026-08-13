@@ -343,10 +343,29 @@ without a redeploy; the client Leaflet script lives **on the page**, not in a
   into a permanent static coords file (that's the office's job).
 - Basemap is CARTO Positron (muted, so the colored logos pop; attribution
   required). Wheel-zoom engages only after the map gains focus (so it doesn't
-  hijack page scroll); `+`/`−` always work. Markers are `L.divIcon` chips (a 0×0
-  anchor with the logo translated to center on the point); planned neighborhoods
-  get a dashed border. The sidebar list is the accessible equivalent — hovering
-  a row pans the map to that marker and highlights it.
+  hijack page scroll); `+`/`−` always work. Planned neighborhoods get a dashed
+  border. The sidebar list is the accessible equivalent — hovering a row pans
+  the map to that marker (or the cluster it's folded into) and highlights it.
+- **Spiderfy / clustering (`leaflet.markercluster`):** most of these communities
+  cluster within a few miles of Wake Forest and their logo chips are large, so
+  they'd overlap at the default zoom. Nearby logos collapse into a **branded red
+  count badge**; clicking it **spiderfies** them out on leg lines (all logos
+  readable, none overlapping); zooming in splits the cluster back into individual
+  logos. Two non-obvious pieces, both load-bearing:
+    - `zoomToBoundsOnClick: false` alone does **not** spiderfy on click in
+      markercluster 1.5 (its default handler no-ops unless you're at max zoom).
+      An explicit `cluster.on('clusterclick', e => e.layer.spiderfy())` forces
+      fan-out at any zoom.
+    - The **pin** chips are `L.divIcon` with `iconSize:[0,0]` (a zero-size anchor,
+      logo translated to center) — fine, because they're `<a href>` and a native
+      anchor click follows the link regardless of Leaflet. The **cluster** badge
+      can't be `[0,0]`: it relies on Leaflet's JS click handler, and a physical
+      click on a zero-size hit target doesn't reach it. So the cluster icon has a
+      real **`iconSize:[38,38]` + `iconAnchor:[19,19]`** footprint. Because
+      Leaflet positions the marker element with its own `transform`, the hover
+      **`scale()` lives on a child** (`.nbhd-cluster`), never on the marker
+      element itself (that would fight Leaflet's positioning). If you touch either
+      icon, keep these two constraints.
 - **Linked from** the footer nav (`BaseLayout.astro`) and a "See them on the
   map" `BtnArrow` on `/neighborhoods`. Legacy `/area-neighborhood-map.php` still
   301s here (`astro.config.mjs`).
