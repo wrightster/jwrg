@@ -167,9 +167,26 @@ calls the deploy API. It needs 3 secrets + 2 variables:
 | variable | `COOLIFY_APP_UUID` | the site's Coolify app uuid (jwrg = `ieunvd3nlxbnv1chvg3ghc3n`) | ❌ per-site |
 
 Fleet-wide, set-once prerequisites (not per repo): the Tailscale `tag:ci`
-tagOwner + OAuth trust credential, and Coolify's **API Allowed-IPs widened to the
-tailnet range `100.64.0.0/10`** (CI joins with a *dynamic* tailnet IP, so a
-single-IP allowlist would 403 it).
+tagOwner + OAuth trust credential, and — in Coolify **Settings → API** — *API
+Access* enabled with **"Allowed IPs for API Access" left EMPTY**.
+
+> **Don't put an IP range in that field — not even the tailnet's.** This
+> originally read "widen Allowed-IPs to the tailnet range `100.64.0.0/10`,"
+> which does not work and cost a fleet-wide outage on **2026-08-12**: every
+> deploy failed with **403** while the box answered `/api/health` fine, so every
+> surface-level check looked green. Coolify runs behind Docker, which **NATs the
+> source address** — it compares the allowlist against the Docker bridge
+> address, never the caller's tailnet IP. So *no* range in that field can ever
+> match, and a non-empty list blocks all API traffic including CI. Access is
+> already restricted where it counts: `:8000` is Tailscale-only and every call
+> needs a bearer token.
+>
+> Symptom → fix: a valid token that returns **403** is this setting, not a
+> credential — clear the field. (A **401** is the opposite: the token itself is
+> rejected, so rotate it and re-run `enable-autodeploy.sh` per repo.)
+> `engage.sh`'s readiness check now makes a real authenticated
+> `GET /api/v1/version` and distinguishes the two, precisely because
+> `/api/health` needs no token and proves only that the box is up.
 
 **The GitHub Free gotcha — org secrets don't reach private repos.** On the Free
 org plan, **organization** secrets can be used by **public** repos only (the
