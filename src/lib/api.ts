@@ -82,6 +82,8 @@ export interface ApiLot {
   status: LotStatus;
   lot_type: string | null;
   address: string | null;
+  /** Public per-lot copy set in the office. Falls back to generated text. */
+  marketing_description?: string | null;
   size_acres: number | string | null;
   size_sqft: number | string | null;
   base_price: number | string | null;

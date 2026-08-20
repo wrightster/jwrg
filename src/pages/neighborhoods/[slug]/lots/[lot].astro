@@ -44,6 +44,10 @@ const hasPrice = lot.base_price != null && Number(lot.base_price) > 0;
 const priceLabel = lotPriceLabel(lot);
 
 const location = [n.city, n.county && `${n.county} County`].filter(Boolean).join(' · ');
+// Office-authored copy wins over the generated sentence. Blank-line-separated
+// paragraphs are preserved; the closing "reach out" line stays either way so a
+// lot with copy still ends on a call to action.
+const blurb = lot.marketing_description?.trim() || null;
 
 // Marketing-safe documents attached to this lot (floor plans, spec sheets).
 const documents = (lot.documents ?? []).filter((d) => d.url);
@@ -129,12 +133,16 @@ const metaDescription =
           <div>
             <h2 class="listing-description-heading">About this homesite</h2>
             <div class="listing-description-body">
-              <p>
-                {title} is {status.label === 'Available' ? 'an available' : `a ${status.label.toLowerCase()}`} homesite
-                in {n.name}{location ? `, ${location}` : ''}.
-                {acres ? ` The lot spans ${acres}.` : ''}
-                {lot.builder?.name ? ` Homes here are built by ${lot.builder.name}.` : ''}
-              </p>
+              {blurb
+                ? blurb.split(/\n{2,}/).map((para) => <p>{para}</p>)
+                : (
+                  <p>
+                    {title} is {status.label === 'Available' ? 'an available' : `a ${status.label.toLowerCase()}`} homesite
+                    in {n.name}{location ? `, ${location}` : ''}.
+                    {acres ? ` The lot spans ${acres}.` : ''}
+                    {lot.builder?.name ? ` Homes here are built by ${lot.builder.name}.` : ''}
+                  </p>
+                )}
               <p>
                 Reach out to the Julie Wright Realty Group team for pricing details, available
                 floor plans, and to schedule a walk of the site.
