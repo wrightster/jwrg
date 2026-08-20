@@ -117,6 +117,7 @@ const longBio = member.bio ?? member.short_bio ?? '';
   </section>
 
   <MiniContactForm
+    agentId={String(member.id)}
     heading={`Connect with ${firstName}`}
     description="Send a message — we'll forward it directly to make sure you get a quick response."
   />

@@ -5,11 +5,25 @@ import EmbedForm from './EmbedForm.astro';
 interface Props {
   heading?: string;
   description?: string;
+  /**
+   * Subject/routing ids, forwarded to EmbedForm so the office can attribute the
+   * lead and route it (a neighborhood enquiry → that community's round-robin, an
+   * agent page → that agent). These MUST be declared and passed through: Astro
+   * silently discards props a component doesn't accept, so when they were
+   * missing here the callers' `neighborhoodId={n.id}` vanished without any
+   * error and every lot/neighborhood lead fell back to the general pool.
+   */
+  listingId?: string;
+  agentId?: string;
+  neighborhoodId?: string;
 }
 
 const {
   heading = "Questions? We'd Love to Hear from You",
   description = "Whether you're buying, selling, or just exploring your options, our team is here to help. Reach out and let us put five decades of experience to work for you.",
+  listingId,
+  agentId,
+  neighborhoodId,
 } = Astro.props;
 
 const formToken = site.formTokens.miniContact || site.formTokens.contact;
@@ -59,7 +73,7 @@ const formToken = site.formTokens.miniContact || site.formTokens.contact;
       <div class="bg-white rounded-sm p-8 md:p-10">
         <h3 class="contact-form-heading">Send Us a Message</h3>
         {formToken ? (
-          <EmbedForm id="jwrg-mini-contact" token={formToken} />
+          <EmbedForm id="jwrg-mini-contact" token={formToken} listingId={listingId} agentId={agentId} neighborhoodId={neighborhoodId} />
         ) : (
           <p class="text-earth-600 leading-relaxed">
             Our online contact form is being configured. In the meantime, please reach us
