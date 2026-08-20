@@ -75,6 +75,8 @@ export interface ApiLotDocument {
   title: string;
   document_type: string | null;
   url: string | null;
+  /** Drives the viewer's render path (PDF.js vs image vs download). */
+  mime?: string | null;
 }
 
 export interface ApiLot {

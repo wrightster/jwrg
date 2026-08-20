@@ -6,6 +6,7 @@
 export const prerender = false;
 
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import DocumentViewerModal from '../../../../components/DocumentViewerModal.astro';
 import MiniContactForm from '../../../../components/MiniContactForm.astro';
 import LotCard from '../../../../components/LotCard.astro';
 import BtnArrow from '../../../../components/BtnArrow.astro';
@@ -180,7 +181,16 @@ const metaDescription =
               <ul class="listing-documents-list">
                 {documents.map((doc) => (
                   <li>
-                    <a href={doc.url} target="_blank" rel="noopener" class="listing-document-link">
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-doc-viewer
+                      data-doc-id={doc.id}
+                      data-doc-title={doc.title}
+                      data-doc-mime={doc.mime ?? ''}
+                      class="listing-document-link"
+                    >
                       <svg class="listing-document-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                       <div class="listing-document-body">
                         <div class="listing-document-row">
@@ -250,6 +260,8 @@ const metaDescription =
       </div>
     </section>
   )}
+
+  <DocumentViewerModal />
 
   <div id="contact" class="scroll-mt-28"></div>
   <MiniContactForm
