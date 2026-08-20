@@ -13,6 +13,7 @@ import {
   formatPrice,
   normalizeListingLabel,
   type ApiListing,
+  type ApiTeamMember,
   type ListingsQuery,
 } from '@jw/shared/api';
 
@@ -159,6 +160,36 @@ export const lotHref = (neighborhoodSlug: string, lot: ApiLot): string =>
 // office for the same slug within a request burst. Keyed by slug.
 const LOTS_TTL_MS = 60_000;
 const _lotsMemo = new Map<string, { at: number; data: ApiLot[] }>();
+
+/**
+ * Agents the office has assigned to a neighborhood AND flagged `list_on_website`.
+ *
+ * Display only. This is deliberately NOT the lead-routing set: the office keeps
+ * `list_on_website` and `round_robin_off` as separate flags on the
+ * neighborhood_user pivot, so an agent can be shown without taking intake, or
+ * take intake without being shown. Routing stays with the neighborhood id the
+ * form already sends. Returns [] when nobody is flagged, which is common — the
+ * caller falls back to the brokerage contact block.
+ */
+const TEAM_TTL_MS = 60_000;
+const _nbTeamMemo = new Map<string, { at: number; data: ApiTeamMember[] }>();
+
+export async function fetchNeighborhoodTeam(slug: string): Promise<ApiTeamMember[]> {
+  const hit = _nbTeamMemo.get(slug);
+  if (hit && Date.now() - hit.at < TEAM_TTL_MS) return hit.data;
+  try {
+    const res = await fetch(`${BASE_URL}/neighborhoods/${slug}/team`, {
+      headers: { Accept: 'application/json' },
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const data = (json?.data ?? []) as ApiTeamMember[];
+    _nbTeamMemo.set(slug, { at: Date.now(), data });
+    return data;
+  } catch {
+    return [];
+  }
+}
 
 export async function fetchNeighborhoodLots(slug: string): Promise<ApiLot[]> {
   const hit = _lotsMemo.get(slug);

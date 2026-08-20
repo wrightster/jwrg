@@ -8,7 +8,7 @@ import MiniContactForm from '../../components/MiniContactForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import LotCard from '../../components/LotCard.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
-import { fetchNeighborhood, fetchListings, fetchNeighborhoodLots, groupDocuments, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
+import { fetchNeighborhood, fetchListings, fetchNeighborhoodLots, fetchNeighborhoodTeam, groupDocuments, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
 import { neighborhoodSites } from '../../data/neighborhoodSites';
 
 const { slug } = Astro.params;
@@ -24,9 +24,12 @@ if (!n) {
 // "from the $X00s" starting price off the cheapest available lot's base_price).
 // Both key off the resolved neighborhood slug and are independent of each other,
 // so fetch them concurrently rather than in series.
-const [nListings, lots] = await Promise.all([
+const [nListings, lots, nbAgents] = await Promise.all([
   fetchListings({ neighborhood: n.slug, perPage: 100 }),
   fetchNeighborhoodLots(n.slug),
+  // Agents flagged list_on_website for this community; [] falls back to the
+  // brokerage contact block in MiniContactForm.
+  fetchNeighborhoodTeam(n.slug),
 ]);
 const listingCount = nListings.length;
 const availableLots = lots.filter((l) => l.status === 'available');
@@ -476,7 +479,7 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
     </section>
   )}
 
-  <MiniContactForm neighborhoodId={n.id} />
+  <MiniContactForm neighborhoodId={n.id} agents={nbAgents} />
 
   {documentGroups.length > 0 && <DocumentViewerModal />}
 

@@ -1,5 +1,6 @@
 ---
 import { site } from '../data/site';
+import { photoSrc, type ApiTeamMember } from '../lib/api';
 import EmbedForm from './EmbedForm.astro';
 
 interface Props {
@@ -16,6 +17,13 @@ interface Props {
   listingId?: string;
   agentId?: string;
   neighborhoodId?: string;
+  /**
+   * Neighborhood agents to show instead of the brokerage phone/email/office
+   * block. Display only — routing still goes through neighborhoodId, because
+   * the office treats `list_on_website` and round-robin intake as separate
+   * flags. Empty or omitted falls back to the brokerage block.
+   */
+  agents?: ApiTeamMember[];
 }
 
 const {
@@ -24,7 +32,10 @@ const {
   listingId,
   agentId,
   neighborhoodId,
+  agents = [],
 } = Astro.props;
+
+const hasAgents = agents.length > 0;
 
 const formToken = site.formTokens.miniContact || site.formTokens.contact;
 ---
@@ -38,6 +49,44 @@ const formToken = site.formTokens.miniContact || site.formTokens.contact;
         <h2 class="section-heading">{heading}</h2>
         <p class="text-earth-600 leading-relaxed mt-4 mb-8">{description}</p>
 
+        {hasAgents ? (
+          <div class="space-y-4">
+            {agents.map((a) => (
+              <div class="flex items-start gap-4">
+                {photoSrc(a.primary_photo, 400) ? (
+                  <img
+                    src={photoSrc(a.primary_photo, 400)}
+                    alt={a.name}
+                    width="56"
+                    height="56"
+                    loading="lazy"
+                    class="w-14 h-14 rounded-sm object-cover shrink-0 bg-earth-100"
+                  />
+                ) : (
+                  <div class="w-14 h-14 rounded-sm bg-earth-100 text-red-600 flex items-center justify-center shrink-0 font-display">
+                    {a.name.split(' ').map((w) => w[0]).slice(0, 2).join('')}
+                  </div>
+                )}
+                <div class="min-w-0">
+                  <a href={`/about/team/${a.slug}`} class="font-display text-earth-900 hover:text-red-600 transition-colors">{a.name}</a>
+                  {a.title && <div class="text-sm text-earth-500">{a.title}</div>}
+                  <div class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                    {a.public_phone && (
+                      <a href={`tel:${a.public_phone.replace(/[^0-9]/g, '')}`} class="text-earth-600 hover:text-red-600 transition-colors">{a.public_phone}</a>
+                    )}
+                    {a.public_email && (
+                      <a href={`mailto:${a.public_email}`} class="text-earth-600 hover:text-red-600 transition-colors break-all">{a.public_email}</a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+            <p class="text-sm text-earth-500 pt-1">
+              Or reach the office at
+              <a href={`tel:${site.phoneRaw}`} class="text-red-600 hover:underline">{site.phone}</a>.
+            </p>
+          </div>
+        ) : (
         <div class="space-y-5">
           <div class="flex items-start gap-4">
             <div class="w-11 h-11 rounded-sm bg-earth-100 text-red-600 flex items-center justify-center shrink-0">
@@ -67,6 +116,7 @@ const formToken = site.formTokens.miniContact || site.formTokens.contact;
             </div>
           </div>
         </div>
+        )}
       </div>
 
       <!-- Form -->

@@ -12,6 +12,7 @@ import BtnArrow from '../../../../components/BtnArrow.astro';
 import {
   fetchNeighborhood,
   fetchNeighborhoodLots,
+  fetchNeighborhoodTeam,
   lotStatusMeta,
   lotTitle,
   lotAcresLabel,
@@ -27,6 +28,9 @@ if (!n) {
 }
 
 const lots = await fetchNeighborhoodLots(n.slug);
+// Agents flagged list_on_website for this community; [] falls back to the
+// brokerage contact block in MiniContactForm.
+const nbAgents = await fetchNeighborhoodTeam(n.slug);
 const wanted = decodeURIComponent(lotParam ?? '').toLowerCase();
 const lot = lots.find(
   (l) => l.status !== 'common_area' && String(l.lot_number).toLowerCase() === wanted,
@@ -250,6 +254,7 @@ const metaDescription =
   <div id="contact" class="scroll-mt-28"></div>
   <MiniContactForm
     neighborhoodId={n.id}
+    agents={nbAgents}
     heading={`Ask about ${title}`}
     description={`Interested in this homesite in ${n.name}? Send us a message and our team will follow up with pricing, availability, and floor-plan options.`}
   />
