@@ -1,8 +1,9 @@
 ---
 // Grid card for a subdivision lot (homesite), styled to match ListingCard so
 // lots and homes read as one inventory system. JWRG-local — lots come from the
-// office public API (fetchNeighborhoodLots / ApiLot in src/lib/api.ts) and have
-// no photos, so the image area is a branded placeholder rather than a <picture>.
+// office public API (fetchNeighborhoodLots / ApiLot in src/lib/api.ts). Lots can
+// now carry photos; when one has none the image area falls back to the branded
+// plat placeholder, which is still the common case.
 //
 // Reuses the shared `.listing-card*` classes (see @jw/shared/styles/components.css)
 // for pixel parity; the status pill borrows the listing palette via `colorKey`.
@@ -15,6 +16,9 @@ import {
   lotPriceLabel,
   lotTypeLabel,
   lotHref,
+  photoSrc,
+  photoSrcSet,
+  photoDimensions,
   type ApiLot,
 } from '../lib/api';
 
@@ -25,7 +29,7 @@ interface Props {
   index?: number;
 }
 
-const { lot, neighborhoodSlug, neighborhoodName } = Astro.props;
+const { lot, neighborhoodSlug, neighborhoodName, index = 0 } = Astro.props;
 
 const status = lotStatusMeta(lot.status);
 const title = lotTitle(lot);
@@ -42,17 +46,47 @@ const descLine =
   (neighborhoodName ? `Homesite in ${neighborhoodName}` : 'Homesite');
 const priceLabel = lotPriceLabel(lot);
 const href = lotHref(neighborhoodSlug, lot);
+
+// Photo when the lot has one; otherwise the plat placeholder below. 800 is the
+// card's rung, matching ListingCard so lots and homes stay pixel-consistent.
+const photo = lot.primary_photo ?? lot.photos?.[0] ?? null;
+const image = photoSrc(photo, 800);
+const dims = photoDimensions(photo, 800);
+const avif = photoSrcSet(photo, 'avif');
+const webp = photoSrcSet(photo, 'webp');
+const jpg = photoSrcSet(photo, 'jpg');
+const sizes = '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw';
+const photoAltText = photo?.alt || title;
 ---
 
 <article class="[display:contents]">
   <a href={href} class="listing-card" aria-label={`${title} — ${status.label}`}>
     <div class="listing-card-image">
-      <div class="w-full h-full bg-gradient-to-br from-earth-200 via-gold-100 to-earth-100 flex items-center justify-center">
-        {/* Plat/land motif so the placeholder reads as "homesite", not a broken image */}
-        <svg class="w-14 h-14 text-earth-400/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-        </svg>
-      </div>
+      {image ? (
+        <picture>
+          {avif && <source type="image/avif" srcset={avif} sizes={sizes} />}
+          {webp && <source type="image/webp" srcset={webp} sizes={sizes} />}
+          <img
+            src={image}
+            srcset={jpg ?? undefined}
+            sizes={jpg ? sizes : undefined}
+            width={dims?.width}
+            height={dims?.height}
+            alt={photoAltText}
+            class="listing-card-img"
+            loading={index === 0 ? 'eager' : 'lazy'}
+            fetchpriority={index === 0 ? 'high' : undefined}
+            decoding="async"
+          />
+        </picture>
+      ) : (
+        <div class="w-full h-full bg-gradient-to-br from-earth-200 via-gold-100 to-earth-100 flex items-center justify-center">
+          {/* Plat/land motif so the placeholder reads as "homesite", not a broken image */}
+          <svg class="w-14 h-14 text-earth-400/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.25" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+          </svg>
+        </div>
+      )}
       <div class="listing-card-gradient"></div>
       <div class="listing-card-overlay">
         <div>

@@ -6,6 +6,7 @@
 export const prerender = false;
 
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import ListingGallery from '@jw/shared/components/ListingGallery.astro';
 import DocumentViewerModal from '../../../../components/DocumentViewerModal.astro';
 import MiniContactForm from '../../../../components/MiniContactForm.astro';
 import LotCard from '../../../../components/LotCard.astro';
@@ -56,6 +57,11 @@ const blurb = lot.marketing_description?.trim() || null;
 
 // Marketing-safe documents attached to this lot (floor plans, spec sheets).
 const documents = (lot.documents ?? []).filter((d) => d.url);
+// Gallery photos, when the office has any. Same shape as listing photos, so the
+// shared gallery takes them as-is; the block is omitted entirely when empty
+// rather than rendering an empty frame.
+const photos = lot.photos ?? [];
+const heroAlt = photos[0]?.alt || `${title} in ${n.name}`;
 const humanizeType = (t: string | null): string | null =>
   t ? t.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : null;
 
@@ -102,6 +108,12 @@ const metaDescription =
     <div class="max-w-7xl mx-auto px-6">
       <div class="listing-detail-grid">
         <div class="listing-detail-main">
+          {photos.length > 0 && (
+            <div class="mb-8">
+              <ListingGallery photos={photos} title={title} alt={heroAlt} />
+            </div>
+          )}
+
           <div class="listing-key-stats">
             <div class="listing-stat-cell">
               <div class="listing-stat-label">Price</div>

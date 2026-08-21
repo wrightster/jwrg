@@ -13,6 +13,7 @@ import {
   formatPrice,
   normalizeListingLabel,
   type ApiListing,
+  type ApiPhoto,
   type ApiTeamMember,
   type ListingsQuery,
 } from '@jw/shared/api';
@@ -95,6 +96,15 @@ export interface ApiLot {
   builder?: ApiLotBuilder | null;
   agent?: ApiLotAgent | null;
   documents?: ApiLotDocument[];
+  /**
+   * Gallery photos. Same shape as ApiPhoto (LotPhotoResource mirrors the
+   * neighborhood/listing photo resource), so the shared ListingGallery and the
+   * photoSrc/photoSrcSet helpers take them directly. Absent — not empty — when
+   * the endpoint didn't eager-load them.
+   */
+  primary_photo?: ApiPhoto | null;
+  photos?: ApiPhoto[];
+  photo_count?: number;
 }
 
 // ---------- Lot presentation helpers (shared by LotCard + the detail page) ----------
