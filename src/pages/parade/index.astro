@@ -72,17 +72,19 @@ const points: MapPoint[] = paradeNeighborhoods
     description="Five of our communities are part of this year's Parade of Homes. Pick a neighborhood to see its featured homes."
   />
 
-  <section class="py-8">
-    <div class="max-w-7xl mx-auto px-6">
-      <!-- The card grid caps at 3 per row: its wrap container is exactly three
-           w-72 cards + two gap-x-6 gaps wide (3×288 + 2×24 = 936px), so a
-           fourth card always wraps; shorter rows center. -->
+  <section class="py-8 pb-16">
+    <!-- At lg+ the logo grid and the map share one row: cards in the left 3/4,
+         a portrait map in the right 1/4 (below lg the map stacks underneath).
+         The card row still caps at 3: the 3/4 column is ~916px at the 7xl cap,
+         and three w-72 cards + two gap-x-4 gaps = 896px, so a fourth wraps;
+         shorter rows center. -->
+    <div class="max-w-7xl mx-auto px-6 grid gap-8 lg:grid-cols-4 items-start">
       {paradeNeighborhoods.length === 0 ? (
-        <div class="text-center text-earth-600 py-16">
+        <div class="text-center text-earth-600 py-16 lg:col-span-3">
           <p>Parade communities are being finalized. Please check back soon.</p>
         </div>
       ) : (
-        <div class="flex flex-wrap justify-center gap-x-6 -mb-6 max-w-[936px] mx-auto">
+        <div class="lg:col-span-3 flex flex-wrap justify-center gap-x-4 -mb-6">
           {paradeNeighborhoods.map((n) => {
             const heroSrc = photoSrc(n.primary_photo, 800);
             // Alpha-preserving webp — several neighborhood "photos" are
@@ -138,20 +140,18 @@ const points: MapPoint[] = paradeNeighborhoods
           })}
         </div>
       )}
+
+      {points.length > 0 && (
+        <div class="lg:col-span-1">
+          <NeighborhoodMap
+            points={points}
+            ariaLabel="Interactive map of the Parade of Homes communities"
+            heightStyle="height: 640px;"
+          />
+        </div>
+      )}
     </div>
   </section>
-
-  {points.length > 0 && (
-    <section class="pb-16">
-      <div class="max-w-7xl mx-auto px-6">
-        <h2 class="font-display text-2xl text-earth-900 mb-4 text-center">Find them on the map</h2>
-        <NeighborhoodMap
-          points={points}
-          ariaLabel="Interactive map of the Parade of Homes communities"
-        />
-      </div>
-    </section>
-  )}
 
   <MiniContactForm />
 </BaseLayout>

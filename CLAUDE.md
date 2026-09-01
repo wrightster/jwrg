@@ -401,10 +401,12 @@ it's being promoted.
 - **`/parade`** (`src/pages/parade/index.astro`, SSR) — the five participating
   communities (`PARADE_SLUGS` in `src/data/parade.ts`: Preserve West, Tennyson,
   Cedar Knolls, Aubrie Place, Cannady Mill) as centered logo cards in the neighborhoods-grid
-  style, linking to `/parade/{slug}`, with a parade-only `NeighborhoodMap`
-  below (chips also link to `/parade/{slug}`). The grid caps at three cards
-  per row (the wrap container is sized to exactly three cards); each card's
-  label is the community's parade-home count ("# Homes").
+  style, linking to `/parade/{slug}`, beside a parade-only portrait
+  `NeighborhoodMap` (chips also link to `/parade/{slug}`) in the right 1/4 of
+  the row at lg+ (stacked below the cards on smaller screens; the component
+  grew a `heightStyle` prop for this). The card grid caps at three per row
+  (the 3/4 column fits exactly three); each card's label is the community's
+  parade-home count ("# Homes").
 - **`/parade/[slug]`** (SSR) — the parade view of one community: brand-mark
   hero, then **Featured Parade Homes** (the main focus — listings tagged
   `POH2026`, via the office's `?tag=` filter through `fetchListingsByTag()` in

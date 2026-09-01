@@ -29,15 +29,23 @@ export interface MapPoint {
 interface Props {
   points: MapPoint[];
   ariaLabel?: string;
+  /** CSS sizing for the map container. Default is the landscape
+   *  /neighborhood-map treatment; /parade passes a fixed portrait height for
+   *  its narrow side column. */
+  heightStyle?: string;
 }
 
-const { points, ariaLabel = 'Interactive map of Julie Wright Realty Group neighborhoods' } = Astro.props;
+const {
+  points,
+  ariaLabel = 'Interactive map of Julie Wright Realty Group neighborhoods',
+  heightStyle = 'height: min(70vh, 620px); min-height: 420px;',
+} = Astro.props;
 ---
 
 <div
   id="nbhd-map"
   class="w-full rounded-sm overflow-hidden border border-earth-200 bg-earth-100/60"
-  style="height: min(70vh, 620px); min-height: 420px;"
+  style={heightStyle}
   role="region"
   aria-label={ariaLabel}
 >
