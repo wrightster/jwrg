@@ -1,0 +1,190 @@
+---
+// Parade view of one community (/parade/{slug}) — hidden with the rest of the
+// parade section (noindex, no nav links). A trimmed version of the regular
+// neighborhood page whose main focus is the featured parade homes: listings
+// tagged POH2026 in the office. Description, amenities, and quick facts follow;
+// galleries, documents, and homesites stay on the full neighborhood page,
+// which is linked from the sidebar.
+export const prerender = false;
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MiniContactForm from '../../components/MiniContactForm.astro';
+import ListingCard from '../../components/ListingCard.astro';
+import BtnArrow from '../../components/BtnArrow.astro';
+import { fetchNeighborhood, fetchListingsByTag, fetchNeighborhoodTeam } from '../../lib/api';
+import { PARADE_SLUGS, PARADE_TAG, PARADE_TITLE } from '../../data/parade';
+
+const { slug } = Astro.params;
+// Only the parade communities resolve here — everything else goes back to the
+// parade landing page (not /neighborhoods; this route belongs to the parade).
+const n = slug && PARADE_SLUGS.includes(slug) ? await fetchNeighborhood(slug) : null;
+
+if (!n) {
+  return Astro.redirect('/parade');
+}
+
+const [paradeListings, nbAgents] = await Promise.all([
+  fetchListingsByTag(PARADE_TAG, { neighborhood: n.slug }),
+  fetchNeighborhoodTeam(n.slug),
+]);
+
+// Brand mark hero — same office-managed featured image and sizing math as the
+// regular neighborhood page (see /neighborhoods/[slug].astro for the details).
+const logo = n.featured_image
+  ? {
+      src: n.featured_image.url,
+      scale: n.featured_image.scale ?? undefined,
+      aspect: n.featured_image.aspect ?? undefined,
+    }
+  : undefined;
+const logoScale = logo?.scale ?? 1;
+const logoAspect = logo?.aspect ?? 1;
+const CAP_W = 492;
+const CAP_H = 334;
+const logoW = Math.round((logoAspect < CAP_W / CAP_H ? CAP_H * logoAspect : CAP_W) * logoScale);
+
+const location = [n.city, n.county && `${n.county} County`].filter(Boolean).join(' · ');
+// marketing_description is rich HTML (office RichEditor); description is legacy plain text.
+const aboutHtml = n.marketing_description?.trim() || null;
+const aboutText = n.description?.trim() || null;
+const aboutStripped = (aboutHtml ?? aboutText ?? '')
+  .replace(/<[^>]*>/g, ' ')
+  .replace(/&nbsp;/gi, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+const hasAbout = aboutStripped.length > 0;
+---
+
+<BaseLayout
+  title={`${n.name} — ${PARADE_TITLE} | Julie Wright Realty Group`}
+  description={`${n.name} in the 2026 Parade of Homes — featured homes and community details from Julie Wright Realty Group.`}
+  noindex
+>
+  <section class="pt-8 pb-8">
+    <div class="max-w-7xl mx-auto px-6">
+      <a href="/parade" class="text-sm text-red-600 hover:text-red-700 inline-flex items-center gap-1 mb-6">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        Back to the Parade of Homes
+      </a>
+
+      <p class="text-center text-sm font-display font-semibold uppercase tracking-widest text-red-600">
+        {PARADE_TITLE}
+      </p>
+      {/* The logo is a wordmark carrying the name, so hide the plain-text
+          title on logo pages — but keep an sr-only h1 for a11y. */}
+      {logo ? (
+        <h1 class="sr-only">{n.name}</h1>
+      ) : (
+        <h1 class="font-display text-4xl md:text-5xl text-earth-900 leading-tight text-center mt-4">
+          {n.name}
+        </h1>
+      )}
+    </div>
+  </section>
+
+  {logo && (
+    <section class="pb-12">
+      <div class="max-w-7xl mx-auto px-6">
+        <div
+          class="mx-auto flex items-center justify-center"
+          style={`width:${logoW}px;max-width:90vw;aspect-ratio:${logoAspect};`}
+        >
+          <img src={logo.src} alt={n.name} class="w-full h-full object-contain" />
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section id="parade-homes" class="pb-16 scroll-mt-28">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
+        <h2 class="font-display text-3xl text-earth-900">Featured Parade Homes</h2>
+        {paradeListings.length > 0 && (
+          <p class="text-sm text-earth-500">
+            <span class="font-semibold text-earth-800">{paradeListings.length}</span> in {n.name}
+          </p>
+        )}
+      </div>
+      {paradeListings.length > 0 ? (
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {paradeListings.map((listing, i) => <ListingCard listing={listing} index={i} />)}
+        </div>
+      ) : (
+        <div class="bg-earth-100/60 border border-earth-200/60 rounded-sm p-8 text-center text-earth-600">
+          <p>The featured homes in {n.name} haven't been announced yet — check back soon.</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section class="pb-16">
+    <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-3 gap-12">
+      <div class="lg:col-span-2 space-y-10">
+        {hasAbout && (
+          <div>
+            <h2 class="font-display text-2xl text-earth-900 mb-4">About {n.name}</h2>
+            {aboutHtml ? (
+              <div class="prose max-w-none text-earth-700 leading-relaxed" set:html={aboutHtml} />
+            ) : (
+              <div class="prose max-w-none text-earth-700 leading-relaxed whitespace-pre-line">{aboutText}</div>
+            )}
+          </div>
+        )}
+
+        {n.amenities.length > 0 && (
+          <div>
+            <h2 class="font-display text-2xl text-earth-900 mb-4">Community Amenities</h2>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-earth-700">
+              {n.amenities.map((a) => (
+                <li class="flex items-start gap-2">
+                  <svg class="w-5 h-5 text-gold-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>{a}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {n.school_district && (
+          <div>
+            <h3 class="font-display text-lg text-earth-900 mb-2">Schools</h3>
+            <p class="text-earth-700 text-sm">{n.school_district}</p>
+          </div>
+        )}
+      </div>
+
+      <aside class="space-y-6">
+        <BtnArrow href={`/neighborhoods/${n.slug}`} class="w-full justify-center">
+          Full Neighborhood Page
+        </BtnArrow>
+
+        <div class="bg-earth-100/60 rounded-sm p-6 border border-earth-200/60">
+          <dl class="space-y-3 text-sm">
+            {location && (
+              <div>
+                <dt class="text-earth-500 text-xs uppercase tracking-wider">Location</dt>
+                <dd class="text-earth-900 mt-0.5">{location}</dd>
+              </div>
+            )}
+            {n.hoa.name && (
+              <div>
+                <dt class="text-earth-500 text-xs uppercase tracking-wider">HOA</dt>
+                <dd class="text-earth-900 mt-0.5">{n.hoa.name}</dd>
+              </div>
+            )}
+            {paradeListings.length > 0 && (
+              <div>
+                <dt class="text-earth-500 text-xs uppercase tracking-wider">Parade Homes</dt>
+                <dd class="text-earth-900 mt-0.5">
+                  <a href="#parade-homes" class="text-red-600 hover:text-red-700">{paradeListings.length}</a>
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <MiniContactForm neighborhoodId={n.id} agents={nbAgents} />
+</BaseLayout>

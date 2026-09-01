@@ -203,6 +203,36 @@ export async function fetchNeighborhoodTeam(slug: string): Promise<ApiTeamMember
   }
 }
 
+/**
+ * Listings carrying a marketing tag (office `?tag=` filter, exact match) —
+ * e.g. POH2026 drives the /parade page. Site-scoped like every listing fetch.
+ * JWRG-local because the shared ListingsQuery doesn't know `tag` yet; fold it
+ * into @jw/shared's buildListingsUrl if JWLC ever needs tag filtering.
+ */
+const TAGGED_TTL_MS = 60_000;
+const _taggedMemo = new Map<string, { at: number; data: ApiListing[] }>();
+
+export async function fetchListingsByTag(
+  tag: string,
+  opts: { neighborhood?: string } = {},
+): Promise<ApiListing[]> {
+  const params = new URLSearchParams({ site: SITE_SLUG, tag, per_page: '100' });
+  if (opts.neighborhood) params.set('neighborhood', opts.neighborhood);
+  const url = `${BASE_URL}/listings?${params}`;
+  const hit = _taggedMemo.get(url);
+  if (hit && Date.now() - hit.at < TAGGED_TTL_MS) return hit.data;
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return [];
+    const json = await res.json();
+    const data = ((json?.data ?? []) as ApiListing[]).map(normalizeListingLabel);
+    _taggedMemo.set(url, { at: Date.now(), data });
+    return data;
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchNeighborhoodLots(slug: string): Promise<ApiLot[]> {
   const hit = _lotsMemo.get(slug);
   if (hit && Date.now() - hit.at < LOTS_TTL_MS) return hit.data;

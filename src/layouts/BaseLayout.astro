@@ -14,6 +14,10 @@ interface Props {
   /** Page-specific JSON-LD (e.g. RealEstateListing + breadcrumb); merged with
    *  the sitewide brokerage block emitted on every page. */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Emit a robots noindex for this page (e.g. /parade while it's unlaunched —
+   *  linked from nowhere and kept out of the sitemap, but a stray link
+   *  shouldn't get it indexed early). */
+  noindex?: boolean;
 }
 
 const {
@@ -23,6 +27,7 @@ const {
   imageAlt,
   ogType = 'website',
   jsonLd,
+  noindex = false,
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
@@ -86,7 +91,7 @@ const footerNav = [
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    {isStaging && <meta name="robots" content="noindex, nofollow" />}
+    {(isStaging || noindex) && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

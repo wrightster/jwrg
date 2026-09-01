@@ -66,6 +66,7 @@ src/
 │   ├── ListingCard.astro     # Card view for a listing (grid) — beds/baths/sqft
 │   ├── ListingRow.astro      # Row view for a listing (list layout)
 │   ├── MiniContactForm.astro # Contact info + message form band
+│   ├── NeighborhoodMap.astro # Leaflet logo-chip map (shared by /neighborhood-map + /parade)
 │   ├── PageBanner.astro      # Page header band (.page-banner)
 │   ├── Section.astro         # Section wrapper (label/heading/description)
 │   └── TeamCard.astro        # Broker / agent card
@@ -75,7 +76,9 @@ src/
 │   ├── countyShapes.ts    # Generated county silhouette SVG paths (About "Triangle Area")
 │   ├── keyTerms.ts        # Real estate glossary
 │   ├── movingTips.ts      # Relocation moving-tips content
+│   ├── neighborhoodCoords.ts # Interim SEED_COORDS (office lat/lng wins; delete once office has coords)
 │   ├── neighborhoodSites.ts  # slug → external community-site URL
+│   ├── parade.ts          # Parade of Homes config (community slugs, POH2026 tag, title)
 │   ├── site.ts            # Global site metadata (name, contact, service-area counties, embed-form tokens)
 │   └── stagingTips.ts     # Seller staging-tips content
 │   # NOTE: embed-form tokens live in site.ts (site.formTokens) — there is no forms.ts.
@@ -93,6 +96,7 @@ src/
 │   │   ├── sellers/           # Home value, list-your-property, staging, sold reports
 │   │   └── relocation/        # Relocation package, moving tips
 │   ├── neighborhoods/     # Index + [slug] dynamic pages
+│   ├── parade/            # FCHBA Parade of Homes 2026 (hidden: noindex, no nav/sitemap) — see below
 │   ├── listings/          # Index + [slug] dynamic property detail
 │   ├── 404.astro
 │   ├── accessibility.astro
@@ -321,14 +325,19 @@ Neighborhoods are managed in the office (Filament admin, or the `create-neighbor
 
 **Brand logo (optional):** the neighborhoods index cards are frameless (imagery/logos sit over the site topo background — no white card). The grid uses `flex flex-wrap justify-center` (not CSS grid) with **fixed-width cards** (`w-72` / 288px, plus `max-w-full` to shrink on tiny phones and `shrink-0` so flex never sizes cards unevenly) — so cards hold the same scale at any viewport width and surplus width becomes side margin (via `justify-center` + the `max-w-7xl` wrapper) rather than stretching them. Rows are **staggered** like brickwork: each row alternates between the breakpoint's column count and one less (xl 3/4, lg 2/3, md 1/2, base 1–2), so adjacent rows offset. Equal-width cards would otherwise just pack the max per row, so the wrap is forced by zero-height, full-width spacers inserted after each row's last card; break positions differ per breakpoint (the short/full cycle length is 3 / 5 / 7 for md / lg / xl) so each card renders up to three spacers, each scoped to one breakpoint band (`hidden md:block lg:hidden`, etc., so exactly one is active at a given width). Vertical rhythm comes from a per-card `mb-6` (with `gap-x-6`, not a row-gap) so the invisible spacer lines add no space; shorter/partial rows are **centered**. A neighborhood can render a brand logo instead of its API photo, and **this is now office-managed, not a repo file.** The mark lives on the neighborhood record as its `featured_image` (a single-file media collection), set in the office — the Filament neighborhood **Details** tab, or the `attach-neighborhood-featured-image-from-url` / `-from-upload` MCP tools (each attach replaces the prior one). Both the index grid (`NeighborhoodGrid.astro`) and the detail page (`[slug].astro`) read it from the API as `n.featured_image` (`{url, aspect, scale}`) and render it as a contained hero over the background instead of the API photo gallery — these neighborhoods' single API "photo" is itself a logo that crops badly as a cover tile. `aspect` (width/height) is derived from the artwork automatically (SVG viewBox or raster dimensions), so the hero sizes without fetching the file; the optional `scale` (~0.7–1.0) optically balances the marks so they read at a similar size (heavier/wider marks scale toward the lightest, ~1.0). **The old repo-side approach — a `src/data/neighborhoodLogos.ts` map plus SVGs in `public/images/neighborhoods/` — is retired; don't reintroduce it.** It moved onto the record precisely because a slug rename orphaned the local map. Guidance for the artwork still holds: use transparent, single/dark-ink marks (they display over the light `earth-50` background); masters live in the `JW-Brand-Assets` repo; when recoloring an Illustrator SVG export to 1-color, set a root `fill="…"` on the `<svg>` so unclassed paths don't default to **black**.
 
-### Neighborhood map (`/neighborhood-map`)
+### Neighborhood map (`/neighborhood-map` + the `NeighborhoodMap` component)
 
 `src/pages/neighborhood-map.astro` is an **interactive Leaflet map** of every
-neighborhood, plotted as its **`featured_image` logo in a clickable chip** that
-links to `/neighborhoods/{slug}`. Self-hosted `leaflet` dep (not a CDN/embed —
-the old page was a keyless, marker-less Google Maps iframe). It's **SSR
-(`prerender = false`)** so a new neighborhood or a corrected coordinate shows up
-without a redeploy; the client Leaflet script lives **on the page**, not in a
+neighborhood, plotted as its **`featured_image` logo in a clickable chip**.
+The map itself — chips, displacement pass, styles, and the client script — was
+extracted (2026-08) into **`src/components/NeighborhoodMap.astro`** so `/parade`
+can render a subset; each point carries an explicit `href` (the full map links
+chips to `/neighborhoods/{slug}`, the parade map to `/parade/{slug}`). One
+instance per page (id-addressed container/data elements). Self-hosted `leaflet`
+dep (not a CDN/embed — the old page was a keyless, marker-less Google Maps
+iframe). Both consumer pages are **SSR (`prerender = false`)** so a new
+neighborhood or a corrected coordinate shows up without a redeploy; the client
+Leaflet script lives in the component (rendered on the page), not in a
 `server:defer` island (the island-script caveat — see "Server islands").
 
 - **Coordinates come from the office record's `latitude`/`longitude`** (the
@@ -336,9 +345,10 @@ without a redeploy; the client Leaflet script lives **on the page**, not in a
   neighborhood with null coords still lists in the sidebar, marked "location
   coming soon," and simply isn't plotted.
 - **Interim `SEED_COORDS` seed:** the office coordinates weren't writable when
-  this shipped (the office `/mcp` route was rejecting writes), so the page
-  carries a best-effort `SEED_COORDS` map keyed by slug. The merge is
-  `n.latitude ?? seed`, so **office values always win** — **delete `SEED_COORDS`
+  this shipped (the office `/mcp` route was rejecting writes), so
+  **`src/data/neighborhoodCoords.ts`** carries a best-effort `SEED_COORDS` map
+  keyed by slug (moved off the page when /parade started sharing it). The merge
+  is `n.latitude ?? seed`, so **office values always win** — **delete the file
   once every neighborhood carries coordinates in the office.** Do *not* grow it
   into a permanent static coords file (that's the office's job).
 - Basemap is CARTO Positron (muted, so the colored logos pop; attribution
@@ -379,6 +389,32 @@ without a redeploy; the client Leaflet script lives **on the page**, not in a
 - **Linked from** the footer nav (`BaseLayout.astro`) and a "See them on the
   map" `BtnArrow` on `/neighborhoods`. Legacy `/area-neighborhood-map.php` still
   301s here (`astro.config.mjs`).
+
+### Parade of Homes (`/parade` — hidden until launch)
+
+The FCHBA Parade of Homes 2026 section, deliberately **unlinked**: no nav or
+footer entry, not in `STATIC_PATHS` in `sitemap.xml.ts`, and both pages pass
+`noindex` to `BaseLayout` (a per-page prop added for this). To launch it,
+remove the `noindex` props, add it to the sitemap, and link it from wherever
+it's being promoted.
+
+- **`/parade`** (`src/pages/parade/index.astro`, SSR) — the four participating
+  communities (`PARADE_SLUGS` in `src/data/parade.ts`: Preserve West, Tennyson,
+  Cedar Knolls, Aubrie Place) as centered logo cards in the neighborhoods-grid
+  style, linking to `/parade/{slug}`, with a parade-only `NeighborhoodMap`
+  below (chips also link to `/parade/{slug}`). Cards show a "N parade homes"
+  count when tagged homes exist.
+- **`/parade/[slug]`** (SSR) — the parade view of one community: brand-mark
+  hero, then **Featured Parade Homes** (the main focus — listings tagged
+  `POH2026`, via the office's `?tag=` filter through `fetchListingsByTag()` in
+  `src/lib/api.ts`), then a trimmed about/amenities section with a sidebar link
+  to the full `/neighborhoods/{slug}` page. Non-parade slugs redirect to
+  `/parade`. With no tagged homes yet it renders a "not announced yet" note.
+- **Tagging a home into the parade:** office listing → "Marketing tags" field
+  (Description & marketing section) → add `POH2026` (or `update-listing` MCP
+  with `tags`). No frontend change needed. **Caveat:** an office build without
+  the `?tag=` filter ignores the param and returns every listing — the office
+  change deploys before (or with) this page.
 
 ### Adding a New Form
 

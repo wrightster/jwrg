@@ -1,0 +1,394 @@
+---
+// Interactive Leaflet map of neighborhood logo chips, extracted from
+// /neighborhood-map so the (hidden) /parade page can render its own subset.
+// Each point plots as its featured_image logo in a clickable chip linking to
+// point.href — the caller decides where a chip goes (/neighborhoods/{slug} on
+// the full map, /parade/{slug} on the parade page).
+//
+// One instance per page (the map container and data element are id-addressed).
+// The client script must live in a page/component rendered on the page itself,
+// NOT inside a server:defer island (see "Server islands" in CLAUDE.md).
+//
+// The displacement pass ("relax"/"separate") carries four hard-won constraints
+// — circle separation, margin-applied offsets, deterministic nudges, and the
+// logo-scoped decode gate. Do not regress them; the rationale is inline below.
+
+export interface MapPoint {
+  slug: string;
+  name: string;
+  lat: number;
+  lng: number;
+  logo: string | null;
+  aspect: number;
+  town: string;
+  planned: boolean;
+  /** Where the chip's <a> navigates. */
+  href: string;
+}
+
+interface Props {
+  points: MapPoint[];
+  ariaLabel?: string;
+}
+
+const { points, ariaLabel = 'Interactive map of Julie Wright Realty Group neighborhoods' } = Astro.props;
+---
+
+<div
+  id="nbhd-map"
+  class="w-full rounded-sm overflow-hidden border border-earth-200 bg-earth-100/60"
+  style="height: min(70vh, 620px); min-height: 420px;"
+  role="region"
+  aria-label={ariaLabel}
+>
+  <noscript>
+    <div class="p-6 text-earth-600 text-sm">
+      The interactive map needs JavaScript. Use the neighborhood list to explore each community.
+    </div>
+  </noscript>
+</div>
+<p class="text-earth-500 text-xs mt-2">
+  Click a neighborhood logo to open its page. Nearby communities spread apart so every logo stays readable — zoom in to see each sit on its exact location. Scroll to zoom after clicking the map, or use the + / − controls.
+</p>
+
+<!-- Map data for the client script. Kept as inert JSON so the bundled module
+     below can read it without re-fetching. -->
+<script type="application/json" id="nbhd-map-data" set:html={JSON.stringify(points)}></script>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  type Point = {
+    slug: string;
+    name: string;
+    lat: number;
+    lng: number;
+    logo: string | null;
+    aspect: number;
+    town: string;
+    planned: boolean;
+    href: string;
+  };
+
+  const el = document.getElementById('nbhd-map');
+  const dataEl = document.getElementById('nbhd-map-data');
+  if (el && dataEl) {
+    const points: Point[] = JSON.parse(dataEl.textContent || '[]');
+
+    // Fallback view: the Triangle, roughly centered on Wake Forest, if we have
+    // nothing to plot.
+    const FALLBACK_CENTER: [number, number] = [36.0, -78.6];
+
+    const map = L.map(el, {
+      scrollWheelZoom: false, // enabled once the user clicks into the map
+      zoomControl: true,
+      attributionControl: true,
+    }).setView(FALLBACK_CENTER, 10);
+
+    // Muted light basemap (CARTO Positron) so the colored logos read clearly.
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd',
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    }).addTo(map);
+
+    // Don't hijack page scroll: wheel-zoom turns on only while the map has focus.
+    map.on('focus', () => map.scrollWheelZoom.enable());
+    map.on('blur', () => map.scrollWheelZoom.disable());
+
+    // Every logo stays on the map at its true point. When two chips would
+    // overlap at the current zoom, a displacement pass (below) nudges them
+    // apart and draws a thin leader line back to the real location; zoom in
+    // and the nudge relaxes to zero so each logo sits exactly on its point.
+    type Entry = { marker: L.Marker; pin: HTMLElement; leader: SVGLineElement };
+    const markers = new Map<string, L.Marker>();
+    const entries: Entry[] = [];
+    const bounds = L.latLngBounds([]);
+
+    for (const p of points) {
+      const inner = p.logo
+        ? `<img src="${p.logo}" alt="" style="height:28px;width:auto;display:block" />`
+        : `<span class="nbhd-pin-fallback">${p.name}</span>`;
+
+      const icon = L.divIcon({
+        className: 'nbhd-pin-wrap',
+        iconSize: [0, 0],
+        // Leader line (anchor → displaced chip) sits behind the chip; the chip
+        // is a native <a> so clicks navigate regardless of Leaflet.
+        html:
+          `<svg class="nbhd-leader" width="1" height="1" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="0" /></svg>` +
+          `<a class="nbhd-pin${p.planned ? ' is-planned' : ''}" href="${p.href}" title="${p.name} — view neighborhood" data-slug="${p.slug}">${inner}</a>`,
+      });
+
+      const marker = L.marker([p.lat, p.lng], { icon, riseOnHover: true }).addTo(map);
+      markers.set(p.slug, marker);
+      bounds.extend([p.lat, p.lng]);
+    }
+
+    // Settle the view synchronously (animate:false) so the displacement pass
+    // below computes against the final zoom's pixel grid — not an intermediate
+    // frame of a fit/zoom animation (which produced mismatched offsets).
+    if (points.length === 1) {
+      map.setView([points[0].lat, points[0].lng], 13, { animate: false });
+    } else if (points.length > 1) {
+      map.fitBounds(bounds, { padding: [56, 56], maxZoom: 12, animate: false });
+    }
+
+    // Collect each marker's chip + leader elements once they're in the DOM.
+    const collect = () => {
+      entries.length = 0;
+      for (const [, marker] of markers) {
+        const root = marker.getElement();
+        const pin = root?.querySelector<HTMLElement>('.nbhd-pin');
+        const leader = root?.querySelector<SVGLineElement>('.nbhd-leader line');
+        if (pin && leader) entries.push({ marker, pin, leader });
+      }
+    };
+
+    // Push overlapping chips apart in layer-pixel space (pan-invariant, so this
+    // only needs to run per zoom). Two phases: (A) separate with a spring home
+    // so chips settle near their true points, then (B) a pure-collision cleanup
+    // that guarantees zero overlap, and a rigid recentre so the whole spread
+    // stays over the true area. A persistent spring alone always leaves a
+    // little overlap (it never stops pulling inward), hence the cleanup pass.
+    const PAD = 12;
+
+    // One pass of pairwise separation. Returns true if any overlap remained.
+    // Each chip is treated as its circumscribed circle (radius from its own
+    // width/height) and overlapping circles are pushed apart *radially*. Circle
+    // relaxation has no axis-aligned jam — unlike rectangle least-penetration,
+    // which in a dense pile balances pushes from all sides and settles with a
+    // permanently-overlapped core — so this reliably converges to no overlap.
+    // Circles circumscribe the chips, so once the circles clear, the rectangles
+    // inside them are clear too (with margin to spare).
+    const separate = (nodes: { x: number; y: number; r: number }[]): boolean => {
+      let hit = false;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i];
+          const b = nodes[j];
+          let dx = b.x - a.x;
+          let dy = b.y - a.y;
+          let dist = Math.hypot(dx, dy);
+          const minDist = a.r + b.r;
+          if (dist < minDist - 0.5) {
+            hit = true;
+            if (dist < 0.01) {
+              // Coincident centres — nudge in a deterministic per-pair
+              // direction (keeps every relax pass identical, so re-runs don't
+              // jitter the chips).
+              const ang = (i * 7 + j) * 1.1;
+              dx = Math.cos(ang);
+              dy = Math.sin(ang);
+              dist = 1;
+            }
+            const push = (minDist - dist) / 2;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            a.x -= nx * push;
+            a.y -= ny * push;
+            b.x += nx * push;
+            b.y += ny * push;
+          }
+        }
+      }
+      return hit;
+    };
+
+    const relax = () => {
+      // Re-collect every pass: Leaflet recreates marker icon DOM elements on
+      // zoom / invalidateSize, so cached pin/leader refs go stale (detached) —
+      // applying transforms to them would do nothing while the live chips stay
+      // piled at their anchors.
+      collect();
+      // A chip's width isn't known until its logo has decoded; running before
+      // then sizes the boxes wrong. Skip — the decode() gate below runs the
+      // authoritative pass once every logo is ready. Scope to the logo <img>s
+      // only: el also contains map tiles, which are perpetually mid-load and
+      // would otherwise block this forever.
+      if (Array.from(el.querySelectorAll('.nbhd-pin img')).some((img) => !img.complete)) return;
+      const nodes = entries.map((e) => {
+        const lp = map.latLngToLayerPoint(e.marker.getLatLng());
+        const box = e.pin.getBoundingClientRect();
+        // Circumscribed-circle radius for the chip, plus half the gap.
+        const r = Math.hypot(box.width, box.height) / 2 + PAD / 2;
+        return { e, ax: lp.x, ay: lp.y, x: lp.x, y: lp.y, r };
+      });
+
+      // Phase A — separate while a moderate spring keeps chips near home, so
+      // the final arrangement stays biased toward each chip's true point.
+      const SPRING = 0.03;
+      for (let it = 0; it < 150; it++) {
+        separate(nodes);
+        for (const n of nodes) {
+          n.x += (n.ax - n.x) * SPRING;
+          n.y += (n.ay - n.y) * SPRING;
+        }
+      }
+      // Phase B — pure separation (spring off) until nothing overlaps. Cheap
+      // enough (10 chips) to iterate freely; converges well before the cap.
+      for (let it = 0; it < 3000; it++) {
+        if (!separate(nodes)) break;
+      }
+      // Rigid recentre: shift the whole arrangement so its centroid sits back
+      // on the anchors' centroid (can't reintroduce overlap — it's a uniform
+      // translation), keeping the spread visually over the true locations.
+      let sx = 0;
+      let sy = 0;
+      for (const n of nodes) {
+        sx += n.x - n.ax;
+        sy += n.y - n.ay;
+      }
+      sx /= nodes.length;
+      sy /= nodes.length;
+      for (const n of nodes) {
+        n.x -= sx;
+        n.y -= sy;
+      }
+
+      for (const n of nodes) {
+        const dx = Math.round(n.x - n.ax);
+        const dy = Math.round(n.y - n.ay);
+        // Apply the displacement as a margin, NOT via transform: the chip's
+        // transform is reserved for its -50%/-50% centring and hover scale,
+        // which is transitioned — animating the displacement there makes every
+        // re-run restart the transition and the chip never reaches its spot.
+        // Margins aren't transitioned, so the offset lands immediately and the
+        // hover scale can't wipe it.
+        n.e.pin.style.marginLeft = `${dx}px`;
+        n.e.pin.style.marginTop = `${dy}px`;
+        const leaderEl = n.e.leader.parentElement as unknown as HTMLElement | null;
+        if (Math.hypot(dx, dy) > 6) {
+          n.e.leader.setAttribute('x2', String(dx));
+          n.e.leader.setAttribute('y2', String(dy));
+          if (leaderEl) leaderEl.style.display = '';
+        } else if (leaderEl) {
+          leaderEl.style.display = 'none';
+        }
+      }
+    };
+
+    let relaxRAF = 0;
+    const scheduleRelax = () => {
+      cancelAnimationFrame(relaxRAF);
+      relaxRAF = requestAnimationFrame(relax);
+    };
+
+    // Re-space whenever the layer-point grid changes (zoom) or the view
+    // settles (fitBounds fires moveend even when the zoom level is unchanged).
+    // These may fire before the logos decode; relax() no-ops until they're
+    // ready, and the decode() gate below runs the authoritative first pass.
+    map.on('zoomend moveend', scheduleRelax);
+    Promise.all(
+      Array.from(el.querySelectorAll('.nbhd-pin img')).map((img) => img.decode().catch(() => {})),
+    ).then(() => {
+      map.invalidateSize();
+      relax();
+    });
+
+    // Sidebar ↔ map linking (only /neighborhood-map renders the sidebar; on
+    // pages without .nbhd-list-item rows this is a no-op): hovering / focusing
+    // a list row pans to its marker and lifts it; the row is still a plain
+    // link, so a click navigates.
+    const listItems = document.querySelectorAll<HTMLAnchorElement>('.nbhd-list-item[data-on-map="true"]');
+    listItems.forEach((item) => {
+      const slug = item.dataset.slug || '';
+      const marker = markers.get(slug);
+      if (!marker) return;
+      const focusMarker = () => {
+        map.panTo(marker.getLatLng(), { animate: true });
+        marker.getElement()?.querySelector('.nbhd-pin')?.classList.add('is-active');
+      };
+      const blurMarker = () => {
+        marker.getElement()?.querySelector('.nbhd-pin')?.classList.remove('is-active');
+      };
+      item.addEventListener('mouseenter', focusMarker);
+      item.addEventListener('focus', focusMarker);
+      item.addEventListener('mouseleave', blurMarker);
+      item.addEventListener('blur', blurMarker);
+    });
+
+    // Leaflet lays out against the container's size at init; if the container
+    // was still settling (fonts/topo), nudge it once everything paints. The
+    // authoritative displacement pass runs from the decode() gate above.
+    requestAnimationFrame(() => map.invalidateSize());
+  }
+</script>
+
+<style is:global>
+  /* Leaflet markers render in an overflow:hidden pane; the pin chip is a 0×0
+     anchor point with its content translated to sit centered over the point. */
+  .nbhd-pin-wrap {
+    background: transparent;
+    border: none;
+  }
+  .nbhd-pin {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    background: #fff;
+    border: 1.5px solid var(--color-earth-200, #e2ddd3);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(60, 40, 20, 0.18);
+    cursor: pointer;
+    transition:
+      border-color 140ms ease,
+      box-shadow 140ms ease,
+      transform 140ms ease;
+    pointer-events: auto;
+    white-space: nowrap;
+  }
+  .nbhd-pin:hover,
+  .nbhd-pin:focus-visible,
+  .nbhd-pin.is-active {
+    border-color: var(--color-red-600, #b52126);
+    box-shadow: 0 4px 14px rgba(181, 33, 38, 0.3);
+    transform: translate(-50%, -50%) scale(1.06);
+    outline: none;
+    z-index: 500;
+  }
+  .nbhd-pin.is-planned {
+    border-style: dashed;
+  }
+  .nbhd-pin-fallback {
+    font-family: var(--font-display, sans-serif);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--color-earth-900, #2a2620);
+    padding: 0 2px;
+  }
+  /* Leader line from a chip's true point to where it was nudged to avoid
+     overlap. It lives inside the 0×0 marker element (origin = the true point),
+     so it pans/zooms with the marker for free; the displacement pass sets its
+     x2/y2 (the chip offset) and shows/hides it. overflow:visible lets it draw
+     outside the 0×0 svg box, including to negative offsets. */
+  .nbhd-leader {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .nbhd-leader line {
+    stroke: var(--color-red-600, #b52126);
+    stroke-width: 1.5;
+    stroke-opacity: 0.5;
+    stroke-dasharray: 3 3;
+  }
+  /* Keep the attribution legible over the light basemap. */
+  .leaflet-container {
+    font-family: var(--font-body, sans-serif);
+    background: var(--color-earth-100, #f2ede3);
+  }
+  .leaflet-control-attribution {
+    font-size: 10px;
+  }
+</style>
