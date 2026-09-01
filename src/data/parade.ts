@@ -9,4 +9,4 @@ export const PARADE_SLUGS = ['preserve-west', 'tennyson', 'cedar-knolls', 'aubri
 // tag listings in the office via the "Marketing tags" field or update-listing).
 export const PARADE_TAG = 'POH2026';
 
-export const PARADE_TITLE = 'FCHBA Parade of Homes 2026';
+export const PARADE_TITLE = 'Parade of Homes 2026';

@@ -96,7 +96,7 @@ src/
 │   │   ├── sellers/           # Home value, list-your-property, staging, sold reports
 │   │   └── relocation/        # Relocation package, moving tips
 │   ├── neighborhoods/     # Index + [slug] dynamic pages
-│   ├── parade/            # FCHBA Parade of Homes 2026 (hidden: noindex, no nav/sitemap) — see below
+│   ├── parade/            # Parade of Homes 2026 (hidden: noindex, no nav/sitemap) — see below
 │   ├── listings/          # Index + [slug] dynamic property detail
 │   ├── 404.astro
 │   ├── accessibility.astro
@@ -392,7 +392,7 @@ Leaflet script lives in the component (rendered on the page), not in a
 
 ### Parade of Homes (`/parade` — hidden until launch)
 
-The FCHBA Parade of Homes 2026 section, deliberately **unlinked**: no nav or
+The Parade of Homes 2026 section (an FCHBA event; the header deliberately omits the acronym), deliberately **unlinked**: no nav or
 footer entry, not in `STATIC_PATHS` in `sitemap.xml.ts`, and both pages pass
 `noindex` to `BaseLayout` (a per-page prop added for this). To launch it,
 remove the `noindex` props, add it to the sitemap, and link it from wherever
