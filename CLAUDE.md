@@ -398,9 +398,9 @@ footer entry, not in `STATIC_PATHS` in `sitemap.xml.ts`, and both pages pass
 remove the `noindex` props, add it to the sitemap, and link it from wherever
 it's being promoted.
 
-- **`/parade`** (`src/pages/parade/index.astro`, SSR) — the four participating
+- **`/parade`** (`src/pages/parade/index.astro`, SSR) — the five participating
   communities (`PARADE_SLUGS` in `src/data/parade.ts`: Preserve West, Tennyson,
-  Cedar Knolls, Aubrie Place) as centered logo cards in the neighborhoods-grid
+  Cedar Knolls, Aubrie Place, Cannady Mill) as centered logo cards in the neighborhoods-grid
   style, linking to `/parade/{slug}`, with a parade-only `NeighborhoodMap`
   below (chips also link to `/parade/{slug}`). Cards show a "N parade homes"
   count when tagged homes exist.
