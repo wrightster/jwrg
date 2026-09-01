@@ -74,12 +74,15 @@ const points: MapPoint[] = paradeNeighborhoods
 
   <section class="py-8">
     <div class="max-w-7xl mx-auto px-6">
+      <!-- The card grid caps at 3 per row: its wrap container is exactly three
+           w-72 cards + two gap-x-6 gaps wide (3×288 + 2×24 = 936px), so a
+           fourth card always wraps; shorter rows center. -->
       {paradeNeighborhoods.length === 0 ? (
         <div class="text-center text-earth-600 py-16">
           <p>Parade communities are being finalized. Please check back soon.</p>
         </div>
       ) : (
-        <div class="flex flex-wrap justify-center gap-x-6 -mb-6">
+        <div class="flex flex-wrap justify-center gap-x-6 -mb-6 max-w-[936px] mx-auto">
           {paradeNeighborhoods.map((n) => {
             const heroSrc = photoSrc(n.primary_photo, 800);
             // Alpha-preserving webp — several neighborhood "photos" are
@@ -125,14 +128,10 @@ const points: MapPoint[] = paradeNeighborhoods
                     </div>
                   )}
                 </div>
-                <div class="flex items-center justify-center gap-2 text-sm font-semibold text-earth-800">
-                  <span>{n.name}</span>
-                  {count > 0 && (
-                    <Fragment>
-                      <span aria-hidden="true">·</span>
-                      <span>{`${count} parade home${count === 1 ? '' : 's'}`}</span>
-                    </Fragment>
-                  )}
+                {/* The logo carries the community name (and the <a> has an
+                    aria-label), so the label is just the parade-home count. */}
+                <div class="flex items-center justify-center text-sm font-semibold text-earth-800">
+                  <span>{`${count} Home${count === 1 ? '' : 's'}`}</span>
                 </div>
               </a>
             );

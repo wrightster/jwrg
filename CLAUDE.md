@@ -402,8 +402,9 @@ it's being promoted.
   communities (`PARADE_SLUGS` in `src/data/parade.ts`: Preserve West, Tennyson,
   Cedar Knolls, Aubrie Place, Cannady Mill) as centered logo cards in the neighborhoods-grid
   style, linking to `/parade/{slug}`, with a parade-only `NeighborhoodMap`
-  below (chips also link to `/parade/{slug}`). Cards show a "N parade homes"
-  count when tagged homes exist.
+  below (chips also link to `/parade/{slug}`). The grid caps at three cards
+  per row (the wrap container is sized to exactly three cards); each card's
+  label is the community's parade-home count ("# Homes").
 - **`/parade/[slug]`** (SSR) — the parade view of one community: brand-mark
   hero, then **Featured Parade Homes** (the main focus — listings tagged
   `POH2026`, via the office's `?tag=` filter through `fetchListingsByTag()` in
