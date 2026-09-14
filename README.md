@@ -35,7 +35,7 @@ src/
 ├── layouts/        BaseLayout shell
 ├── lib/api.ts      Office API client + types — keep in sync with jwlc/src/lib/api.ts
 ├── middleware.ts   Short edge cache (Cache-Control) on SSR responses
-├── pages/          Routes (about, resources/{buyers,sellers,relocation,real-estate-101}, listings, neighborhoods + neighborhoods/[slug]/lots/[lot] homesite pages, neighborhood-map (interactive Leaflet map of every neighborhood; overlapping logo chips auto-displace with leader lines instead of clustering), parade (Parade of Homes 2026 — hidden/noindex until launch; community logo cards + a parade-only map, and per-community pages of listings tagged POH2026), etc.)
+├── pages/          Routes (about, resources/{buyers,sellers,relocation,real-estate-101}, listings, neighborhoods + neighborhoods/[slug]/lots/[lot] homesite pages (communities taken down from JWRG — e.g. Bragg Farm — are listed in `HIDDEN_NEIGHBORHOODS` in `src/lib/api.ts`), neighborhood-map (interactive Leaflet map of every neighborhood; overlapping logo chips auto-displace with leader lines instead of clustering), parade (Parade of Homes 2026 — hidden/noindex until launch; community logo cards + a parade-only map, and per-community pages of listings tagged POH2026), etc.)
 └── styles/         global.css: Tailwind @theme tokens + self-hosted @font-face
 ```
 

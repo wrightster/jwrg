@@ -7,6 +7,7 @@ import {
   fetchAllListings as sharedFetchAllListings,
   fetchListing as sharedFetchListing,
   fetchListings as sharedFetchListings,
+  fetchNeighborhood as sharedFetchNeighborhood,
   fetchNeighborhoods as sharedFetchNeighborhoods,
   fetchTeam as sharedFetchTeam,
   fetchTeamMember as sharedFetchTeamMember,
@@ -44,7 +45,19 @@ export const fetchTeam = () => sharedFetchTeam(SITE_SLUG);
 export const fetchTeamMember = (slug: string) => sharedFetchTeamMember(slug, SITE_SLUG);
 // Bind the site slug so neighborhood cards' listings_count reflects only what's
 // live on JWRG (see the shared fetchNeighborhoods + NeighborhoodController).
-export const fetchNeighborhoods = () => sharedFetchNeighborhoods(SITE_SLUG);
+//
+// HIDDEN_NEIGHBORHOODS: communities taken down from JWRG. The office has no
+// per-site neighborhood publication flag yet, so they're filtered here — off the
+// grid, map, sitemap, and llms.txt, and the detail/lot routes redirect to
+// /neighborhoods (they treat a null fetchNeighborhood as not found). Replace with
+// an office-side flag once one exists (OFFICE_MCP_REQUESTS.md).
+const HIDDEN_NEIGHBORHOODS = new Set(['bragg-farm']);
+
+export const fetchNeighborhoods = async () =>
+  (await sharedFetchNeighborhoods(SITE_SLUG)).filter((n) => !HIDDEN_NEIGHBORHOODS.has(n.slug));
+
+export const fetchNeighborhood = async (slug: string) =>
+  HIDDEN_NEIGHBORHOODS.has(slug) ? null : sharedFetchNeighborhood(slug);
 
 // Subdivision lots for a neighborhood, from the office public API
 // (`GET /neighborhoods/{slug}/lots`, served by LotResource). Marketing-safe
