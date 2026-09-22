@@ -58,6 +58,27 @@ apps.
 - **Harden:** enable **2FA** on the Coolify admin account (step 3); SSH key-only
   with root password login disabled; leave Coolify auto-update on.
 
+> **If you add `ufw`, it does NOT govern published Docker ports.** Docker
+> DNATs a published port (Coolify `:8000`, realtime `6001-6002`, Traefik
+> `:8080`) and the packet traverses **FORWARD**. Every `ufw` rule hooks
+> **INPUT**, and Docker's `DOCKER-USER` chain is empty by default. So
+> `ufw status` reads deny-by-default while those ports are closed by the
+> **cloud firewall alone**: one layer, not two. `ufw allow in on tailscale0`
+> governs sshd and nothing else. Found on the BCL stand-up (IT-INFRA-0079) and
+> measured in IT-INFRA-0084: with UFW active, an eth0-arriving SYN to `:8000`
+> was accepted into the Coolify container.
+> The second layer is a `DOCKER-USER` ruleset (tailscale0/lo/established
+> RETURN; public-plane 80/443 RETURN on targets; DROP everything else arriving
+> on the public interface). Persist it with a systemd unit `After=`/`PartOf=`
+> `docker.service` running `iptables-restore --noflush`, **not**
+> `iptables-persistent`: on Ubuntu 24.04 `ufw` declares
+> `Breaks: iptables-persistent`, so installing it removes ufw. Recipe:
+> IT-INFRA-0084. Two traps when testing it. `DOCKER-USER` sees the
+> **post-DNAT** port (`:8000` arrives as `8080`). And a packet the box sends to
+> its own public IP is DNAT'd in OUTPUT and never reaches FORWARD, so
+> `nc <own-ip> 8000` "succeeds" with the rule loaded and proves nothing. Scan
+> from a genuinely off-allowlist vantage (another box), never from your Mac.
+
 ### 3. Install Coolify
 ```bash
 curl -fsSL https://cdn.coollabs.io/coolify/install.sh | sudo bash
@@ -65,9 +86,17 @@ curl -fsSL https://cdn.coollabs.io/coolify/install.sh | sudo bash
 Reach the dashboard **over the tailnet** at `http://<droplet-tailscale-ip>:8000`,
 create the admin account, **enable 2FA**, finish onboarding.
 
+> **Coolify does not install Docker on remote servers.** When you add a second
+> droplet as a Coolify *server* (a target), Coolify installs only the proxy.
+> Docker must already be there. Without it the failure lands in `failed_jobs`,
+> never `activity_log`, and the server sits `reachable: true, usable: false`
+> with no visible reason (IT-INFRA-0079). Install Docker on the target first
+> (`curl -fsSL https://get.docker.com | sh`), then add it in Coolify.
+
 ### 4. Scoped API token (for Claude / automation)
-- Coolify → **Keys & Tokens → API Tokens** → new token scoped to **deploy +
-  write** on this team/project — **not** the `root` scope. Enough to create,
+- Coolify → **Keys & Tokens → API Tokens** → new token scoped to **read +
+  write + deploy** on this team/project — **not** the `root` scope (`write`
+  does not imply `read`; see the 403 table in the CI section). Enough to create,
   configure, deploy, and read logs; can't delete the server or touch other
   projects. Revocable in one click; every call is attributed in the audit log.
 - Store it on your Mac in the **login Keychain** (encrypted at rest):
@@ -181,9 +210,18 @@ Access* enabled with **"Allowed IPs for API Access" left EMPTY**.
 > already restricted where it counts: `:8000` is Tailscale-only and every call
 > needs a bearer token.
 >
-> Symptom → fix: a valid token that returns **403** is this setting, not a
-> credential — clear the field. (A **401** is the opposite: the token itself is
-> rejected, so rotate it and re-run `enable-autodeploy.sh` per repo.)
+> **A failing API call has three readings — read the status *and* the body:**
+>
+> | Response | Meaning | Fix |
+> |---|---|---|
+> | `401` | the token itself is rejected | rotate it, re-run `enable-autodeploy.sh` per repo |
+> | `403` + `"Missing required permissions: read"` (or another ability) | the token's **scope** is too narrow — **`write` does not imply `read`** | mint `read` + `write` + `deploy` (never `root`) |
+> | bare `403` on a token that works elsewhere | this **Allowed-IPs** setting | clear the field |
+>
+> The last row is the one that cost the 2026-08-12 outage. The middle row was
+> found on the BCL stand-up (IT-INFRA-0079, Coolify 4.3.23): a token minted
+> `deploy` + `write` as step 4 used to say returned
+> `403 {"message":"Missing required permissions: read"}` on every read endpoint.
 > `engage.sh`'s readiness check now makes a real authenticated
 > `GET /api/v1/version` and distinguishes the two, precisely because
 > `/api/health` needs no token and proves only that the box is up.
