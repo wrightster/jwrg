@@ -13,6 +13,12 @@
 // because it's a supplementary discovery path: /sitemap.xml and /llms.txt are
 // SSR routes that enumerate the same listings live. Stale entries still resolve;
 // listings published since the last build are found via those two.
+//
+// Deliberately a <section>, not a <nav>: readability-style extractors — which
+// is what most crawler/fetch pipelines run over the HTML before a model sees
+// it — routinely discard <nav> as site chrome, which would strip this list
+// back out again. The lead-in sentence is there for the same reason: it gives
+// the block prose so an extractor scores it as content, not a link menu.
 import type { ApiListing } from '../lib/api';
 
 interface Props {
@@ -33,8 +39,12 @@ const links = listings
 ---
 
 {links.length > 0 && (
-  <nav class="mt-6 border-t border-earth-100 pt-6" aria-label={label}>
-    <h2 class="mb-3 text-sm font-semibold text-earth-800">{label}</h2>
+  <section class="mt-6 border-t border-earth-100 pt-6" aria-label={label}>
+    <h2 class="mb-1 text-sm font-semibold text-earth-800">{label}</h2>
+    <p class="mb-3 text-sm text-earth-600">
+      {links.length} {links.length === 1 ? 'property' : 'properties'} currently marketed by
+      Julie Wright Realty Group. Each links to its full listing details.
+    </p>
     <ul class="grid gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
       {links.map((l) => (
         <li class="text-sm leading-snug">
@@ -45,5 +55,5 @@ const links = listings
         </li>
       ))}
     </ul>
-  </nav>
+  </section>
 )}
