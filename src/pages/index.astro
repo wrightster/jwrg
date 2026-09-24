@@ -8,6 +8,15 @@ export const prerender = true;
 import BaseLayout from '../layouts/BaseLayout.astro';
 import BtnArrow from '../components/BtnArrow.astro';
 import FeaturedListings from '../components/FeaturedListings.astro';
+import FallbackListingLinks from '../components/FallbackListingLinks.astro';
+import { fetchListings } from '../lib/api';
+
+// Build-time listing set for the island's fallback — the no-JS tier otherwise
+// sees only a skeleton here. See FallbackListingLinks.astro.
+let fallbackListings = await fetchListings({ featured: true, perPage: 6 }).catch(() => []);
+if (fallbackListings.length === 0) {
+  fallbackListings = await fetchListings({ perPage: 6 }).catch(() => []);
+}
 
 // Photos are CC0 (StockSnap) — free for commercial use, no attribution required.
 const helpLinks = [
@@ -49,7 +58,8 @@ const helpLinks = [
         <BtnArrow href="/listings" variant="primary">View All</BtnArrow>
       </div>
       <FeaturedListings server:defer>
-        <div slot="fallback" class="featured-grid" aria-hidden="true">
+        <div slot="fallback">
+          <div class="featured-grid" aria-hidden="true">
           {Array.from({ length: 6 }).map(() => (
             <div class="rounded-sm overflow-hidden ring-1 ring-inset ring-earth-100 bg-white">
               <div class="aspect-[4/3] bg-earth-100 animate-pulse"></div>
@@ -60,6 +70,8 @@ const helpLinks = [
               </div>
             </div>
           ))}
+          </div>
+          <FallbackListingLinks listings={fallbackListings} label="Featured listings" />
         </div>
       </FeaturedListings>
     </div>

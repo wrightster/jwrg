@@ -11,6 +11,13 @@ export const prerender = true;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
 import ListingsBrowser from '../../components/ListingsBrowser.astro';
+import FallbackListingLinks from '../../components/FallbackListingLinks.astro';
+import { fetchAllListings } from '../../lib/api';
+
+// Build-time listing set for the island's fallback, so the no-JS tier (plain
+// `fetch`, many answer-engine crawlers) gets followable links instead of a
+// skeleton. See FallbackListingLinks.astro for why this is baked, not live.
+const fallbackListings = await fetchAllListings({ perPage: 50 }).catch(() => []);
 ---
 
 <BaseLayout title="Listings | Julie Wright Realty Group" description="Browse homes for sale across the greater Triangle region and surrounding counties.">
@@ -29,7 +36,8 @@ import ListingsBrowser from '../../components/ListingsBrowser.astro';
     <div class="content-wrap">
       <div id="listings-mount">
         <ListingsBrowser server:defer>
-          <div slot="fallback" aria-hidden="true">
+          <div slot="fallback">
+            <div aria-hidden="true">
             <!-- Keyword search + filter bar placeholders -->
             <div class="h-12 mb-4 rounded-sm bg-earth-100 animate-pulse"></div>
             <div class="h-12 mb-6 rounded-sm bg-earth-100 animate-pulse"></div>
@@ -46,6 +54,8 @@ import ListingsBrowser from '../../components/ListingsBrowser.astro';
                 </div>
               ))}
             </div>
+            </div>
+            <FallbackListingLinks listings={fallbackListings} />
           </div>
         </ListingsBrowser>
       </div>

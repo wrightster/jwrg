@@ -1,0 +1,49 @@
+---
+// Crawlable listing links for a server island's `slot="fallback"`.
+//
+// Why this exists: /listings and the home strip are prerendered shells whose
+// grids live in `server:defer` islands. An island's HTML arrives on a second
+// request, so a client that doesn't run the swap script — a plain `fetch`, and
+// a good share of answer-engine crawlers — sees only the skeleton and concludes
+// we have no listings. This list rides along in the fallback so that tier gets
+// real, followable links to the detail pages (which are fully SSR'd).
+//
+// It is baked at BUILD time (the host pages are `prerender = true`, deliberately
+// — see their frontmatter), so it goes stale between deploys. That's acceptable
+// because it's a supplementary discovery path: /sitemap.xml and /llms.txt are
+// SSR routes that enumerate the same listings live. Stale entries still resolve;
+// listings published since the last build are found via those two.
+import type { ApiListing } from '../lib/api';
+
+interface Props {
+  listings: ApiListing[];
+  /** Heading above the list; also what the section is labelled for a11y. */
+  label?: string;
+}
+
+const { listings, label = 'Our current listings' } = Astro.props;
+
+const links = listings
+  .map((l) => ({
+    href: `/listings/${l.slug}`,
+    name: l.marketing_title || l.address || l.slug,
+    where: [l.city, l.state].filter(Boolean).join(', '),
+  }))
+  .filter((l) => l.name);
+---
+
+{links.length > 0 && (
+  <nav class="mt-6 border-t border-earth-100 pt-6" aria-label={label}>
+    <h2 class="mb-3 text-sm font-semibold text-earth-800">{label}</h2>
+    <ul class="grid gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+      {links.map((l) => (
+        <li class="text-sm leading-snug">
+          <a href={l.href} class="text-earth-700 underline underline-offset-2 hover:text-red-700">
+            {l.name}
+          </a>
+          {l.where && <span class="text-earth-500"> &middot; {l.where}</span>}
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
