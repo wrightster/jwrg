@@ -9,10 +9,13 @@ import { formatBedsBaths, formatSqft, type ApiListing } from '../lib/api';
 interface Props {
   listing: ApiListing;
   index?: number;
+  /** False when this row duplicates a ListingCard on the page (grid/list
+   *  toggle), so the parade badge's data-parade-entry marker appears once. */
+  paradeMark?: boolean;
 }
 
-const { listing, index } = Astro.props;
+const { listing, index, paradeMark } = Astro.props;
 const headline = formatBedsBaths(listing) || formatSqft(listing.sqft);
 ---
 
-<SharedListingRow listing={listing} index={index} headline={headline} />
+<SharedListingRow listing={listing} index={index} headline={headline} paradeMark={paradeMark} />

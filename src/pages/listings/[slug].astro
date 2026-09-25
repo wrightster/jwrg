@@ -8,7 +8,7 @@ import EmbedForm from '../../components/EmbedForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import VideoSection from '@jw/shared/components/VideoSection.astro';
 import ListingGallery from '@jw/shared/components/ListingGallery.astro';
-import { fetchListing, fetchListings, fetchTeam, formatPrice, photoSrc, photoAlt, documentTypeLabel } from '../../lib/api';
+import { fetchListing, fetchListings, fetchTeam, formatPrice, photoSrc, photoAlt, documentTypeLabel, paradeBadgeLabel } from '../../lib/api';
 import { listingJsonLd, breadcrumbJsonLd } from '@jw/shared/jsonLd';
 import { site } from '../../data/site';
 
@@ -59,6 +59,13 @@ const brokerMember = agentName ? team.find((t) => t.name === agentName) : undefi
 const brokerPhoto = photoSrc(brokerMember?.primary_photo, 400);
 const coBrokerMember = coAgentName ? team.find((t) => t.name === coAgentName) : undefined;
 const coBrokerPhoto = photoSrc(coBrokerMember?.primary_photo, 400);
+
+// Parade of Homes banner: the listing's entry in a current office parade. Links
+// to the parade view of its community (which redirects to /parade if the
+// community isn't in the parade).
+const parade = listing.parade ?? null;
+const paradeHref = listing.neighborhood ? `/parade/${listing.neighborhood.slug}` : '/parade';
+const paradeBuilder = parade?.builder?.name ?? null;
 
 const relatedListings = otherListings.filter(l => l.slug !== listing.slug).slice(0, 3);
 
@@ -121,6 +128,19 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
               </address>
             )}
           </div>
+
+          {parade && (
+            <a href={paradeHref} class="listing-parade-banner" data-parade-entry={parade.slug}>
+              <span class="listing-parade-banner-label">{paradeBadgeLabel(parade)}</span>
+              <span class="listing-parade-banner-text">
+                On the {parade.name}{paradeBuilder && <> · Built by {paradeBuilder}</>}
+              </span>
+              <span class="listing-parade-banner-link">
+                Tour dates &amp; homes
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+              </span>
+            </a>
+          )}
 
           <!-- Key Stats -->
           <div class="listing-key-stats">

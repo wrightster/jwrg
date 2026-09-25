@@ -1,8 +1,10 @@
 ---
-// Parade view of one community (/parade/{slug}) — hidden with the rest of the
-// parade section (noindex, no nav links). A trimmed version of the regular
-// neighborhood page whose main focus is the featured parade homes: listings
-// tagged POH2026 in the office. Description, amenities, and quick facts follow;
+// Parade view of one community (/parade/{slug}). A trimmed version of the
+// regular neighborhood page whose main focus is the community's entries in the
+// office Parade (`GET /parades/parade-of-homes-2026`): listing entries render as
+// ListingCards (they carry `parade`, so they badge), lot entries as a simple
+// card linking to the community site's lot page. Description, amenities, and
+// quick facts follow;
 // galleries, documents, and homesites stay on the full neighborhood page,
 // which is linked from the sidebar.
 export const prerender = false;
@@ -11,22 +13,28 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
-import { fetchNeighborhood, fetchListingsByTag, fetchNeighborhoodTeam } from '../../lib/api';
-import { PARADE_SLUGS, PARADE_TAG, PARADE_TITLE } from '../../data/parade';
+import { fetchNeighborhood, fetchParade, fetchNeighborhoodTeam } from '../../lib/api';
+import { PARADE_SLUG, PARADE_TITLE, communityLotUrl } from '../../data/parade';
 
 const { slug } = Astro.params;
-// Only the parade communities resolve here — everything else goes back to the
-// parade landing page (not /neighborhoods; this route belongs to the parade).
-const n = slug && PARADE_SLUGS.includes(slug) ? await fetchNeighborhood(slug) : null;
+const parade = await fetchParade(PARADE_SLUG);
+// Only the parade's communities resolve here — everything else (or a missing
+// parade) goes back to the parade landing page (not /neighborhoods; this route
+// belongs to the parade).
+const inParade = !!slug && !!parade?.neighborhoods.some((p) => p.slug === slug);
+const n = inParade ? await fetchNeighborhood(slug!) : null;
 
-if (!n) {
+if (!parade || !n) {
   return Astro.redirect('/parade');
 }
 
-const [paradeListings, nbAgents] = await Promise.all([
-  fetchListingsByTag(PARADE_TAG, { neighborhood: n.slug }),
-  fetchNeighborhoodTeam(n.slug),
-]);
+const title = parade.name || PARADE_TITLE;
+const entries = parade.entries.filter((e) => e.neighborhood?.slug === n.slug);
+const paradeListings = entries.flatMap((e) => (e.kind === 'listing' && e.listing ? [e.listing] : []));
+const lotEntries = entries.filter((e) => e.kind === 'lot' && e.lot);
+const entryCount = paradeListings.length + lotEntries.length;
+
+const nbAgents = await fetchNeighborhoodTeam(n.slug);
 
 // Brand mark hero — same office-managed featured image and sizing math as the
 // regular neighborhood page (see /neighborhoods/[slug].astro for the details).
@@ -56,9 +64,8 @@ const hasAbout = aboutStripped.length > 0;
 ---
 
 <BaseLayout
-  title={`${n.name} — ${PARADE_TITLE} | Julie Wright Realty Group`}
-  description={`${n.name} in the 2026 Parade of Homes — featured homes and community details from Julie Wright Realty Group.`}
-  noindex
+  title={`${n.name} — ${title} | Julie Wright Realty Group`}
+  description={`${n.name} in the ${title} — featured homes and community details from Julie Wright Realty Group.`}
 >
   <section class="pt-8 pb-8">
     <div class="max-w-7xl mx-auto px-6">
@@ -68,7 +75,7 @@ const hasAbout = aboutStripped.length > 0;
       </a>
 
       <p class="text-center text-sm font-display font-semibold uppercase tracking-widest text-red-600">
-        {PARADE_TITLE}
+        {title}
       </p>
       {/* The logo is a wordmark carrying the name, so hide the plain-text
           title on logo pages — but keep an sr-only h1 for a11y. */}
@@ -99,15 +106,37 @@ const hasAbout = aboutStripped.length > 0;
     <div class="max-w-7xl mx-auto px-6">
       <div class="flex flex-wrap items-end justify-between gap-4 mb-8">
         <h2 class="font-display text-3xl text-earth-900">Featured Parade Homes</h2>
-        {paradeListings.length > 0 && (
+        {entryCount > 0 && (
           <p class="text-sm text-earth-500">
-            <span class="font-semibold text-earth-800">{paradeListings.length}</span> in {n.name}
+            <span class="font-semibold text-earth-800">{entryCount}</span> in {n.name}
           </p>
         )}
       </div>
-      {paradeListings.length > 0 ? (
+      {entryCount > 0 ? (
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {paradeListings.map((listing, i) => <ListingCard listing={listing} index={i} />)}
+          {lotEntries.map((e) => {
+            const lot = e.lot!;
+            const href = communityLotUrl(n.slug, lot.lot_number);
+            const builder = e.builder?.name;
+            const Tag = href ? 'a' : 'div';
+            return (
+              <Tag
+                href={href ?? undefined}
+                class:list={['block bg-earth-100/60 border border-earth-200/60 rounded-sm p-6', href && 'hover:border-red-600 transition-colors']}
+              >
+                <p class="text-xs font-display font-semibold uppercase tracking-widest text-red-600">
+                  {e.entry_number ? `Parade entry #${e.entry_number}` : 'Parade homesite'}
+                </p>
+                <h3 class="font-display text-xl text-earth-900 mt-2">
+                  {lot.lot_number ? `Lot ${lot.lot_number}` : 'Homesite'}
+                </h3>
+                {lot.address && <p class="text-earth-700 mt-1">{lot.address}</p>}
+                {builder && <p class="text-sm text-earth-600 mt-1">Built by {builder}</p>}
+                {href && <p class="text-sm text-red-600 mt-3">View on the {n.name} site →</p>}
+              </Tag>
+            );
+          })}
         </div>
       ) : (
         <div class="bg-earth-100/60 border border-earth-200/60 rounded-sm p-8 text-center text-earth-600">
@@ -172,11 +201,11 @@ const hasAbout = aboutStripped.length > 0;
                 <dd class="text-earth-900 mt-0.5">{n.hoa.name}</dd>
               </div>
             )}
-            {paradeListings.length > 0 && (
+            {entryCount > 0 && (
               <div>
                 <dt class="text-earth-500 text-xs uppercase tracking-wider">Parade Homes</dt>
                 <dd class="text-earth-900 mt-0.5">
-                  <a href="#parade-homes" class="text-red-600 hover:text-red-700">{paradeListings.length}</a>
+                  <a href="#parade-homes" class="text-red-600 hover:text-red-700">{entryCount}</a>
                 </dd>
               </div>
             )}

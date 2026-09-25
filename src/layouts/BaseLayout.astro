@@ -14,7 +14,7 @@ interface Props {
   /** Page-specific JSON-LD (e.g. RealEstateListing + breadcrumb); merged with
    *  the sitewide brokerage block emitted on every page. */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
-  /** Emit a robots noindex for this page (e.g. /parade while it's unlaunched —
+  /** Emit a robots noindex for this page (e.g. a page while it's unlaunched —
    *  linked from nowhere and kept out of the sitemap, but a stray link
    *  shouldn't get it indexed early). */
   noindex?: boolean;
@@ -70,6 +70,8 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/listings', label: 'Listings' },
   { href: '/neighborhoods', label: 'Neighborhoods' },
+  // Parade of Homes 2026 (Oct) — a follow-up takes this down after the parade.
+  { href: '/parade', label: 'Parade of Homes' },
   { href: '/resources', label: 'Resources' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
@@ -80,6 +82,7 @@ const footerNav = [
   { href: '/search', label: 'Property Search' },
   { href: '/neighborhoods', label: 'Neighborhoods' },
   { href: '/neighborhood-map', label: 'Neighborhood Map' },
+  { href: '/parade', label: 'Parade of Homes' },
   { href: '/resources', label: 'Resources' },
   { href: '/about', label: 'About' },
   { href: '/about#team', label: 'Our Team' },

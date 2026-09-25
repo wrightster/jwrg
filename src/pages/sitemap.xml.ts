@@ -3,10 +3,12 @@ import {
   fetchAllListings,
   fetchNeighborhoodLots,
   fetchNeighborhoods,
+  fetchParade,
   fetchTeam,
   lotHref,
 } from '../lib/api';
 import { site as siteData } from '../data/site';
+import { PARADE_SLUG } from '../data/parade';
 
 // Dynamic sitemap. The standard @astrojs/sitemap integration can't see SSR
 // routes, so we enumerate them from the live feed here, alongside the key
@@ -56,11 +58,18 @@ export const GET: APIRoute = async ({ site }) => {
 
   // One backend hiccup shouldn't 500 the sitemap — each source degrades to
   // "no URLs from this section" on its own.
-  const [listings, neighborhoods, team] = await Promise.all([
+  const [listings, neighborhoods, team, parade] = await Promise.all([
     fetchAllListings().catch(() => []),
     fetchNeighborhoods().catch(() => []),
     fetchTeam().catch(() => []),
+    fetchParade(PARADE_SLUG).catch(() => null),
   ]);
+
+  // Parade of Homes: the landing page plus each community's parade view, live
+  // from the office Parade (none when it's missing).
+  const paradePaths = parade
+    ? ['/parade', ...parade.neighborhoods.map((n) => `/parade/${n.slug}`)]
+    : [];
 
   // Homesite detail pages, one API call per neighborhood (memoized 60s in
   // fetchNeighborhoodLots, which already swallows its own errors). Common-area
@@ -80,6 +89,7 @@ export const GET: APIRoute = async ({ site }) => {
     ...STATIC_PATHS,
     ...neighborhoods.map((n) => `/neighborhoods/${n.slug}`),
     ...lotPaths,
+    ...paradePaths,
     ...team.map((m) => `/about/team/${m.slug}`),
   ];
 
