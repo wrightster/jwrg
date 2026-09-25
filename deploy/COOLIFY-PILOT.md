@@ -3,11 +3,11 @@
 > **STATUS (2026-07-22): LIVE IN PRODUCTION.** This began as a pilot on
 > `main.juliewrightrealtygroup.com`, but jwrg is now fully cut over — the apex
 > `juliewrightrealtygroup.com` (+ `www`) is served by Coolify with a Let's Encrypt
-> cert and zero-downtime deploys. The old Ploi jwrg site and the `search.*` site
+> cert and rolling deploys (health-gated swap; requests in flight at the swap are not proven safe). The old Ploi jwrg site and the `search.*` site
 > were **deleted (2026-07-30)**, and push-to-deploy is live (org secrets + the repo
 > `COOLIFY_APP_UUID` variable). Treat this as **the jwrg deploy doc**, not a proposal.
 
-Goal: prove out zero-downtime deploys for the Astro fleet by running **jwrg** on
+Goal (as written for the pilot): prove out deploys without a downtime gap for the Astro fleet by running **jwrg** on
 a **new droplet + Coolify**, on the throwaway subdomain
 `main.juliewrightrealtygroup.com`. Production (Ploi, `juliewrightrealtygroup.com`)
 is untouched: this runs off the **`coolify-pilot`** branch, and Ploi only
@@ -132,7 +132,7 @@ create the admin account, **enable 2FA**, finish onboarding.
 - **Domain (FQDN): `https://main.juliewrightrealtygroup.com`** — Coolify's
   Traefik proxy provisions Let's Encrypt automatically.
 - **Health check**: path `/healthz`, port `4321` (Coolify only swaps traffic to a
-  container once this returns 200 → that's the zero-downtime gate). The probe runs
+  container once this returns 200 → that's the health-gated swap). The probe runs
   `curl` **inside** the container, so the runtime image must contain `curl`/`wget`
   — the Dockerfile installs `curl` for exactly this reason.
 - Env vars: none required.
@@ -147,7 +147,18 @@ create the admin account, **enable 2FA**, finish onboarding.
   Then load `/`, `/listings`, `/neighborhoods`, and a listing detail — confirm
   **live** office data renders (the server-island sections stream in).
 
-### 9. Prove zero-downtime (the whole point)
+### 9. Prove the health-gated swap
+
+> **What this probe proves, and what it doesn't.** A `/healthz` poller that stays
+> `200` through a redeploy shows the swap is health-gated: the old container
+> serves until the new one passes its health check. It says nothing about a
+> request that is *in flight* when traffic moves — `/healthz` answers in
+> milliseconds. On the BCL Coolify instance (4.3.23), IT-INFRA-0092 measured a
+> health-gated swap with a 36 s overlap, the old container SIGKILLed, and long
+> requests in flight at the swap cut. The wrightster instance has not been measured. So call
+> these rolling deploys (health-gated swap; requests in flight at the swap are not
+> proven safe), not downtime-free.
+
 In one terminal, poll continuously:
 ```bash
 while true; do \
@@ -238,8 +249,9 @@ by private repositories with your plan"*). So:
   private repo's own Settings → Secrets → Actions. Don't paste by hand: run the
   **`enable-autodeploy.sh` helper** (see below), which sets all 5 for a repo from
   the Keychain. Repo secrets work on private repos on Free; the only cost is
-  re-running per repo. Do it per site at migration time (they're all still on Ploi
-  until then, where push = deploy with no secrets).
+  re-running per repo. Done for the four neighborhood sites and the design guide
+  (2026-07-30 / 2026-08-25). `jwrg-brochures` is not on Coolify: it deploys through
+  the fleet pull pipeline (`jwrg-brochures/deploy/README.md`) and needs none of these.
 - **Upgrading to GitHub Team** (~$4/mo, one solo seat) lifts this — org secrets
   then reach private repos. Optional convenience once several private Coolify
   sites exist; not required.

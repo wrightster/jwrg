@@ -16,8 +16,8 @@ name: Deploy to Coolify
 #                                             ACL and authorize the OAuth client)
 #     COOLIFY_TOKEN                          - the scoped Coolify API token
 #
-# Also: set Coolify's "Allowed IPs for API Access" to the tailnet range
-# 100.64.0.0/10 (CI joins with a dynamic tailnet IP, not the Mac's fixed one).
+# Also: in Coolify Settings → API, leave "Allowed IPs for API Access" EMPTY.
+# A range there (even the tailnet's) 403s every deploy — see jwrg/deploy/COOLIFY-PILOT.md.
 
 on:
   push:

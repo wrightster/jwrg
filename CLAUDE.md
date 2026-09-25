@@ -11,7 +11,7 @@ Real estate website for a North Carolina full-service brokerage (Triangle / Wake
 - **Local dev**: `npm run dev` → localhost:4321
 - **Backend**: `https://office.jwrgnc.com` (Laravel/Filament at `~/Herd/jwrg_office`)
 - **Site slug for API filtering**: `jwrg` (set in `src/lib/api.ts` as `SITE_SLUG`)
-- **Production**: **https://juliewrightrealtygroup.com** (apex + www) — **live on Coolify** (its own DO droplet, zero-downtime deploys) since 2026-07. See §"Deployment" below and `deploy/COOLIFY-PILOT.md`.
+- **Production**: **https://juliewrightrealtygroup.com** (apex + www) — **live on Coolify** since 2026-07, on the wrightster Coolify droplet with rolling deploys (health-gated swap; requests in flight at the swap are not proven safe). See §"Deployment" below and `deploy/COOLIFY-PILOT.md`.
 
 ## Commands
 
@@ -23,8 +23,8 @@ Real estate website for a North Carolina full-service brokerage (Triangle / Wake
 ## Deployment (Coolify, since 2026-07)
 
 Production `juliewrightrealtygroup.com` (apex + www) runs on **Coolify** on its own
-DigitalOcean droplet — **not** the shared Ploi box — with **zero-downtime** rolling
-deploys. Full runbook + operational IDs (project/app/server UUIDs, API access) in
+DigitalOcean droplet — **not** the shared Ploi box — with rolling deploys
+(health-gated swap; requests in flight at the swap are not proven safe). Full runbook + operational IDs (project/app/server UUIDs, API access) in
 **`deploy/COOLIFY-PILOT.md`**. Essentials:
 
 - **Container**: `Dockerfile` (multi-stage) builds the `@astrojs/node` standalone
@@ -34,8 +34,7 @@ deploys. Full runbook + operational IDs (project/app/server UUIDs, API access) i
 - **Deploys**: **push to `main` auto-deploys** — `.github/workflows/deploy-coolify.yml`
   joins the tailnet and calls the Coolify deploy API (org-level secrets +
   `COOLIFY_APP_UUID` repo variable). You can also deploy manually via the Coolify
-  API/dashboard. The old Ploi jwrg site no longer receives traffic; retire it when
-  convenient.
+  API/dashboard. The old Ploi jwrg site was deleted (2026-07-30).
 - **Staging**: a `staging` branch deploys to **`jwrg.stage.jwrgnc.com`** (Coolify
   `staging` environment, app `jwrg-staging`). Staging sets `SITE_ENV=staging`,
   which emits `noindex` (robots.txt is SSR + reads it at runtime; the `<meta

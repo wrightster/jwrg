@@ -65,7 +65,7 @@ The rebrand is fully landed as of 2026-07: every page uses the `earth-*` / `red-
 
 ## Deploy
 
-Deploys to a DigitalOcean droplet managed by Ploi.io. Push to `main` triggers the deploy webhook. The Node SSR daemon binds to `127.0.0.1:4342` (set in `package.json`'s `start` script — Astro's default 4321 is taken by JWLC on the same host).
+Runs on **Coolify** on the wrightster Coolify droplet. A push to `main` auto-deploys: `.github/workflows/deploy-coolify.yml` joins the tailnet and calls the Coolify deploy API (it has no path filter, so put `[skip ci]` in a docs-only commit message). Coolify builds the `Dockerfile`, whose container binds `0.0.0.0:4321` and serves `/healthz` for the health-gated swap. `npm run start` (`127.0.0.1:4342`, from `package.json`) is a local convenience only and is not what production runs. Runbook: [`deploy/COOLIFY-PILOT.md`](./deploy/COOLIFY-PILOT.md).
 
 ## Going deeper
 
