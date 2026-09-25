@@ -23,6 +23,13 @@ on:
   push:
     branches: [main]
 
+# Shared with refresh-coolify.yml (the 6-hourly rebuild) so a push deploy and a
+# scheduled rebuild can't run at once — the Coolify droplet can't build two
+# images concurrently (they fail at "exporting layers").
+concurrency:
+  group: coolify-deploy-jwrg
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest

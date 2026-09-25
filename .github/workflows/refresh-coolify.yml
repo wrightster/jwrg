@@ -1,0 +1,50 @@
+name: Scheduled rebuild
+
+# Rebuilds the site every 6 hours against the SAME commit, to refresh data that
+# is baked at build time rather than fetched per request.
+#
+# What depends on this: the crawlable listing links in the server islands'
+# `slot="fallback"` (src/components/FallbackListingLinks.astro). /listings and
+# the home strip are prerendered shells, so that list is a build-time snapshot —
+# without a periodic rebuild a newly-published listing stays missing from the
+# no-JS/crawler view until someone happens to push. Everything else on the site
+# is either live (the islands, /llms.txt, /sitemap.xml) or genuinely static.
+#
+# `force=true` matters: the push workflow uses force=false, which lets Coolify
+# skip a build when the commit hasn't changed — exactly the case here, since a
+# scheduled run is always redeploying the same commit.
+#
+# Uses the same tailnet + Coolify credentials as deploy-coolify.yml; see that
+# file's header for what to configure. Scheduled workflows run on the default
+# branch only.
+
+on:
+  schedule:
+    # 03:17 / 09:17 / 15:17 / 21:17 UTC. Offset off the hour because GitHub
+    # delays crons queued at :00, and off the Coolify droplet's own quiet hours.
+    - cron: '17 3,9,15,21 * * *'
+  workflow_dispatch:
+
+# Never let two rebuilds overlap. (The Coolify droplet cannot build two images
+# at once — concurrent builds fail at "exporting layers" — so if a rebuild is
+# already running, drop the new one rather than queueing a collision.)
+concurrency:
+  group: coolify-deploy-jwrg
+  cancel-in-progress: false
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    if: ${{ vars.COOLIFY_APP_UUID != '' }}
+    steps:
+      - name: Join Tailscale (ephemeral)
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - name: Trigger Coolify rebuild
+        run: |
+          curl -fsS -X GET \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
+            "http://${{ vars.COOLIFY_HOST }}/api/v1/deploy?uuid=${{ vars.COOLIFY_APP_UUID }}&force=true"
