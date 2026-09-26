@@ -94,12 +94,10 @@ const {
       attributionControl: true,
     }).setView(FALLBACK_CENTER, 10);
 
-    // Muted light basemap (CARTO Positron) so the colored logos read clearly.
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      subdomains: 'abcd',
+    // OpenStreetMap standard tiles, desaturated in CSS below (CARTO now requires a key — APP-JWRG-0004).
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
     // Don't hijack page scroll: wheel-zoom turns on only while the map has focus.
@@ -326,6 +324,11 @@ const {
 </script>
 
 <style is:global>
+  /* Muted basemap so the colored logos read clearly (OSM tiles are full-color). */
+  #nbhd-map .leaflet-tile-pane {
+    filter: grayscale(1) sepia(0.12) brightness(1.06) contrast(0.85);
+  }
+
   /* Leaflet markers render in an overflow:hidden pane; the pin chip is a 0×0
      anchor point with its content translated to sit centered over the point. */
   .nbhd-pin-wrap {
