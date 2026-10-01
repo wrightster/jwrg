@@ -24,6 +24,12 @@ export interface MapPoint {
   planned: boolean;
   /** Where the chip's <a> navigates. */
   href: string;
+  /** featured_image optical scale (~0.7–1.0), so marks read at a similar size. */
+  scale?: number;
+  /** Optional count shown as a corner badge on the chip (e.g. parade homes). */
+  badge?: number;
+  /** Accessible/tooltip label for the badge, e.g. "3 parade homes". */
+  badgeLabel?: string;
 }
 
 interface Props {
@@ -33,12 +39,15 @@ interface Props {
    *  /neighborhood-map treatment; /parade passes a fixed portrait height for
    *  its narrow side column. */
   heightStyle?: string;
+  /** One-line help text under the map. */
+  caption?: string;
 }
 
 const {
   points,
   ariaLabel = 'Interactive map of Julie Wright Realty Group neighborhoods',
   heightStyle = 'height: min(70vh, 620px); min-height: 420px;',
+  caption = 'Click a logo to open the neighborhood. Zoom in to see where each one sits.',
 } = Astro.props;
 ---
 
@@ -55,9 +64,7 @@ const {
     </div>
   </noscript>
 </div>
-<p class="text-earth-500 text-xs mt-2">
-  Click a neighborhood logo to open its page. Nearby communities spread apart so every logo stays readable — zoom in to see each sit on its exact location. Scroll to zoom after clicking the map, or use the + / − controls.
-</p>
+<p class="text-earth-500 text-xs mt-2">{caption}</p>
 
 <!-- Map data for the client script. Kept as inert JSON so the bundled module
      below can read it without re-fetching. -->
@@ -77,6 +84,9 @@ const {
     town: string;
     planned: boolean;
     href: string;
+    scale?: number;
+    badge?: number;
+    badgeLabel?: string;
   };
 
   const el = document.getElementById('nbhd-map');
@@ -106,32 +116,64 @@ const {
 
     // Every logo stays on the map at its true point. When two chips would
     // overlap at the current zoom, a displacement pass (below) nudges them
-    // apart and draws a thin leader line back to the real location; zoom in
-    // and the nudge relaxes to zero so each logo sits exactly on its point.
-    type Entry = { marker: L.Marker; pin: HTMLElement; leader: SVGLineElement };
+    // apart and draws a thin leader line from a dot at the real location to
+    // the chip; zoom in and the nudge relaxes to zero so each logo sits
+    // exactly on its point (dot + leader hidden).
+    //
+    // Leaders and dots are vector layers in Leaflet's overlay pane, which sits
+    // below the marker pane — so a leader never draws across another chip (an
+    // in-marker SVG did: each marker is its own stacking context, ordered by
+    // latitude). They're hidden during a zoom animation (their latlng endpoints
+    // would drift from the pixel-offset chips) and redrawn by relax().
+    type Entry = { slug: string; marker: L.Marker; pin: HTMLElement; leader: L.Polyline; dot: L.CircleMarker };
     const markers = new Map<string, L.Marker>();
+    const guides = new Map<string, { leader: L.Polyline; dot: L.CircleMarker }>();
     const entries: Entry[] = [];
     const bounds = L.latLngBounds([]);
+    const esc = (v: string) => v.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+    // Chip content box (the .nbhd-pin size minus its padding).
+    const LOGO_BOX_W = 80;
+    const LOGO_BOX_H = 40;
 
     for (const p of points) {
+      // Contain the logo in the chip's fixed content box. Sized in px from the
+      // artwork's aspect: leaflet.css forces max-width/max-height:none
+      // !important on marker-pane images, so percentage caps don't apply.
+      const scale = p.scale ?? 1;
+      const aspect = p.aspect > 0 ? p.aspect : 1;
+      const w = Math.round(Math.min(LOGO_BOX_W, LOGO_BOX_H * aspect) * scale);
+      const h = Math.round(w / aspect);
       const inner = p.logo
-        ? `<img src="${p.logo}" alt="" style="height:28px;width:auto;display:block" />`
-        : `<span class="nbhd-pin-fallback">${p.name}</span>`;
+        ? `<img src="${esc(p.logo)}" alt="" width="${w}" height="${h}" style="width:${w}px;height:${h}px" />`
+        : `<span class="nbhd-pin-fallback">${esc(p.name)}</span>`;
+      const badge = p.badge
+        ? `<span class="nbhd-pin-badge" aria-hidden="true">${p.badge}</span>`
+        : '';
+      const label = p.badgeLabel ? `${p.name} — ${p.badgeLabel}` : p.name;
 
       const icon = L.divIcon({
         className: 'nbhd-pin-wrap',
         iconSize: [0, 0],
-        // Leader line (anchor → displaced chip) sits behind the chip; the chip
-        // is a native <a> so clicks navigate regardless of Leaflet.
-        html:
-          `<svg class="nbhd-leader" width="1" height="1" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="0" /></svg>` +
-          `<a class="nbhd-pin${p.planned ? ' is-planned' : ''}" href="${p.href}" title="${p.name} — view neighborhood" data-slug="${p.slug}">${inner}</a>`,
+        // The chip is a native <a> so clicks navigate regardless of Leaflet.
+        html: `<a class="nbhd-pin${p.planned ? ' is-planned' : ''}" href="${esc(p.href)}" title="${esc(label)}" aria-label="${esc(label)}" data-slug="${esc(p.slug)}">${inner}${badge}</a>`,
       });
 
-      const marker = L.marker([p.lat, p.lng], { icon, riseOnHover: true }).addTo(map);
+      const ll = L.latLng(p.lat, p.lng);
+      const marker = L.marker(ll, { icon, riseOnHover: true }).addTo(map);
       markers.set(p.slug, marker);
-      bounds.extend([p.lat, p.lng]);
+      guides.set(p.slug, {
+        leader: L.polyline([ll, ll], { className: 'nbhd-leader', interactive: false, weight: 1.5, opacity: 0 }).addTo(map),
+        dot: L.circleMarker(ll, { className: 'nbhd-anchor', interactive: false, radius: 4, weight: 2, opacity: 0, fillOpacity: 0 }).addTo(map),
+      });
+      bounds.extend(ll);
     }
+
+    const showGuide = (g: { leader: L.Polyline; dot: L.CircleMarker }, on: boolean) => {
+      g.leader.setStyle({ opacity: on ? 0.6 : 0 });
+      g.dot.setStyle({ opacity: on ? 1 : 0, fillOpacity: on ? 1 : 0 });
+    };
+    map.on('zoomstart', () => guides.forEach((g) => showGuide(g, false)));
 
     // Settle the view synchronously (animate:false) so the displacement pass
     // below computes against the final zoom's pixel grid — not an intermediate
@@ -139,17 +181,17 @@ const {
     if (points.length === 1) {
       map.setView([points[0].lat, points[0].lng], 13, { animate: false });
     } else if (points.length > 1) {
-      map.fitBounds(bounds, { padding: [56, 56], maxZoom: 12, animate: false });
+      // Pad by roughly a chip's size so edge chips aren't clipped.
+      map.fitBounds(bounds, { padding: [60, 70], maxZoom: 12, animate: false });
     }
 
     // Collect each marker's chip + leader elements once they're in the DOM.
     const collect = () => {
       entries.length = 0;
-      for (const [, marker] of markers) {
-        const root = marker.getElement();
-        const pin = root?.querySelector<HTMLElement>('.nbhd-pin');
-        const leader = root?.querySelector<SVGLineElement>('.nbhd-leader line');
-        if (pin && leader) entries.push({ marker, pin, leader });
+      for (const [slug, marker] of markers) {
+        const pin = marker.getElement()?.querySelector<HTMLElement>('.nbhd-pin');
+        const g = guides.get(slug);
+        if (pin && g) entries.push({ slug, marker, pin, ...g });
       }
     };
 
@@ -265,14 +307,11 @@ const {
         // hover scale can't wipe it.
         n.e.pin.style.marginLeft = `${dx}px`;
         n.e.pin.style.marginTop = `${dy}px`;
-        const leaderEl = n.e.leader.parentElement as unknown as HTMLElement | null;
-        if (Math.hypot(dx, dy) > 6) {
-          n.e.leader.setAttribute('x2', String(dx));
-          n.e.leader.setAttribute('y2', String(dy));
-          if (leaderEl) leaderEl.style.display = '';
-        } else if (leaderEl) {
-          leaderEl.style.display = 'none';
+        const displaced = Math.hypot(dx, dy) > 6;
+        if (displaced) {
+          n.e.leader.setLatLngs([n.e.marker.getLatLng(), map.layerPointToLatLng([n.ax + dx, n.ay + dy])]);
         }
+        showGuide(n.e, displaced);
       }
     };
 
@@ -294,17 +333,19 @@ const {
       relax();
     });
 
-    // Sidebar ↔ map linking (only /neighborhood-map renders the sidebar; on
-    // pages without .nbhd-list-item rows this is a no-op): hovering / focusing
-    // a list row pans to its marker and lifts it; the row is still a plain
-    // link, so a click navigates.
-    const listItems = document.querySelectorAll<HTMLAnchorElement>('.nbhd-list-item[data-on-map="true"]');
+    // Page ↔ map linking. Two kinds of linked element: the /neighborhood-map
+    // sidebar rows (.nbhd-list-item[data-on-map]) and any element carrying
+    // data-map-slug (the /parade cards). Hovering / focusing one lifts its
+    // marker (panning to it only if it's out of view); each is still a plain
+    // link, so a click navigates. In the other direction, hovering a marker
+    // adds .is-map-active to its data-map-slug elements.
+    const listItems = document.querySelectorAll<HTMLElement>('.nbhd-list-item[data-on-map="true"], [data-map-slug]');
     listItems.forEach((item) => {
-      const slug = item.dataset.slug || '';
+      const slug = item.dataset.mapSlug || item.dataset.slug || '';
       const marker = markers.get(slug);
       if (!marker) return;
       const focusMarker = () => {
-        map.panTo(marker.getLatLng(), { animate: true });
+        if (!map.getBounds().contains(marker.getLatLng())) map.panTo(marker.getLatLng(), { animate: true });
         marker.getElement()?.querySelector('.nbhd-pin')?.classList.add('is-active');
       };
       const blurMarker = () => {
@@ -314,6 +355,15 @@ const {
       item.addEventListener('focus', focusMarker);
       item.addEventListener('mouseleave', blurMarker);
       item.addEventListener('blur', blurMarker);
+    });
+
+    el.addEventListener('mouseover', (e) => {
+      const slug = (e.target as Element).closest<HTMLElement>('.nbhd-pin')?.dataset.slug;
+      document.querySelectorAll('[data-map-slug].is-map-active').forEach((c) => c.classList.remove('is-map-active'));
+      if (slug) document.querySelectorAll(`[data-map-slug="${CSS.escape(slug)}"]`).forEach((c) => c.classList.add('is-map-active'));
+    });
+    el.addEventListener('mouseleave', () => {
+      document.querySelectorAll('[data-map-slug].is-map-active').forEach((c) => c.classList.remove('is-map-active'));
     });
 
     // Leaflet lays out against the container's size at init; if the container
@@ -326,7 +376,8 @@ const {
 <style is:global>
   /* Muted basemap so the colored logos read clearly (OSM tiles are full-color). */
   #nbhd-map .leaflet-tile-pane {
-    filter: grayscale(1) sepia(0.12) brightness(1.06) contrast(0.85);
+    filter: grayscale(1) sepia(0.25) brightness(1.1) contrast(0.7);
+    opacity: 0.85;
   }
 
   /* Leaflet markers render in an overflow:hidden pane; the pin chip is a 0×0
@@ -340,6 +391,11 @@ const {
     left: 0;
     top: 0;
     transform: translate(-50%, -50%);
+    /* Every chip is the same size; the logo is contained inside it, so wide
+       wordmarks and square monograms read as equals. */
+    width: 96px;
+    height: 52px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -354,14 +410,17 @@ const {
       box-shadow 140ms ease,
       transform 140ms ease;
     pointer-events: auto;
-    white-space: nowrap;
+  }
+  .nbhd-pin img {
+    display: block;
   }
   .nbhd-pin:hover,
   .nbhd-pin:focus-visible,
   .nbhd-pin.is-active {
     border-color: var(--color-red-600, #b52126);
     box-shadow: 0 4px 14px rgba(181, 33, 38, 0.3);
-    transform: translate(-50%, -50%) scale(1.06);
+    /* Enlarge on hover so a small logo is actually legible. */
+    transform: translate(-50%, -50%) scale(1.4);
     outline: none;
     z-index: 500;
   }
@@ -371,28 +430,38 @@ const {
   .nbhd-pin-fallback {
     font-family: var(--font-display, sans-serif);
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    line-height: 1.1;
+    text-align: center;
     color: var(--color-earth-900, #2a2620);
-    padding: 0 2px;
   }
-  /* Leader line from a chip's true point to where it was nudged to avoid
-     overlap. It lives inside the 0×0 marker element (origin = the true point),
-     so it pans/zooms with the marker for free; the displacement pass sets its
-     x2/y2 (the chip offset) and shows/hides it. overflow:visible lets it draw
-     outside the 0×0 svg box, including to negative offsets. */
-  .nbhd-leader {
+  .nbhd-pin-badge {
     position: absolute;
-    left: 0;
-    top: 0;
-    overflow: visible;
-    pointer-events: none;
-    z-index: -1;
+    top: -8px;
+    right: -8px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 10px;
+    background: var(--color-red-600, #b52126);
+    color: var(--color-gold-300, #ffcf7d);
+    font-family: var(--font-display, sans-serif);
+    font-weight: 700;
+    font-size: 11px;
+    line-height: 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(60, 40, 20, 0.3);
   }
-  .nbhd-leader line {
+  /* Leader (true point → nudged chip) and the dot marking the true point.
+     Vector layers in the overlay pane, under every chip; relax() shows them
+     only while a chip is displaced. */
+  .nbhd-leader {
     stroke: var(--color-red-600, #b52126);
-    stroke-width: 1.5;
-    stroke-opacity: 0.5;
     stroke-dasharray: 3 3;
+  }
+  .nbhd-anchor {
+    stroke: #fff;
+    fill: var(--color-red-600, #b52126);
   }
   /* Keep the attribution legible over the light basemap. */
   .leaflet-container {

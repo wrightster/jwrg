@@ -66,9 +66,12 @@ const points: MapPoint[] = paradeNeighborhoods
     lng,
     logo: n.featured_image?.url ?? null,
     aspect: n.featured_image?.aspect ?? 1,
+    scale: n.featured_image?.scale ?? undefined,
     town: townLine(n),
     planned: isPlanned(n.status),
     href: `/parade/${n.slug}`,
+    badge: n.entry_count || undefined,
+    badgeLabel: `${n.entry_count} parade home${n.entry_count === 1 ? '' : 's'}`,
   }));
 ---
 
@@ -136,7 +139,8 @@ const points: MapPoint[] = paradeNeighborhoods
               <a
                 href={`/parade/${n.slug}`}
                 aria-label={n.name}
-                class="group flex flex-col mb-6 transition-transform duration-300 hover:-translate-y-1 w-72 max-w-full shrink-0"
+                data-map-slug={n.slug}
+                class="parade-card group flex flex-col mb-6 transition-transform duration-300 hover:-translate-y-1 w-72 max-w-full shrink-0"
               >
                 <div class="aspect-[4/3] relative overflow-hidden rounded-sm">
                   {logo ? (
@@ -144,7 +148,7 @@ const points: MapPoint[] = paradeNeighborhoods
                       <img
                         src={logo.src}
                         alt={`${n.name} logo`}
-                        class="w-auto h-auto object-contain origin-bottom transition-transform duration-300 group-hover:scale-[1.04]"
+                        class="parade-card-logo w-auto h-auto object-contain origin-bottom transition-transform duration-300 group-hover:scale-[1.04]"
                         style={`max-width:${logoPct};max-height:${logoPct}`}
                         loading="lazy"
                       />
@@ -179,11 +183,12 @@ const points: MapPoint[] = paradeNeighborhoods
       )}
 
       {points.length > 0 && (
-        <div class="lg:col-span-1">
+        <div class="lg:col-span-1 order-first lg:order-none">
           <NeighborhoodMap
             points={points}
             ariaLabel="Interactive map of the Parade of Homes communities"
-            heightStyle="height: 480px;"
+            heightStyle="height: clamp(320px, 55vh, 480px);"
+            caption="Click a community to see its parade homes."
           />
         </div>
       )}
@@ -192,3 +197,9 @@ const points: MapPoint[] = paradeNeighborhoods
 
   <MiniContactForm />
 </BaseLayout>
+
+<style>
+  /* Hovering a community's map chip lifts its card, mirroring the card hover. */
+  .parade-card:global(.is-map-active) { transform: translateY(-0.25rem); }
+  .parade-card:global(.is-map-active) .parade-card-logo { transform: scale(1.04); }
+</style>

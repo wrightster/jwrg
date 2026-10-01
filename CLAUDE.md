@@ -351,17 +351,30 @@ Leaflet script lives in the component (rendered on the page), not in a
   is `n.latitude ?? seed`, so **office values always win** — **delete the file
   once every neighborhood carries coordinates in the office.** Do *not* grow it
   into a permanent static coords file (that's the office's job).
-- Basemap is CARTO Positron (muted, so the colored logos pop; attribution
-  required). Wheel-zoom engages only after the map gains focus (so it doesn't
+- Basemap is OpenStreetMap standard tiles, desaturated + faded in CSS (muted, so
+  the colored logos pop; attribution required). Wheel-zoom engages only after the map gains focus (so it doesn't
   hijack page scroll); `+`/`−` always work. Planned neighborhoods get a dashed
-  border. The sidebar list is the accessible equivalent — hovering a row pans
-  the map to that marker and highlights it.
+  border. The sidebar list is the accessible equivalent — hovering a row lifts
+  that marker (panning to it only if it's out of view). Any element with
+  `data-map-slug` links the same way (the /parade cards), and hovering a chip
+  adds `.is-map-active` to its `data-map-slug` elements.
+- **Chips are one fixed size** (96×52) with the logo contained inside, so wide
+  wordmarks and square monograms read as equals; hover enlarges a chip so a
+  small logo is legible. The logo `<img>` is sized **in px from `aspect` (and the
+  optional `scale`)** — leaflet.css forces `max-width/max-height: none
+  !important` on marker-pane images, so percentage caps silently do nothing.
+  Optional per-point `badge` (+ `badgeLabel`) renders a red count bubble on the
+  chip (parade-home counts); the `caption` prop sets the one-line help text.
 - **Declutter / displacement (no clustering).** Most of these communities sit
   within a few miles of Wake Forest and their logo chips are large, so at the
   default zoom they'd overlap. Rather than hiding them behind a cluster badge,
   **every logo stays visible and a displacement pass nudges overlapping ones
-  apart**, drawing a thin dashed leader line back to each chip's true point;
-  zoom in and the nudge relaxes to zero so each logo sits exactly on its
+  apart**, drawing a thin dashed leader from a red dot at the true point to the
+  chip. Leader + dot are Leaflet vector layers in the **overlay pane, below the
+  marker pane** — an SVG inside each marker drew across other chips (every
+  marker is its own stacking context, ordered by latitude). They're hidden on
+  `zoomstart` (latlng endpoints drift from the px-offset chips mid-animation)
+  and redrawn by `relax()`; zoom in and the nudge relaxes to zero so each logo sits exactly on its
   location. The pass (`relax()` / `separate()`) is a **circle-packing
   relaxation** in Leaflet layer-pixel space (pan-invariant; re-runs on
   `zoomend`/`moveend`): each chip is its circumscribed circle, overlapping
@@ -411,9 +424,10 @@ parade, take down the nav/footer entries and the strip; the pages can stay up.
   communities (`PARADE_SLUGS` in `src/data/parade.ts`: Preserve West, Tennyson,
   Cedar Knolls, Aubrie Place, Cannady Mill) as centered logo cards in the neighborhoods-grid
   style, linking to `/parade/{slug}`, beside a parade-only portrait
-  `NeighborhoodMap` (chips also link to `/parade/{slug}`) in the right 1/4 of
-  the row at lg+ (stacked below the cards on smaller screens; the component
-  grew a `heightStyle` prop for this). The card grid caps at three per row
+  `NeighborhoodMap` (chips also link to `/parade/{slug}` and carry a
+  home-count badge) in the right 1/4 of the row at lg+ — **above** the cards on
+  smaller screens (the component grew a `heightStyle` prop for this). Cards and
+  chips highlight each other on hover (`data-map-slug`). The card grid caps at three per row
   (the 3/4 column fits exactly three); each card's label is the community's
   parade-home count ("# Homes").
 - **`/parade/[slug]`** (SSR) — the parade view of one community: brand-mark
