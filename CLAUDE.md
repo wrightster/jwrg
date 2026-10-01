@@ -95,7 +95,7 @@ src/
 │   │   ├── sellers/           # Home value, list-your-property, staging, sold reports
 │   │   └── relocation/        # Relocation package, moving tips
 │   ├── neighborhoods/     # Index + [slug] dynamic pages
-│   ├── parade/            # Parade of Homes 2026 (hidden: noindex, no nav/sitemap) — see below
+│   ├── parade/            # Parade of Homes 2026 (launched 2026-10) — see below
 │   ├── listings/          # Index + [slug] dynamic property detail
 │   ├── 404.astro
 │   ├── accessibility.astro
@@ -390,13 +390,14 @@ Leaflet script lives in the component (rendered on the page), not in a
   map" `BtnArrow` on `/neighborhoods`. Legacy `/area-neighborhood-map.php` still
   301s here (`astro.config.mjs`).
 
-### Parade of Homes (`/parade` — hidden until launch)
+### Parade of Homes (`/parade` — launched 2026-10)
 
-The Parade of Homes 2026 section (an FCHBA event; the header deliberately omits the acronym), deliberately **unlinked**: no nav or
-footer entry, not in `STATIC_PATHS` in `sitemap.xml.ts`, and both pages pass
-`noindex` to `BaseLayout` (a per-page prop added for this). To launch it,
-remove the `noindex` props, add it to the sitemap, and link it from wherever
-it's being promoted.
+The Parade of Homes 2026 section (an FCHBA event; the header deliberately omits
+the acronym) is **live**: linked from the top nav and the footer, promoted by the
+promo strip below, indexable (no `noindex`), listed in the sitemap
+(`paradePaths` in `sitemap.xml.ts` — `/parade` plus each community's
+`/parade/{slug}`, from the office Parade payload) and in `llms.txt`. After the
+parade, take down the nav/footer entries and the strip; the pages can stay up.
 
 - **Promo strip (2026-10):** `BaseLayout.astro` renders a gold `.parade-strip`
   under the nav on every page except `/parade/*` — "Parade of Homes 2026"

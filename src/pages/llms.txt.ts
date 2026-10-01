@@ -18,6 +18,7 @@ const PAGES: Array<{ path: string; title: string; note: string }> = [
   { path: '/search', title: 'Property search', note: 'full Triangle MLS search (not limited to our listings)' },
   { path: '/neighborhoods', title: 'Neighborhoods', note: 'communities we represent, with available homesites and homes' },
   { path: '/neighborhood-map', title: 'Neighborhood map', note: 'interactive map of every neighborhood we represent' },
+  { path: '/parade', title: 'Parade of Homes 2026', note: 'participating communities and their featured parade homes' },
   { path: '/resources', title: 'Resources', note: 'buyer, seller, and relocation guides' },
   { path: '/resources/real-estate-101', title: 'Real estate 101', note: 'glossary of real estate terms' },
   { path: '/resources/buyers/mortgage-calculator', title: 'Mortgage calculator', note: 'monthly payment estimator' },
