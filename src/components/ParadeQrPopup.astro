@@ -1,0 +1,248 @@
+---
+// Pop-up contact form for visitors who reach a /parade page through one of our
+// short links / QR codes (yard signs, flyers). The office short-URL redirect
+// appends `ref=<code>` to the landing URL, so "arrived via QR" = the landing
+// URL carries `ref`. Shown once per browser session; the X, Esc, or a click on
+// the backdrop closes it.
+//
+// It posts straight to the office form API (the embed widget can't change the
+// subject per submission): the picked community goes up as `neighborhood_id`,
+// so the office routes the lead to that community's round-robin team and
+// records the interest, and as the `neighborhood` field (its name), so the
+// submission reads plainly. `ref`/utm_* ride along as top-level keys — the
+// office links the submission to the short link and names it on the contact's
+// activity note.
+
+import { site } from '../data/site';
+
+interface Props {
+  /** The parade's communities, in parade order (id = office neighborhood UUID). */
+  communities: { id: string; slug: string; name: string }[];
+  /** Pre-select this community (the /parade/{slug} page). */
+  selected?: string;
+}
+
+const { communities, selected } = Astro.props;
+const token = site.formTokens.paradeQr;
+---
+
+{token && communities.length > 0 && (
+  <dialog id="parade-qr" class="parade-qr" aria-labelledby="parade-qr-title" data-token={token}>
+    <div class="relative bg-earth-50 rounded-sm shadow-xl w-full">
+      <div class="bg-red-600 px-6 py-5 pr-14">
+        <h2 id="parade-qr-title" class="font-display italic text-2xl text-gold-300 leading-tight">Welcome to the Parade of Homes</h2>
+        <p class="text-earth-50 text-sm mt-1">Tell us where you are and we'll send you details on the homes there.</p>
+      </div>
+      <button type="button" class="parade-qr-close" aria-label="Close" data-close>
+        <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+
+      <form class="px-6 py-5 space-y-3" novalidate>
+        <div>
+          <label for="pqr-neighborhood" class="parade-qr-label">Community you're visiting</label>
+          <select id="pqr-neighborhood" name="neighborhood" class="parade-qr-input">
+            <option value="" selected={!selected}>Choose a community…</option>
+            {communities.map((c) => (
+              <option value={c.id} data-name={c.name} selected={c.slug === selected}>{c.name}</option>
+            ))}
+            <option value="" data-name="Not sure yet">Not sure yet</option>
+          </select>
+        </div>
+        <div>
+          <label for="pqr-name" class="parade-qr-label">Full name <span class="text-red-600">*</span></label>
+          <input id="pqr-name" name="name" type="text" autocomplete="name" required class="parade-qr-input" />
+        </div>
+        <div>
+          <label for="pqr-email" class="parade-qr-label">Email <span class="text-red-600">*</span></label>
+          <input id="pqr-email" name="email" type="email" autocomplete="email" required class="parade-qr-input" />
+        </div>
+        <div>
+          <label for="pqr-phone" class="parade-qr-label">Phone</label>
+          <input id="pqr-phone" name="phone" type="tel" autocomplete="tel" class="parade-qr-input" />
+        </div>
+        <div>
+          <label for="pqr-message" class="parade-qr-label">Questions?</label>
+          <textarea id="pqr-message" name="message" rows="2" class="parade-qr-input"></textarea>
+        </div>
+        <!-- Honeypot (the office form's honeypot_field) — hidden from people. -->
+        <div class="hidden" aria-hidden="true">
+          <input name="_hp_phone" type="text" tabindex="-1" autocomplete="off" />
+        </div>
+        <p class="parade-qr-error text-sm text-red-700" role="alert" hidden></p>
+        <button type="submit" class="w-full py-3 font-display font-medium border-2 border-red-600 bg-red-600 text-earth-50 tracking-wide rounded-sm transition-colors duration-300 hover:bg-red-700 hover:border-red-700 cursor-pointer disabled:opacity-60 disabled:cursor-wait">
+          Send
+        </button>
+      </form>
+
+      <div class="parade-qr-done px-6 py-8 text-center" hidden>
+        <p class="font-display text-xl text-earth-900">Thanks!</p>
+        <p class="parade-qr-done-msg text-earth-700 mt-2"></p>
+        <button type="button" class="mt-5 text-red-600 underline underline-offset-2 hover:text-red-700 cursor-pointer" data-close>Back to the parade</button>
+      </div>
+    </div>
+  </dialog>
+)}
+
+<script>
+  import { captureSource, getStoredSource } from '../lib/source';
+
+  const API = 'https://office.jwrgnc.com/api/v1';
+  const SEEN_KEY = 'jwrg_parade_qr_seen';
+
+  const dialog = document.getElementById('parade-qr') as HTMLDialogElement | null;
+  const arrivedViaShortLink = new URLSearchParams(window.location.search).has('ref');
+
+  const alreadySeen = () => {
+    try {
+      return sessionStorage.getItem(SEEN_KEY) === '1';
+    } catch {
+      return false;
+    }
+  };
+  const markSeen = () => {
+    try {
+      sessionStorage.setItem(SEEN_KEY, '1');
+    } catch {
+      // best-effort — without storage it just shows again on the next QR landing
+    }
+  };
+
+  if (dialog && arrivedViaShortLink && !alreadySeen()) {
+    const form = dialog.querySelector('form')!;
+    const errorEl = dialog.querySelector<HTMLElement>('.parade-qr-error')!;
+    const done = dialog.querySelector<HTMLElement>('.parade-qr-done')!;
+    const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+
+    // Mark it seen as part of closing rather than from the dialog's `close`
+    // event, which Chrome can defer (it didn't fire at all in a background tab).
+    // Esc goes through `cancel`, which fires synchronously.
+    const closeDialog = () => {
+      markSeen();
+      dialog.close();
+    };
+    dialog.addEventListener('cancel', markSeen);
+    dialog.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeDialog));
+    // A click on the backdrop lands on the <dialog> itself (its content box is
+    // the inner card), so close on clicks whose target is the dialog.
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) closeDialog();
+    });
+
+    const showError = (msg: string) => {
+      errorEl.textContent = msg;
+      errorEl.hidden = false;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      if (!form.reportValidity()) return;
+
+      const fd = new FormData(form);
+      const select = form.querySelector<HTMLSelectElement>('select[name="neighborhood"]')!;
+      const option = select.selectedOptions[0];
+      const neighborhoodId = select.value;
+      const data: Record<string, string> = {
+        name: String(fd.get('name') ?? '').trim(),
+        email: String(fd.get('email') ?? '').trim(),
+        phone: String(fd.get('phone') ?? '').trim(),
+        message: String(fd.get('message') ?? '').trim(),
+        neighborhood: option?.dataset.name ?? '',
+        _hp_phone: String(fd.get('_hp_phone') ?? ''),
+      };
+      if (neighborhoodId) data.neighborhood_id = neighborhoodId;
+      captureSource();
+      for (const [k, v] of Object.entries(getStoredSource())) {
+        if (!(k in data)) data[k] = v;
+      }
+
+      submitBtn.disabled = true;
+      try {
+        const token = dialog.dataset.token;
+        const res = await fetch(`${API}/forms/${token}/submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (res.ok) {
+          try {
+            const w = window as unknown as { umami?: { track: (n: string, d: object) => void } };
+            w.umami?.track('lead', { form: 'parade-qr', ref: data.ref, neighborhood_id: data.neighborhood_id });
+          } catch {
+            // analytics is best-effort
+          }
+          markSeen();
+          form.hidden = true;
+          done.querySelector('.parade-qr-done-msg')!.textContent = json.message ?? 'Someone from our team will be in touch soon.';
+          done.hidden = false;
+        } else if (res.status === 422 && json.errors) {
+          const first = Object.values(json.errors as Record<string, string[]>)[0]?.[0];
+          showError(first ?? 'Please check the form and try again.');
+        } else {
+          showError(json.message ?? 'Something went wrong. Please try again.');
+        }
+      } catch {
+        showError('Unable to send. Please check your connection and try again.');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    // Let the page paint first, then open.
+    setTimeout(() => dialog.showModal(), 400);
+  }
+</script>
+
+<style>
+  .parade-qr {
+    width: min(28rem, calc(100vw - 2rem));
+    max-height: calc(100dvh - 2rem);
+    /* Tailwind's preflight zeroes the UA margin that centres a modal dialog. */
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: auto;
+  }
+  .parade-qr::backdrop {
+    background: rgb(42 38 32 / 0.6);
+  }
+  .parade-qr-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    color: var(--color-gold-300);
+    cursor: pointer;
+    transition: background-color 200ms ease;
+  }
+  .parade-qr-close:hover,
+  .parade-qr-close:focus-visible {
+    background: rgb(255 255 255 / 0.15);
+    outline: none;
+  }
+  .parade-qr-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-earth-800);
+    margin-bottom: 0.25rem;
+  }
+  .parade-qr-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-earth-300);
+    border-radius: 0.125rem;
+    background: #fff;
+    color: var(--color-earth-900);
+  }
+  .parade-qr-input:focus {
+    outline: 2px solid var(--color-red-600);
+    outline-offset: -1px;
+  }
+</style>

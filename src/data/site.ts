@@ -43,5 +43,7 @@ export const site = {
     listYourHome: '',
     soldReport: '',
     listingInquiry: 'F7h6VKTWpW8J3GiytA38RsMuCXxJoHwD',
+    // "Parade of Homes 2026 QR Contact" — the /parade pop-up for QR/short-link arrivals (ParadeQrPopup).
+    paradeQr: 'jfPloVnN17rou78XWTP4pfyjDmym9HC1',
   },
 };

@@ -11,9 +11,10 @@ export const prerender = false;
 
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
+import ParadeQrPopup from '../../components/ParadeQrPopup.astro';
 import ListingCard from '../../components/ListingCard.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
-import { fetchNeighborhood, fetchParade, fetchNeighborhoodTeam } from '../../lib/api';
+import { fetchNeighborhood, fetchNeighborhoods, fetchParade, fetchNeighborhoodTeam } from '../../lib/api';
 import { PARADE_SLUG, PARADE_TITLE, communityLotUrl } from '../../data/parade';
 
 const { slug } = Astro.params;
@@ -35,6 +36,14 @@ const lotEntries = entries.filter((e) => e.kind === 'lot' && e.lot);
 const entryCount = paradeListings.length + lotEntries.length;
 
 const nbAgents = await fetchNeighborhoodTeam(n.slug);
+
+// The QR pop-up's community picker: every parade community (in parade order),
+// joined to the office records for their UUIDs, with this one pre-selected.
+const allNeighborhoods = await fetchNeighborhoods().catch(() => []);
+const qrCommunities = parade.neighborhoods.flatMap((p) => {
+  const match = allNeighborhoods.find((x) => x.slug === p.slug);
+  return match ? [{ id: match.id, slug: match.slug, name: match.name }] : [];
+});
 
 // Brand mark hero — same office-managed featured image and sizing math as the
 // regular neighborhood page (see /neighborhoods/[slug].astro for the details).
@@ -216,4 +225,6 @@ const hasAbout = aboutStripped.length > 0;
   </section>
 
   <MiniContactForm neighborhoodId={n.id} agents={nbAgents} />
+
+  <ParadeQrPopup communities={qrCommunities} selected={n.slug} />
 </BaseLayout>

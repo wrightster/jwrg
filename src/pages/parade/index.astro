@@ -13,6 +13,7 @@ export const prerender = false;
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageBanner from '../../components/PageBanner.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
+import ParadeQrPopup from '../../components/ParadeQrPopup.astro';
 import NeighborhoodMap, { type MapPoint } from '../../components/NeighborhoodMap.astro';
 import { fetchNeighborhoods, fetchParade, formatParadeDate, photoSrc, photoSrcSet } from '../../lib/api';
 import { SEED_COORDS } from '../../data/neighborhoodCoords';
@@ -196,6 +197,8 @@ const points: MapPoint[] = paradeNeighborhoods
   </section>
 
   <MiniContactForm />
+
+  <ParadeQrPopup communities={paradeNeighborhoods.map((n) => ({ id: n.id, slug: n.slug, name: n.name }))} />
 </BaseLayout>
 
 <style>

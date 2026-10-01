@@ -420,6 +420,21 @@ parade, take down the nav/footer entries and the strip; the pages can stay up.
   top + bottom inset rules and a gold title, and the `.parade-strip:is(:hover,
   :focus-visible)` rules in `global.css` drive the arrow's own hover motion.
   Remove it alongside the nav entry once the parade is over.
+- **QR pop-up (2026-10):** `src/components/ParadeQrPopup.astro`, on `/parade` and
+  `/parade/{slug}`. Opens (a native modal `<dialog>`) when the landing URL
+  carries `ref` — i.e. the visitor came through an office short link / QR code —
+  once per browser session (`sessionStorage` `jwrg_parade_qr_seen`; the X, Esc,
+  backdrop click, or a submit marks it seen). A community picker (parade
+  communities by office UUID, pre-selected on `/parade/{slug}`; "Not sure yet"
+  sends none) plus name/email/phone/message. It **posts straight to the office
+  form API** (form "Parade of Homes 2026 QR Contact", `site.formTokens.paradeQr`)
+  rather than through `forms.js`, because the subject changes per submission:
+  the picked community goes up as `neighborhood_id` (round-robin to that
+  community's team + interest) and as the `neighborhood` text field;
+  `ref`/utm_* ride along from `src/lib/source.ts`, so the office links the
+  submission to the short link and names it on the contact's activity note.
+  Mark it seen as part of closing, not from the dialog's `close` event — Chrome
+  can defer that event (it never fired in a background tab during testing).
 - **`/parade`** (`src/pages/parade/index.astro`, SSR) — the five participating
   communities (`PARADE_SLUGS` in `src/data/parade.ts`: Preserve West, Tennyson,
   Cedar Knolls, Aubrie Place, Cannady Mill) as centered logo cards in the neighborhoods-grid
