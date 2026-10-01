@@ -323,6 +323,26 @@
   .footer-affiliation-mark--eho     { -webkit-mask-image: url('/affiliations/equal-housing.svg'); mask-image: url('/affiliations/equal-housing.svg'); }
   .footer-affiliation-mark--realtor { -webkit-mask-image: url('/affiliations/realtor.svg'); mask-image: url('/affiliations/realtor.svg'); }
 
+  /* Parade of Homes promo strip under the nav — red on gold (flat). The whole
+     strip is one link; on hover/focus it flips to red with gold top + bottom rules
+     and gold title, and drives the arrow's own hover motion (the arrow is a
+     span inside it, so its :hover rules only fire under the pointer). */
+  .parade-strip       { @apply relative block bg-gold-300 no-underline transition-colors duration-300; --btn-bg: var(--color-gold-300); }
+  .parade-strip:hover,
+  .parade-strip:focus-visible { @apply bg-red-600 outline-none; box-shadow: inset 0 3px 0 var(--color-gold-300), inset 0 -3px 0 var(--color-gold-300); }
+  .parade-strip-inner { @apply max-w-7xl mx-auto px-6 lg:px-8 py-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-1; }
+  .parade-strip-title { @apply font-display font-black italic text-xl md:text-2xl text-red-600 leading-tight transition-colors duration-300; }
+  .parade-strip:hover .parade-strip-title,
+  .parade-strip:focus-visible .parade-strip-title { @apply text-gold-300; }
+  .parade-strip-btn   { --btn-arrow-h: 2.25rem; }
+  /* Strip hover → arrow turns gold with red label, and moves as on its own hover. */
+  .parade-strip:is(:hover, :focus-visible) .btn-arrow--primary { color: var(--color-red-600); --_btn-arrow-fill: var(--color-gold-300); }
+  .parade-strip:is(:hover, :focus-visible) .btn-arrow--primary svg { fill: var(--color-gold-300); }
+  .parade-strip:is(:hover, :focus-visible) .btn-arrow__shaft { background: var(--_btn-arrow-fill); }
+  .parade-strip:is(:hover, :focus-visible) .btn-arrow__inner { transform: translateX(8px); }
+  .parade-strip:is(:hover, :focus-visible) .btn-arrow__label { transform: scale(1.143); }
+  .parade-strip:is(:hover, :focus-visible) :is(.btn-arrow__lcap, .btn-arrow__rcap) { transform: scaleY(1.1); }
+
   /* ══════════════════════════════════════════════════
      PAGE BANNER
   ══════════════════════════════════════════════════ */

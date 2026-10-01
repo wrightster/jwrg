@@ -57,7 +57,7 @@ DigitalOcean droplet — **not** the shared Ploi box — with rolling deploys
 src/
 ├── components/       # Astro components
 │   ├── BackLink.astro        # "Back to X" up-one-level link (Resources pages; href/label = the PARENT)
-│   ├── BtnArrow.astro        # Animated three-piece arrow button (.btn-arrow)
+│   ├── BtnArrow.astro        # Animated three-piece arrow button (.btn-arrow); `as="span"` when nested in a larger link
 │   ├── DocumentViewerModal.astro # In-page doc viewer modal — PDFs via PDF.js (see "Document viewer")
 │   ├── GlossaryCallout.astro # Short full-width card → Real Estate 101 (top of Resources pages)
 │   ├── EmbedForm.astro       # Office embed-form widget adapter (loads forms.js, bound to a form token)
@@ -398,6 +398,14 @@ footer entry, not in `STATIC_PATHS` in `sitemap.xml.ts`, and both pages pass
 remove the `noindex` props, add it to the sitemap, and link it from wherever
 it's being promoted.
 
+- **Promo strip (2026-10):** `BaseLayout.astro` renders a gold `.parade-strip`
+  under the nav on every page except `/parade/*` — "Parade of Homes 2026"
+  (`PARADE_TITLE`) in red black-italic plus a "See the homes" `BtnArrow`. The
+  whole strip is one `<a href="/parade">`, so the arrow renders with
+  `as="span"` (links can't nest); hover/focus flips it to `bg-red-600` with gold
+  top + bottom inset rules and a gold title, and the `.parade-strip:is(:hover,
+  :focus-visible)` rules in `global.css` drive the arrow's own hover motion.
+  Remove it alongside the nav entry once the parade is over.
 - **`/parade`** (`src/pages/parade/index.astro`, SSR) — the five participating
   communities (`PARADE_SLUGS` in `src/data/parade.ts`: Preserve West, Tennyson,
   Cedar Knolls, Aubrie Place, Cannady Mill) as centered logo cards in the neighborhoods-grid

@@ -1,6 +1,8 @@
 ---
 import '../styles/global.css';
 import FontSwitcher from '../components/FontSwitcher.astro';
+import BtnArrow from '../components/BtnArrow.astro';
+import { PARADE_TITLE } from '../data/parade';
 import Seo from '@jw/shared/components/Seo.astro';
 import { brokerageJsonLd } from '@jw/shared/jsonLd';
 import { site } from '../data/site';
@@ -220,6 +222,17 @@ const footerNav = [
 
     <!-- Main Content -->
     <main class="site-main" id="main-content">
+      <!-- Parade of Homes promo strip — sits under the nav on every page except
+           the parade section itself. The whole strip is the link; the arrow
+           inside is a span (links can't nest). -->
+      {!currentPath.startsWith('/parade') && (
+        <a href="/parade" class="parade-strip">
+          <span class="parade-strip-inner">
+            <span class="parade-strip-title">{PARADE_TITLE}</span>
+            <BtnArrow as="span" class="parade-strip-btn">See the homes</BtnArrow>
+          </span>
+        </a>
+      )}
       <slot />
     </main>
 

@@ -5,10 +5,15 @@ interface Props {
   class?: string;
   target?: string;
   rel?: string;
+  /** Render as a non-interactive <span> when the arrow sits inside a larger
+   *  link (e.g. the parade strip) — links can't nest. */
+  as?: 'a' | 'span';
 }
-const { href = '#', variant = 'primary', class: className = '', target, rel } = Astro.props;
+const { href = '#', variant = 'primary', class: className = '', target, rel, as = 'a' } = Astro.props;
+const Tag = as;
+const linkAttrs = as === 'a' ? { href, target, rel } : {};
 ---
-<a href={href} target={target} rel={rel} class:list={['btn-arrow', `btn-arrow--${variant}`, className]}>
+<Tag {...linkAttrs} class:list={['btn-arrow', `btn-arrow--${variant}`, className]}>
   <span class="btn-arrow__inner">
     <!-- Shaft stroke rectangle: sits behind caps; border-top/bottom provide shaft outline edges -->
     <span class="btn-arrow__shaft" aria-hidden="true"></span>
@@ -26,4 +31,4 @@ const { href = '#', variant = 'primary', class: className = '', target, rel } = 
       <polygon points="885.73,0 690.75,0 763.41,125.84 690.75,251.68 885.73,251.68 958.39,125.84"/>
     </svg>
   </span>
-</a>
+</Tag>
