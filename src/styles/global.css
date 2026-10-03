@@ -334,6 +334,13 @@
   .parade-strip-title { @apply font-display font-black italic text-xl md:text-2xl text-red-600 leading-tight transition-colors duration-300; }
   .parade-strip:hover .parade-strip-title,
   .parade-strip:focus-visible .parade-strip-title { @apply text-gold-300; }
+  .parade-strip-dates { @apply flex flex-wrap items-baseline justify-center gap-x-3 leading-tight; }
+  .parade-strip-ranges{ @apply font-display font-bold text-lg md:text-xl text-earth-900 transition-colors duration-300; }
+  .parade-strip-when  { @apply text-base md:text-lg text-earth-800 transition-colors duration-300; }
+  .parade-strip:hover .parade-strip-ranges,
+  .parade-strip:focus-visible .parade-strip-ranges { @apply text-white; }
+  .parade-strip:hover .parade-strip-when,
+  .parade-strip:focus-visible .parade-strip-when { @apply text-gold-100; }
   .parade-strip-btn   { --btn-arrow-h: 2.25rem; }
   /* Strip hover → arrow turns gold with red label, and moves as on its own hover. */
   .parade-strip:is(:hover, :focus-visible) .btn-arrow--primary { color: var(--color-red-600); --_btn-arrow-fill: var(--color-gold-300); }

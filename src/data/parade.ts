@@ -54,6 +54,8 @@ export interface ParadeSchedule {
   ranges: ParadeDateRange[];
   /** "Saturdays & Sundays" when every run is a Sat–Sun weekend, else null. */
   days: string | null;
+  /** The same, short ("Sat & Sun"), for tight spots like the promo strip. */
+  daysShort: string | null;
   /** "12–5 pm" when every window keeps the same hours, else null. */
   hours: string | null;
 }
@@ -99,6 +101,7 @@ export function summarizeParadeDates(dates: { starts_at: string; ends_at: string
   return {
     ranges,
     days: allWeekends ? 'Saturdays & Sundays' : null,
+    daysShort: allWeekends ? 'Sat & Sun' : null,
     hours: hourSet.size === 1 ? [...hourSet][0] : null,
   };
 }

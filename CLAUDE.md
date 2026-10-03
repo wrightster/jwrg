@@ -423,6 +423,10 @@ parade, take down the nav/footer entries and the strip; the pages can stay up.
   `as="span"` (links can't nest); hover/focus flips it to `bg-red-600` with gold
   top + bottom inset rules and a gold title, and the `.parade-strip:is(:hover,
   :focus-visible)` rules in `global.css` drive the arrow's own hover motion.
+  The strip also carries the tour dates — "Oct 3–4 · Oct 10–11 · Oct 17–18"
+  + "Sat & Sun, 12–5 pm" (`.parade-strip-dates`), from `summarizeParadeDates()`
+  on the office parade, fetched in `BaseLayout` (memoized; prerendered pages bake
+  it at build). No parade or mixed hours → title only.
   Remove it alongside the nav entry once the parade is over.
 - **Dates & hours (2026-10):** `summarizeParadeDates()` (`src/data/parade.ts`)
   condenses the office's one-window-per-day `dates[]` into weekend ranges

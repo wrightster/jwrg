@@ -2,7 +2,8 @@
 import '../styles/global.css';
 import FontSwitcher from '../components/FontSwitcher.astro';
 import BtnArrow from '../components/BtnArrow.astro';
-import { PARADE_TITLE } from '../data/parade';
+import { PARADE_SLUG, PARADE_TITLE, summarizeParadeDates } from '../data/parade';
+import { fetchParade } from '../lib/api';
 import Seo from '@jw/shared/components/Seo.astro';
 import { brokerageJsonLd } from '@jw/shared/jsonLd';
 import { site } from '../data/site';
@@ -90,6 +91,21 @@ const footerNav = [
   { href: '/about#team', label: 'Our Team' },
   { href: '/contact', label: 'Contact' },
 ];
+
+// Parade dates for the promo strip ("Oct 3–4 · Oct 10–11 · Oct 17–18 ·
+// Sat & Sun, 12–5 pm"), from the office parade. Memoized by the API client, so
+// this costs nothing per request once warm; prerendered pages bake it at build.
+// No parade (or mixed hours) → the strip shows just the title.
+const paradeStripSchedule = currentPath.startsWith('/parade')
+  ? null
+  : summarizeParadeDates((await fetchParade(PARADE_SLUG))?.dates ?? []);
+const paradeStripDates =
+  paradeStripSchedule && paradeStripSchedule.ranges.length > 0 && paradeStripSchedule.hours
+    ? {
+        ranges: paradeStripSchedule.ranges.map((r) => r.label).join(' · '),
+        when: [paradeStripSchedule.daysShort, paradeStripSchedule.hours].filter(Boolean).join(', '),
+      }
+    : null;
 ---
 
 <!doctype html>
@@ -229,6 +245,12 @@ const footerNav = [
         <a href="/parade" class="parade-strip">
           <span class="parade-strip-inner">
             <span class="parade-strip-title">{PARADE_TITLE}</span>
+            {paradeStripDates && (
+              <span class="parade-strip-dates">
+                <span class="parade-strip-ranges">{paradeStripDates.ranges}</span>
+                <span class="parade-strip-when">{paradeStripDates.when}</span>
+              </span>
+            )}
             <BtnArrow as="span" class="parade-strip-btn">See the homes</BtnArrow>
           </span>
         </a>
