@@ -424,6 +424,14 @@ parade, take down the nav/footer entries and the strip; the pages can stay up.
   top + bottom inset rules and a gold title, and the `.parade-strip:is(:hover,
   :focus-visible)` rules in `global.css` drive the arrow's own hover motion.
   Remove it alongside the nav entry once the parade is over.
+- **Dates & hours (2026-10):** `summarizeParadeDates()` (`src/data/parade.ts`)
+  condenses the office's one-window-per-day `dates[]` into weekend ranges
+  ("Oct 3–4 · Oct 10–11 · Oct 17–18") plus shared days/hours ("Saturdays &
+  Sundays, 12–5 pm"), all in Eastern time. `/parade` shows that line in the
+  banner (passed as `PageBanner` children — the component now renders a slot
+  under the description) and in the "Tour Dates & Hours" box. If the windows'
+  hours ever differ, `hours` is null: the banner line drops and the box falls
+  back to the per-day `formatParadeDate` list.
 - **QR pop-up (2026-10):** `src/components/ParadeQrPopup.astro`, on `/parade` and
   `/parade/{slug}`. Opens (a native modal `<dialog>`) when the landing URL
   carries `ref` — i.e. the visitor came through an office short link / QR code —

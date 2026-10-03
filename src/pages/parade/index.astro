@@ -17,7 +17,7 @@ import ParadeQrPopup from '../../components/ParadeQrPopup.astro';
 import NeighborhoodMap, { type MapPoint } from '../../components/NeighborhoodMap.astro';
 import { fetchNeighborhoods, fetchParade, formatParadeDate, photoSrc, photoSrcSet } from '../../lib/api';
 import { SEED_COORDS } from '../../data/neighborhoodCoords';
-import { PARADE_SLUG, PARADE_TITLE } from '../../data/parade';
+import { PARADE_SLUG, PARADE_TITLE, summarizeParadeDates } from '../../data/parade';
 
 const [neighborhoods, parade] = await Promise.all([
   fetchNeighborhoods().catch(() => []),
@@ -37,6 +37,10 @@ const paradeNeighborhoods = (parade?.neighborhoods ?? [])
   .filter((n): n is NonNullable<typeof n> => Boolean(n));
 
 const dates = (parade?.dates ?? []).map(formatParadeDate);
+// Weekend ranges + shared hours ("Oct 3–4 · Oct 10–11 · Oct 17–18",
+// "Saturdays & Sundays", "12–5 pm"). When the windows' hours differ, `hours`
+// is null and the dates box falls back to the per-day list above.
+const schedule = summarizeParadeDates(parade?.dates ?? []);
 
 const countWords = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
 const communityCount = paradeNeighborhoods.length;
@@ -80,7 +84,16 @@ const points: MapPoint[] = paradeNeighborhoods
   title={`${title} | Julie Wright Realty Group`}
   description={`The communities Julie Wright Realty Group is showing in the ${title}, with the featured homes in each, plus the tour dates and hours.`}
 >
-  <PageBanner title={title} description={bannerDescription} />
+  <PageBanner title={title} description={bannerDescription}>
+    {schedule.ranges.length > 0 && schedule.hours && (
+      <p class="mt-4 font-display text-xl md:text-2xl text-gold-300 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        {schedule.ranges.map((r, i) => (
+          <>{i > 0 && <span class="text-gold-100/60" aria-hidden="true">·</span>}<time datetime={r.start}>{r.label}</time></>
+        ))}
+        <span class="font-body text-lg text-gold-100 md:ml-3">{[schedule.days, schedule.hours].filter(Boolean).join(', ')}</span>
+      </p>
+    )}
+  </PageBanner>
 
   {parade && dates.length > 0 && (
     <section class="pt-8" aria-labelledby="parade-dates-heading">
@@ -99,14 +112,28 @@ const points: MapPoint[] = paradeNeighborhoods
               </p>
             )}
           </div>
-          <ul class="md:flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 text-earth-900">
-            {parade.dates.map((d, i) => (
-              <li class="flex items-center gap-2">
-                <svg class="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                <time datetime={d.starts_at}>{dates[i]}</time>
-              </li>
-            ))}
-          </ul>
+          {schedule.hours ? (
+            <div class="md:flex-1">
+              <ul class="flex flex-wrap gap-x-8 gap-y-2 font-display text-3xl text-earth-900">
+                {schedule.ranges.map((r) => (
+                  <li><time datetime={r.start}>{r.label}</time></li>
+                ))}
+              </ul>
+              <p class="mt-2 text-lg text-earth-700 flex items-center gap-2">
+                <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v5l3 2"/></svg>
+                {[schedule.days, schedule.hours].filter(Boolean).join(', ')}
+              </p>
+            </div>
+          ) : (
+            <ul class="md:flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2 text-earth-900">
+              {parade.dates.map((d, i) => (
+                <li class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <time datetime={d.starts_at}>{dates[i]}</time>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <p class="text-xs text-earth-500 mt-2">All times Eastern.</p>
       </div>
