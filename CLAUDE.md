@@ -175,6 +175,10 @@ phone (desktop Chrome's native plugin masks the problem). Three parts:
   — i.e. broken on mobile — so keep the attribute when adding new document
   lists.
 
+### Addresses & directions links (2026-10)
+
+Listing, neighborhood and lot pages link locations to the visitor's map app through `@jw/shared/components/MapsLink.astro` (Google Maps directions href; Apple Maps on iOS, `geo:` on Android). The destination comes from `resolveMapTarget` (`@jw/shared/maps`): own pin → real street address → the community's office coordinates → the listing's road text. `isStreetAddress` decides what counts as an address — placeholders like "0 Lawrence Rd" or "Cannady Mill Road" never become a `<title>` or `streetAddress`. Real addresses lead the `<title>` and meta description (`3408 Tennyson Court, Wake Forest, NC 27587 — The Lindsey | …`). Neighborhood coordinates live in the office (`update-neighborhood` latitude/longitude); a community without them gets no directions link, never a name search.
+
 ## Design System
 
 As of the **2026 rebrand**, JWRG shares brand tokens + fonts with JWLC —

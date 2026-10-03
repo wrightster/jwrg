@@ -2,6 +2,7 @@
 // everything else. Canonical source lives in packages/shared/src/api.ts.
 // JWLC is the reference; if you're tempted to add logic here, add it there.
 
+import { isStreetAddress } from '@jw/shared/maps';
 import {
   BASE_URL,
   fetchAllListings as sharedFetchAllListings,
@@ -113,6 +114,9 @@ export interface ApiLot {
   status: LotStatus;
   lot_type: string | null;
   address: string | null;
+  /** The lot's own pin (office ≥ 14.1.5); null → directions use the neighborhood's. */
+  latitude?: number | null;
+  longitude?: number | null;
   /** Public per-lot copy set in the office. Falls back to generated text. */
   marketing_description?: string | null;
   size_acres: number | string | null;
@@ -167,7 +171,10 @@ const LOT_TYPE_LABELS: Record<string, string> = {
 export const lotTypeLabel = (lotType: string | null | undefined): string | null =>
   lotType ? (LOT_TYPE_LABELS[lotType] ?? lotType.replace(/_/g, ' ')) : null;
 
-export const lotTitle = (lot: ApiLot): string => lot.address?.trim() || `Lot ${lot.lot_number}`;
+// A real street address ("3408 Tennyson Court") is the title; a placeholder
+// ("0 Lawrence Rd") or none falls back to the plat number.
+export const lotTitle = (lot: ApiLot): string =>
+  isStreetAddress(lot.address) ? lot.address!.trim() : `Lot ${lot.lot_number}`;
 
 export const lotAcresLabel = (lot: ApiLot): string | null => {
   const n = lot.size_acres != null ? Number(lot.size_acres) : NaN;

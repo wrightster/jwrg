@@ -10,6 +10,8 @@ import LotCard from '../../components/LotCard.astro';
 import BtnArrow from '../../components/BtnArrow.astro';
 import { fetchNeighborhood, fetchListings, fetchNeighborhoodLots, fetchNeighborhoodTeam, groupDocuments, photoSrc, photoSrcSet, formatPrice } from '../../lib/api';
 import { neighborhoodSites } from '../../data/neighborhoodSites';
+import MapsLink from '@jw/shared/components/MapsLink.astro';
+import { neighborhoodJsonLd, breadcrumbTrailJsonLd, communityMapTarget, type NeighborhoodContext } from '@jw/shared/jsonLd';
 
 const { slug } = Astro.params;
 const n = slug ? await fetchNeighborhood(slug) : null;
@@ -126,11 +128,36 @@ const aboutStripped = (aboutHtml ?? aboutText ?? '')
 const hasAbout = aboutStripped.length > 0;
 // Meta description must be plain text — never raw HTML tags.
 const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area community offered by Julie Wright Realty Group.`;
+
+// The community as a schema.org Place (with its office coordinates) and as a
+// "Get directions" destination.
+const siteUrl = (Astro.site?.href ?? Astro.url.origin).replace(/\/$/, '');
+const placeCtx: NeighborhoodContext = {
+  name: n.name,
+  url: `${siteUrl}/neighborhoods/${n.slug}`,
+  description: aboutStripped || undefined,
+  city: n.city ?? undefined,
+  region: n.state ?? undefined,
+  postalCode: n.zip ?? undefined,
+  streetAddress: n.address,
+  latitude: n.latitude,
+  longitude: n.longitude,
+};
+const mapTarget = communityMapTarget(placeCtx);
+const jsonLd = [
+  neighborhoodJsonLd(placeCtx),
+  breadcrumbTrailJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Neighborhoods', path: '/neighborhoods' },
+    { name: n.name, path: `/neighborhoods/${n.slug}` },
+  ], siteUrl),
+];
 ---
 
 <BaseLayout
-  title={`${n.name} | Julie Wright Realty Group`}
+  title={`${n.name}${n.city ? `, ${n.city}${n.state ? `, ${n.state}` : ''}` : ''} | Julie Wright Realty Group`}
   description={metaDescription}
+  jsonLd={jsonLd}
 >
   <section class="pt-8 pb-8">
     <div class="max-w-7xl mx-auto px-6">
@@ -372,10 +399,15 @@ const metaDescription = aboutStripped || `Explore ${n.name}, a Triangle-area com
 
         <div class="bg-earth-100/60 rounded-sm p-6 border border-earth-200/60">
           <dl class="space-y-3 text-sm">
-            {location && (
+            {(location || mapTarget) && (
               <div>
                 <dt class="text-earth-500 text-xs uppercase tracking-wider">Location</dt>
-                <dd class="text-earth-900 mt-0.5">{location}</dd>
+                {location && <dd class="text-earth-900 mt-0.5">{location}</dd>}
+                {mapTarget && (
+                  <dd class="mt-1">
+                    <MapsLink target={mapTarget} class="maps-link">Get directions &rarr;</MapsLink>
+                  </dd>
+                )}
               </div>
             )}
             {n.total_lots && (

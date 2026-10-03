@@ -11,6 +11,9 @@ import DocumentViewerModal from '../../../../components/DocumentViewerModal.astr
 import MiniContactForm from '../../../../components/MiniContactForm.astro';
 import LotCard from '../../../../components/LotCard.astro';
 import BtnArrow from '../../../../components/BtnArrow.astro';
+import MapsLink from '@jw/shared/components/MapsLink.astro';
+import { isStreetAddress, fullAddress } from '@jw/shared/maps';
+import { lotJsonLd, lotMapTarget, breadcrumbTrailJsonLd, type NeighborhoodContext } from '@jw/shared/jsonLd';
 import {
   fetchNeighborhood,
   fetchNeighborhoodLots,
@@ -71,14 +74,60 @@ const siblings = lots
   .sort((a, b) => Number(a.status !== 'available') - Number(b.status !== 'available'))
   .slice(0, 3);
 
+// Address + directions. A lot with a real street address links to it; one
+// without (most lots before construction) links to the community's location.
+const hasStreet = isStreetAddress(lot.address);
+const postal = hasStreet
+  ? fullAddress({ address: lot.address, city: n.city, state: n.state, zip: n.zip })
+  : null;
+const siteUrl = (Astro.site?.href ?? Astro.url.origin).replace(/\/$/, '');
+const ctx: NeighborhoodContext = {
+  name: n.name,
+  url: `${siteUrl}/neighborhoods/${n.slug}`,
+  lotsPath: '/lots',
+  lotLabel: 'Lot',
+  city: n.city ?? undefined,
+  region: n.state ?? undefined,
+  postalCode: n.zip ?? undefined,
+  streetAddress: n.address,
+  latitude: n.latitude,
+  longitude: n.longitude,
+};
+const ldLot = {
+  id: lot.lot_number,
+  number: lot.lot_number,
+  status: lot.status,
+  acres: lot.size_acres != null ? Number(lot.size_acres) : null,
+  price: lot.base_price,
+  address: lot.address,
+  latitude: lot.latitude,
+  longitude: lot.longitude,
+  builder: lot.builder ? { name: lot.builder.name, short: lot.builder.short_name } : null,
+};
+const mapTarget = lotMapTarget(ldLot, ctx);
+const jsonLd = [
+  lotJsonLd(ldLot, ctx),
+  breadcrumbTrailJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Neighborhoods', path: '/neighborhoods' },
+    { name: n.name, path: `/neighborhoods/${n.slug}` },
+    { name: title, path: `/neighborhoods/${n.slug}/lots/${encodeURIComponent(lot.lot_number)}` },
+  ], siteUrl),
+];
+// Search title leads with the postal address when there is one.
+const seoTitle = postal
+  ? `${postal} — Lot ${lot.lot_number}, ${n.name}`
+  : `${title} · ${n.name}${n.city ? `, ${n.city}${n.state ? `, ${n.state}` : ''}` : ''}`;
+
 const metaDescription =
+  (postal ? `${postal}. ` : '') +
   `${title} in ${n.name}` +
   (acres ? ` — ${acres}` : '') +
   (hasPrice ? `, ${priceLabel}` : '') +
   `. ${status.label} homesite offered by Julie Wright Realty Group.`;
 ---
 
-<BaseLayout title={`${title} · ${n.name} | Julie Wright Realty Group`} description={metaDescription}>
+<BaseLayout title={`${seoTitle} | Julie Wright Realty Group`} description={metaDescription} jsonLd={jsonLd}>
   <div class="listing-back-bar">
     <div class="max-w-7xl mx-auto px-6 py-4">
       <a href={`/neighborhoods/${n.slug}`} class="listing-back-link">
@@ -95,11 +144,18 @@ const metaDescription =
         <a href={`/neighborhoods/${n.slug}`} class="listing-county-badge hover:text-red-600 transition-colors">{n.name}</a>
       </div>
       <h1 class="listing-title">{title}</h1>
-      {location && (
-        <div class="listing-address-row">
+      {(postal || location || mapTarget) && (
+        <address class="listing-address-row not-italic flex-wrap">
           <svg class="listing-address-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-          <span>{location}</span>
-        </div>
+          {postal && mapTarget?.precision !== 'community' ? (
+            <MapsLink target={mapTarget}>{postal}</MapsLink>
+          ) : (
+            <>
+              {location && <span>{location}</span>}
+              <MapsLink target={mapTarget} class="maps-link">Directions to {n.name} &rarr;</MapsLink>
+            </>
+          )}
+        </address>
       )}
     </div>
   </section>
