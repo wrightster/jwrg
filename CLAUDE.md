@@ -431,11 +431,11 @@ parade, take down the nav/footer entries and the strip; the pages can stay up.
 - **Dates & hours (2026-10):** `summarizeParadeDates()` (`src/data/parade.ts`)
   condenses the office's one-window-per-day `dates[]` into weekend ranges
   ("Oct 3–4 · Oct 10–11 · Oct 17–18") plus shared days/hours ("Saturdays &
-  Sundays, 12–5 pm"), all in Eastern time. `/parade` shows that line in the
-  banner (passed as `PageBanner` children — the component now renders a slot
-  under the description) and in the "Tour Dates & Hours" box. If the windows'
-  hours ever differ, `hours` is null: the banner line drops and the box falls
-  back to the per-day `formatParadeDate` list.
+  Sundays, 12–5 pm"), all in Eastern time. It feeds the promo strip and the
+  `/parade` "Tour Dates & Hours" box (the page's red banner deliberately has no
+  dates — the strip is where they go). If the windows' hours ever differ,
+  `hours` is null: the strip shows just the title and the box falls back to the
+  per-day `formatParadeDate` list.
 - **QR pop-up (2026-10):** `src/components/ParadeQrPopup.astro`, on `/parade` and
   `/parade/{slug}`. Opens (a native modal `<dialog>`) when the landing URL
   carries `ref` — i.e. the visitor came through an office short link / QR code —

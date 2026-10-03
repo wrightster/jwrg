@@ -84,16 +84,7 @@ const points: MapPoint[] = paradeNeighborhoods
   title={`${title} | Julie Wright Realty Group`}
   description={`The communities Julie Wright Realty Group is showing in the ${title}, with the featured homes in each, plus the tour dates and hours.`}
 >
-  <PageBanner title={title} description={bannerDescription}>
-    {schedule.ranges.length > 0 && schedule.hours && (
-      <p class="mt-4 font-display text-xl md:text-2xl text-gold-300 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-        {schedule.ranges.map((r, i) => (
-          <>{i > 0 && <span class="text-gold-100/60" aria-hidden="true">·</span>}<time datetime={r.start}>{r.label}</time></>
-        ))}
-        <span class="font-body text-lg text-gold-100 md:ml-3">{[schedule.days, schedule.hours].filter(Boolean).join(', ')}</span>
-      </p>
-    )}
-  </PageBanner>
+  <PageBanner title={title} description={bannerDescription} />
 
   {parade && dates.length > 0 && (
     <section class="pt-8" aria-labelledby="parade-dates-heading">

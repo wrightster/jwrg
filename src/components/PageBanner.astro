@@ -2,8 +2,6 @@
 // Standard page header band — matches the shared 2026 design system.
 // `imageUrl` is accepted for backward-compatibility but no longer used;
 // the banner is a gradient band over the global topo background.
-// Anything passed as children renders under the description (e.g. the
-// parade's dates line).
 interface Props {
   label?: string;
   title: string;
@@ -19,6 +17,5 @@ const { label, title, description } = Astro.props;
     {label && <p class="section-label">{label}</p>}
     <h1 class="page-banner-title">{title}</h1>
     {description && <p class="page-banner-desc">{description}</p>}
-    <slot />
   </div>
 </section>
