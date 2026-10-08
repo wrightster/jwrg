@@ -10,7 +10,7 @@ import VideoSection from '@jw/shared/components/VideoSection.astro';
 import ListingGallery from '@jw/shared/components/ListingGallery.astro';
 import MapsLink from '@jw/shared/components/MapsLink.astro';
 import { isStreetAddress, resolveMapTarget } from '@jw/shared/maps';
-import { fetchListing, fetchListings, fetchTeam, formatPrice, photoSrc, photoAlt, documentTypeLabel, paradeBadgeLabel } from '../../lib/api';
+import { fetchListing, fetchListings, fetchTeam, formatPrice, photoSrc, photoAlt, documentTypeLabel, paradeBadgeLabel, paradeAwardClass, paradeAwardLabel } from '../../lib/api';
 import { listingJsonLd, breadcrumbJsonLd } from '@jw/shared/jsonLd';
 import { site } from '../../data/site';
 
@@ -85,6 +85,8 @@ const coBrokerPhoto = photoSrc(coBrokerMember?.primary_photo, 400);
 const parade = listing.parade ?? null;
 const paradeHref = listing.neighborhood ? `/parade/${listing.neighborhood.slug}` : '/parade';
 const paradeBuilder = parade?.builder?.name ?? null;
+// An award winner's banner takes the medal colour; its label names the award.
+const paradeAward = paradeAwardLabel(parade?.award);
 
 const relatedListings = otherListings.filter(l => l.slug !== listing.slug).slice(0, 3);
 
@@ -156,10 +158,10 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
           </div>
 
           {parade && (
-            <a href={paradeHref} class="listing-parade-banner" data-parade-entry={parade.slug}>
+            <a href={paradeHref} class:list={['listing-parade-banner', paradeAwardClass(parade.award)]} data-parade-entry={parade.slug}>
               <span class="listing-parade-banner-label">{paradeBadgeLabel(parade)}</span>
               <span class="listing-parade-banner-text">
-                On the {parade.name}{paradeBuilder && <> · Built by {paradeBuilder}</>}
+                {paradeAward ? parade.name : <>On the {parade.name}</>}{paradeBuilder && <> · Built by {paradeBuilder}</>}
               </span>
               <span class="listing-parade-banner-link">
                 Tour dates &amp; homes

@@ -6,6 +6,7 @@
 // listings page for the script-in-island caveat, withastro/astro#12294).
 import ListingCard from './ListingCard.astro';
 import { fetchListings, type ApiListing } from '../lib/api';
+import { awardRank } from '../data/parade';
 
 let apiError = false;
 let featuredListings: ApiListing[] = [];
@@ -14,6 +15,8 @@ try {
   if (featuredListings.length === 0) {
     featuredListings = await fetchListings({ perPage: 6 });
   }
+  // Parade award winners lead, in medal order (a stable sort keeps the rest).
+  featuredListings = [...featuredListings].sort((a, b) => awardRank(a.parade?.award) - awardRank(b.parade?.award));
 } catch {
   apiError = true;
 }

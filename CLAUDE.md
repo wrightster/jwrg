@@ -467,6 +467,20 @@ parade, take down the nav/footer entries and the strip; the pages can stay up.
   `src/lib/api.ts`), then a trimmed about/amenities section with a sidebar link
   to the full `/neighborhoods/{slug}` page. Non-parade slugs redirect to
   `/parade`. With no tagged homes yet it renders a "not announced yet" note.
+- **Awards (2026-10):** the office records the organizer's award per entry
+  (Studio → Parades → Entries → *Award*, or `set-parade-entries` with
+  `award: gold|silver|bronze`) and it rides on the entry and on the listing's
+  `parade` badge. Winners get flat medal colours everywhere the badge reads
+  `--parade-badge-*`: the shared card/row badge (`parade-badge--<award>`, label
+  "Gold Award · Parade of Homes", above the status pill) and the listing page's `.listing-parade-banner`.
+  `/parade` opens with **`ParadeAwardWinners.astro`** — the winners, gold first,
+  each card headed by a medal label naming the award and the builder (entry
+  override, else the listing's builder), with the card's own badge hidden
+  (`paradeBadge={false}`) — and the home page's featured strip
+  sorts award winners first (`awardRank()` in `src/data/parade.ts`). What's on
+  the home strip is still the office **featured** flag. A winner keeps its badge
+  after the tour ends (as long as the parade stays published); entrants without
+  an award drop theirs the day after the last window, as before.
 - **Tagging a home into the parade:** office listing → "Marketing tags" field
   (Description & marketing section) → add `POH2026` (or `update-listing` MCP
   with `tags`). No frontend change needed. **Caveat:** an office build without

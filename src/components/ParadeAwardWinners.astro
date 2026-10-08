@@ -1,0 +1,41 @@
+---
+// The parade's award winners (office `award` on each entry), gold first, as
+// listing cards headed by a medal-coloured label naming the award and the
+// builder (the card's own on-image badge is hidden — the header replaces it).
+// Leads the /parade page; renders nothing until judging is recorded.
+import ListingCard from './ListingCard.astro';
+import { paradeAwardClass, paradeAwardLabel, type ApiParadeEntry } from '../lib/api';
+import { awardWinners } from '../data/parade';
+
+interface Props {
+  entries: ApiParadeEntry[];
+  title: string;
+}
+
+const { entries, title } = Astro.props;
+const winners = awardWinners(entries);
+---
+
+{winners.length > 0 && (
+  <section class="pt-10" aria-labelledby="parade-awards-heading">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 id="parade-awards-heading" class="font-display text-3xl text-earth-900 mb-8">{title} Award Winners</h2>
+      <div class="featured-grid">
+        {winners.map((e, i) => {
+          const listing = e.listing!;
+          const builder = e.builder ?? listing.parade?.builder ?? null;
+          return (
+            <div class="parade-award-winner">
+              <p class:list={['parade-badge parade-award-label', paradeAwardClass(e.award)]}>
+                <span>{paradeAwardLabel(e.award)}</span>
+                {builder && <span class="parade-award-builder">{builder.name}</span>}
+              </p>
+              {/* The header above carries the award, so the card skips its own badge. */}
+              <ListingCard listing={listing} index={i} paradeBadge={false} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+)}

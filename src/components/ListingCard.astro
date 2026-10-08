@@ -9,13 +9,15 @@ import { formatBedsBaths, formatSqft, type ApiListing } from '../lib/api';
 interface Props {
   listing: ApiListing;
   index?: number;
+  /** False hides the on-image parade badge (see the shared card). */
+  paradeBadge?: boolean;
 }
 
-const { listing, index } = Astro.props;
+const { listing, index, paradeBadge } = Astro.props;
 const headline =
   formatBedsBaths(listing) ||
   formatSqft(listing.sqft) ||
   `${listing.city}, ${listing.state}`;
 ---
 
-<SharedListingCard listing={listing} index={index} headline={headline} />
+<SharedListingCard listing={listing} index={index} headline={headline} paradeBadge={paradeBadge} />

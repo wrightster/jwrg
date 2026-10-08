@@ -105,3 +105,23 @@ export function summarizeParadeDates(dates: { starts_at: string; ends_at: string
     hours: hourSet.size === 1 ? [...hourSet][0] : null,
   };
 }
+
+// ---------- Awards ----------
+//
+// The organizer's awards come from the office (`award` on each parade entry and
+// on the listing's `parade` badge — gold / silver / bronze). Winners lead the
+// /parade page and the home page's featured strip, in medal order.
+
+const AWARD_RANK: Record<string, number> = { gold: 0, silver: 1, bronze: 2 };
+
+/** Medal order for sorting: gold, silver, bronze, then everything else. */
+export function awardRank(award: string | null | undefined): number {
+  return award != null && award in AWARD_RANK ? AWARD_RANK[award] : Object.keys(AWARD_RANK).length;
+}
+
+/** The parade's award-winning listing entries, gold first. */
+export function awardWinners<E extends { award?: string | null; listing: unknown | null }>(entries: E[]): E[] {
+  return entries
+    .filter((e) => e.listing && awardRank(e.award) < Object.keys(AWARD_RANK).length)
+    .sort((a, b) => awardRank(a.award) - awardRank(b.award));
+}

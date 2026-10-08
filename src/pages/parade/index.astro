@@ -2,7 +2,8 @@
 // FCHBA Parade of Homes 2026 landing page. Driven by the office Parade
 // (`GET /parades/parade-of-homes-2026`): the communities (in the parade's own
 // order), their entry counts, and the public dates/hours all come from the
-// payload. Mirrors the neighborhoods index: the participating communities'
+// payload. The award winners lead the page (ParadeAwardWinners), then it
+// mirrors the neighborhoods index: the participating communities'
 // logos centered over the topo background, with a parade-only version of the
 // neighborhood map beside them. Cards and map chips link to /parade/{slug} —
 // the parade view of each community — not the regular neighborhood page.
@@ -14,6 +15,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageBanner from '../../components/PageBanner.astro';
 import MiniContactForm from '../../components/MiniContactForm.astro';
 import ParadeQrPopup from '../../components/ParadeQrPopup.astro';
+import ParadeAwardWinners from '../../components/ParadeAwardWinners.astro';
 import NeighborhoodMap, { type MapPoint } from '../../components/NeighborhoodMap.astro';
 import { fetchNeighborhoods, fetchParade, formatParadeDate, photoSrc, photoSrcSet } from '../../lib/api';
 import { SEED_COORDS } from '../../data/neighborhoodCoords';
@@ -85,6 +87,8 @@ const points: MapPoint[] = paradeNeighborhoods
   description={`The communities Julie Wright Realty Group is showing in the ${title}, with the featured homes in each, plus the tour dates and hours.`}
 >
   <PageBanner title={title} description={bannerDescription} />
+
+  <ParadeAwardWinners entries={parade?.entries ?? []} title={title} />
 
   {parade && dates.length > 0 && (
     <section class="pt-8" aria-labelledby="parade-dates-heading">
