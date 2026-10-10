@@ -472,7 +472,9 @@ parade, take down the nav/footer entries and the strip; the pages can stay up.
   `award: gold|silver|bronze`) and it rides on the entry and on the listing's
   `parade` badge. Winners get flat medal colours everywhere the badge reads
   `--parade-badge-*`: the shared card/row badge (`parade-badge--<award>`, label
-  "Gold Award · Parade of Homes", above the status pill) and the listing page's `.listing-parade-banner`.
+  "Gold Award · Parade of Homes", above the status pill) and the listing page's `.listing-parade-banner`
+  (whose text for a winner is just "Built by {builder}" — the label already names
+  the parade, so the parade name is omitted; non-winners keep "On the {parade}").
   `/parade` opens with **`ParadeAwardWinners.astro`** — the winners, gold first,
   each card headed by a medal label naming the award and the builder (entry
   override, else the listing's builder), with the card's own badge hidden

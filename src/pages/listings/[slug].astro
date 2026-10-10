@@ -161,7 +161,9 @@ function expiryState(iso: string | null): { label: string; warn: boolean } | nul
             <a href={paradeHref} class:list={['listing-parade-banner', paradeAwardClass(parade.award)]} data-parade-entry={parade.slug}>
               <span class="listing-parade-banner-label">{paradeBadgeLabel(parade)}</span>
               <span class="listing-parade-banner-text">
-                {paradeAward ? parade.name : <>On the {parade.name}</>}{paradeBuilder && <> · Built by {paradeBuilder}</>}
+                {paradeAward
+                  ? paradeBuilder && <>Built by {paradeBuilder}</>
+                  : <>On the {parade.name}{paradeBuilder && <> · Built by {paradeBuilder}</>}</>}
               </span>
               <span class="listing-parade-banner-link">
                 Tour dates &amp; homes
