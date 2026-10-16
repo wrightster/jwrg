@@ -483,6 +483,19 @@ parade, take down the nav/footer entries and the strip; the pages can stay up.
   the home strip is still the office **featured** flag. A winner keeps its badge
   after the tour ends (as long as the parade stays published); entrants without
   an award drop theirs the day after the last window, as before.
+- **Awards from more than one parade (2026-10-16):** a home can win in another
+  organizer's parade too — 1219 Red Cedar (Gold, Franklin County + Bronze,
+  Triangle) and 1204 Red Cedar (Bronze, Franklin County + Silver, Triangle). The
+  Triangle awards live in a separate office parade, `triangle-parade-of-homes-2026`
+  (published, no dates — it only carries awards; the site's own `/parade` stays
+  `PARADE_SLUG`). Each parade's office **Short name** ("Franklin County POH",
+  "Triangle POH") goes into the label: "Gold Award · Franklin County POH". Listings carry
+  `parades[]` (office ≥ 14.5.1; read via `paradeBadges()` from `@jw/shared` ≥ v0.11.0):
+  cards stack a badge per parade, the listing page shows a banner per parade
+  (only this site's parade links to `/parade/{community}`), and the
+  `ParadeAwardWinners` header lists this parade's award first, then the others.
+  To add another parade's award: create the parade in Studio (with a Short name,
+  Published), then `set-parade-entries` on it.
 - **Tagging a home into the parade:** office listing → "Marketing tags" field
   (Description & marketing section) → add `POH2026` (or `update-listing` MCP
   with `tags`). No frontend change needed. **Caveat:** an office build without

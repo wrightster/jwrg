@@ -88,7 +88,7 @@ const points: MapPoint[] = paradeNeighborhoods
 >
   <PageBanner title={title} description={bannerDescription} />
 
-  <ParadeAwardWinners entries={parade?.entries ?? []} title={title} />
+  <ParadeAwardWinners entries={parade?.entries ?? []} title={title} slug={PARADE_SLUG} />
 
   {parade && dates.length > 0 && (
     <section class="pt-8" aria-labelledby="parade-dates-heading">

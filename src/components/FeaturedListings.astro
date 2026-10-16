@@ -16,7 +16,8 @@ try {
     featuredListings = await fetchListings({ perPage: 6 });
   }
   // Parade award winners lead, in medal order (a stable sort keeps the rest).
-  featuredListings = [...featuredListings].sort((a, b) => awardRank(a.parade?.award) - awardRank(b.parade?.award));
+  const bestAward = (l: (typeof featuredListings)[number]) => Math.min(awardRank(l.parade?.award), ...(l.parades ?? []).map((p) => awardRank(p.award)));
+  featuredListings = [...featuredListings].sort((a, b) => bestAward(a) - bestAward(b));
 } catch {
   apiError = true;
 }

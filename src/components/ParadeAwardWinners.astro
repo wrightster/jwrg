@@ -1,18 +1,22 @@
 ---
 // The parade's award winners (office `award` on each entry), gold first, as
-// listing cards headed by a medal-coloured label naming the award and the
-// builder (the card's own on-image badge is hidden — the header replaces it).
+// listing cards headed by medal-coloured labels naming the award, the parade
+// and the builder (the card's own on-image badge is hidden — the header
+// replaces it). A home that also won in another organizer's parade (Triangle
+// as well as Franklin County) gets a label for each award, this parade's first.
 // Leads the /parade page; renders nothing until judging is recorded.
 import ListingCard from './ListingCard.astro';
-import { paradeAwardClass, paradeAwardLabel, type ApiParadeEntry } from '../lib/api';
+import { paradeAwardClass, paradeBadgeLabel, paradeBadges, type ApiParadeEntry } from '../lib/api';
 import { awardWinners } from '../data/parade';
 
 interface Props {
   entries: ApiParadeEntry[];
   title: string;
+  /** This parade's slug — its award leads each winner's labels. */
+  slug: string;
 }
 
-const { entries, title } = Astro.props;
+const { entries, title, slug } = Astro.props;
 const winners = awardWinners(entries);
 ---
 
@@ -23,14 +27,25 @@ const winners = awardWinners(entries);
       <div class="featured-grid">
         {winners.map((e, i) => {
           const listing = e.listing!;
-          const builder = e.builder ?? listing.parade?.builder ?? null;
+          const badges = paradeBadges(listing);
+          const own = badges.find((b) => b.slug === slug);
+          const builder = e.builder ?? own?.builder ?? listing.parade?.builder ?? null;
+          // This parade's award (the entry is authoritative), then any others.
+          const awards = [
+            { slug, award: e.award ?? null, short_name: own?.short_name ?? null, entry_number: null },
+            ...badges.filter((b) => b.slug !== slug && b.award),
+          ];
           return (
             <div class="parade-award-winner">
-              <p class:list={['parade-badge parade-award-label', paradeAwardClass(e.award)]}>
-                <span>{paradeAwardLabel(e.award)}</span>
-                {builder && <span class="parade-award-builder">{builder.name}</span>}
-              </p>
-              {/* The header above carries the award, so the card skips its own badge. */}
+              <div class="parade-award-labels">
+                {awards.map((a, j) => (
+                  <p class:list={['parade-badge parade-award-label', paradeAwardClass(a.award)]}>
+                    <span>{paradeBadgeLabel(a)}</span>
+                    {j === 0 && builder && <span class="parade-award-builder">{builder.name}</span>}
+                  </p>
+                ))}
+              </div>
+              {/* The header above carries the awards, so the card skips its own badge. */}
               <ListingCard listing={listing} index={i} paradeBadge={false} />
             </div>
           );

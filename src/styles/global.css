@@ -411,6 +411,8 @@
     background-color: var(--parade-badge-bg);
     color: var(--color-earth-50);
   }
+  /* A home in two parades stacks a banner for each, tighter than the gap below. */
+  .listing-parade-banner:has(+ .listing-parade-banner) { @apply mb-2; }
   .listing-parade-banner-label {
     @apply text-xs font-display font-semibold uppercase tracking-widest;
     color: var(--parade-badge-fg);
@@ -428,6 +430,8 @@
      — award + builder — sitting on top of each listing card. */
   .parade-award-winner  { @apply flex flex-col; }
   .parade-award-winner .listing-card { @apply flex-1 rounded-t-none; }
-  .parade-award-label   { @apply flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 px-4 py-2.5 rounded-t-sm text-sm whitespace-normal; }
+  .parade-award-labels  { @apply flex flex-col; }
+  .parade-award-label   { @apply flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 px-4 py-2.5 text-sm whitespace-normal; }
+  .parade-award-label:first-child { @apply rounded-t-sm; }
   .parade-award-builder { @apply font-body normal-case tracking-normal text-sm font-semibold; }
 }
