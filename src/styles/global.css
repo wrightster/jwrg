@@ -426,12 +426,12 @@
      medal colours; light medals need the dark foreground for the body text. */
   .listing-parade-banner:is(.parade-badge--gold, .parade-badge--silver, .parade-badge--bronze) { color: var(--parade-badge-fg); }
 
-  /* /parade award winners (ParadeAwardWinners.astro): a medal-coloured label
-     — award + builder — sitting on top of each listing card. */
+  /* /parade award winners (ParadeAwardWinners.astro): the builder's name,
+     centered, over medal-coloured award labels sitting on top of each card. */
   .parade-award-winner  { @apply flex flex-col; }
   .parade-award-winner .listing-card { @apply flex-1 rounded-t-none; }
   .parade-award-labels  { @apply flex flex-col; }
   .parade-award-label   { @apply flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 px-4 py-2.5 text-sm whitespace-normal; }
   .parade-award-label:first-child { @apply rounded-t-sm; }
-  .parade-award-builder { @apply font-body normal-case tracking-normal text-sm font-semibold; }
+  .parade-award-builder { @apply mb-2 text-center font-display text-lg font-semibold text-earth-900 leading-snug; }
 }

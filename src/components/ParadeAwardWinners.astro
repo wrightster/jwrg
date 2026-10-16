@@ -1,8 +1,8 @@
 ---
 // The parade's award winners (office `award` on each entry), gold first, as
-// listing cards headed by medal-coloured labels naming the award, the parade
-// and the builder (the card's own on-image badge is hidden — the header
-// replaces it). A home that also won in another organizer's parade (Triangle
+// listing cards headed by the builder's name (centered) and medal-coloured
+// labels naming the award and the parade (the card's own on-image badge is
+// hidden — the header replaces it). A home that also won in another organizer's parade (Triangle
 // as well as Franklin County) gets a label for each award, this parade's first.
 // Leads the /parade page; renders nothing until judging is recorded.
 import ListingCard from './ListingCard.astro';
@@ -37,11 +37,11 @@ const winners = awardWinners(entries);
           ];
           return (
             <div class="parade-award-winner">
+              {builder && <p class="parade-award-builder">{builder.name}</p>}
               <div class="parade-award-labels">
-                {awards.map((a, j) => (
+                {awards.map((a) => (
                   <p class:list={['parade-badge parade-award-label', paradeAwardClass(a.award)]}>
                     <span>{paradeBadgeLabel(a)}</span>
-                    {j === 0 && builder && <span class="parade-award-builder">{builder.name}</span>}
                   </p>
                 ))}
               </div>

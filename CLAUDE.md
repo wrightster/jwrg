@@ -476,7 +476,7 @@ parade, take down the nav/footer entries and the strip; the pages can stay up.
   (whose text for a winner is just "Built by {builder}" — the label already names
   the parade, so the parade name is omitted; non-winners keep "On the {parade}").
   `/parade` opens with **`ParadeAwardWinners.astro`** — the winners, gold first,
-  each card headed by a medal label naming the award and the builder (entry
+  each card headed by the builder's name (centered) over medal labels naming the award (builder: entry
   override, else the listing's builder), with the card's own badge hidden
   (`paradeBadge={false}`) — and the home page's featured strip
   sorts award winners first (`awardRank()` in `src/data/parade.ts`). What's on
