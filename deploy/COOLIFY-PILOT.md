@@ -192,6 +192,14 @@ Not part of the pilot — captured so we don't forget:
 
 ---
 
+## Coolify facts
+
+- wrightster Coolify is 4.4.7 (2026-10-21), 4.5.3 when measured 2026-11-03;
+  `GET /api/v1/deploy` is refused (405), use `POST` (APP-JWRG-0006). Every
+  deploy workflow and manual-deploy snippet uses `curl -X POST`.
+
+---
+
 ## Auto-deploy: GitHub Actions secrets (public vs private repos)
 
 Coolify's API is Tailscale-only, so GitHub webhooks can't reach it —

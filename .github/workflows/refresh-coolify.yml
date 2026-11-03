@@ -45,6 +45,6 @@ jobs:
           tags: tag:ci
       - name: Trigger Coolify rebuild
         run: |
-          curl -fsS -X GET \
+          curl -fsS -X POST \
             -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}" \
             "http://${{ vars.COOLIFY_HOST }}/api/v1/deploy?uuid=${{ vars.COOLIFY_APP_UUID }}&force=true"
