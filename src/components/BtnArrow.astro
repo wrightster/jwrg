@@ -6,7 +6,7 @@ interface Props {
   target?: string;
   rel?: string;
   /** Render as a non-interactive <span> when the arrow sits inside a larger
-   *  link (e.g. the parade strip) — links can't nest. */
+   *  link — links can't nest. */
   as?: 'a' | 'span';
 }
 const { href = '#', variant = 'primary', class: className = '', target, rel, as = 'a' } = Astro.props;

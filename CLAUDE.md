@@ -410,32 +410,19 @@ Leaflet script lives in the component (rendered on the page), not in a
 ### Parade of Homes (`/parade` — launched 2026-10)
 
 The Parade of Homes 2026 section (an FCHBA event; the header deliberately omits
-the acronym) is **live**: linked from the top nav and the footer, promoted by the
-promo strip below, indexable (no `noindex`), listed in the sitemap
-(`paradePaths` in `sitemap.xml.ts` — `/parade` plus each community's
-`/parade/{slug}`, from the office Parade payload) and in `llms.txt`. After the
-parade, take down the nav/footer entries and the strip; the pages can stay up.
+the acronym) is **over and out of the navigation** (2026-11): the top nav and
+footer entries and the promo strip are gone, but the pages stay up — indexable
+(no `noindex`), listed in the sitemap (`paradePaths` in `sitemap.xml.ts` —
+`/parade` plus each community's `/parade/{slug}`, from the office Parade
+payload) and in `llms.txt`, and still linked from a parade home's listing-page
+banner.
 
-- **Promo strip (2026-10):** `BaseLayout.astro` renders a gold `.parade-strip`
-  under the nav on every page except `/parade/*` — "Parade of Homes 2026"
-  (`PARADE_TITLE`) in red black-italic plus a "See the homes" `BtnArrow`. The
-  whole strip is one `<a href="/parade">`, so the arrow renders with
-  `as="span"` (links can't nest); hover/focus flips it to `bg-red-600` with gold
-  top + bottom inset rules and a gold title, and the `.parade-strip:is(:hover,
-  :focus-visible)` rules in `global.css` drive the arrow's own hover motion.
-  The strip also carries the tour dates — "Oct 3–4 · Oct 10–11 · Oct 17–18"
-  + "Sat & Sun, 12–5 pm" (`.parade-strip-dates`), from `summarizeParadeDates()`
-  on the office parade, fetched in `BaseLayout` (memoized; prerendered pages bake
-  it at build). No parade or mixed hours → title only.
-  Remove it alongside the nav entry once the parade is over.
 - **Dates & hours (2026-10):** `summarizeParadeDates()` (`src/data/parade.ts`)
   condenses the office's one-window-per-day `dates[]` into weekend ranges
   ("Oct 3–4 · Oct 10–11 · Oct 17–18") plus shared days/hours ("Saturdays &
-  Sundays, 12–5 pm"), all in Eastern time. It feeds the promo strip and the
-  `/parade` "Tour Dates & Hours" box (the page's red banner deliberately has no
-  dates — the strip is where they go). If the windows' hours ever differ,
-  `hours` is null: the strip shows just the title and the box falls back to the
-  per-day `formatParadeDate` list.
+  Sundays, 12–5 pm"), all in Eastern time. It feeds the `/parade` "Tour Dates
+  & Hours" box. If the windows' hours ever differ, `hours` is null and the box
+  falls back to the per-day `formatParadeDate` list.
 - **QR pop-up (2026-10):** `src/components/ParadeQrPopup.astro`, on `/parade` and
   `/parade/{slug}`. Opens (a native modal `<dialog>`) when the landing URL
   carries `ref` — i.e. the visitor came through an office short link / QR code —

@@ -54,7 +54,7 @@ export interface ParadeSchedule {
   ranges: ParadeDateRange[];
   /** "Saturdays & Sundays" when every run is a Sat–Sun weekend, else null. */
   days: string | null;
-  /** The same, short ("Sat & Sun"), for tight spots like the promo strip. */
+  /** The same, short ("Sat & Sun"), for tight spots. */
   daysShort: string | null;
   /** "12–5 pm" when every window keeps the same hours, else null. */
   hours: string | null;
