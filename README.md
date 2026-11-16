@@ -76,3 +76,7 @@ Runs on **Coolify** on the wrightster Coolify droplet. A push to `main` auto-dep
 - [`CLAUDE.md`](./CLAUDE.md) — guidance for Claude Code sessions in this repo
 - [`PLAN.md`](./PLAN.md) — site-rebuild checklist
 - [`../SHARED_FRONTEND_GUIDE.md`](../SHARED_FRONTEND_GUIDE.md) — cross-site rules (lives in the workspace meta repo)
+
+## Public statuses
+
+Listings and neighborhood lots show only **Available**, **Pending** or **Sold**. A lot reserved for a builder shows as Available; unreleased and common-area parcels aren't shown. The mapping lives in `@jw/shared` (`publicStatus`, `publicLotStatus`, `normalizeListingLabel`); see `../SHARED_FRONTEND_GUIDE.md` § Status / labeling.
