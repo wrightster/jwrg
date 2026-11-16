@@ -128,11 +128,15 @@ Also present but unused by the current chrome: `JWRG_Icon.svg`, `JWRG_Icon_Red.s
 
 ### Listing status labels
 
-The office labels the `active` status **"Active"** (`status_label`, from
-`ListingStatus::getLabel()`), but the public sites say **"Available."** Both
-JWRG and JWLC therefore run every listing through `normalizeListingLabel()`
-(`@jw/shared/api`) inside their `src/lib/api.ts` shim, which rewrites
-`status_label` and nothing else.
+**Public sites show only three statuses: Available, Pending, Sold** (2026-11
+rule, all sites). The office's own labels ("Active", "Coming Soon", "Under
+Contract") never reach a page. Both JWRG and JWLC run every listing through
+`normalizeListingLabel()` (`@jw/shared/api` ≥ v0.12.0) inside their
+`src/lib/api.ts` shim, which rewrites `status_label` to the public word
+(`publicStatus()`: active + coming_soon → Available, pending + under_contract →
+Pending) and nothing else. The listings filter offers the same three and
+filters on `publicStatus(listing.status)`; old `?status=c`/`u` links land on
+Available/Pending.
 
 Apply it in **all three** listing-returning fetchers — `fetchListings`,
 `fetchAllListings`, and `fetchListing`. The last one is easy to miss: without a
@@ -140,7 +144,7 @@ local override it falls through to `export * from '@jw/shared/api'` and the
 detail page silently reads "Active" while the cards read "Available."
 
 The raw `status` key stays `active`. Anything that keys off it — the
-`[data-status]` pill colors, the `?status=a` filter, `publicStatus()`, the
+`[data-status]` pill colors (coming_soon shares the available color), `publicStatus()`, the
 sitemap's `INDEXABLE` set, JSON-LD availability — is unaffected. Don't "fix"
 those to `available`.
 
@@ -321,7 +325,7 @@ Neighborhoods are managed in the office (Filament admin, or the `create-neighbor
 
 **Detail sidebar (lots):** `[slug].astro` also fetches the neighborhood's subdivision lots (`fetchNeighborhoodLots(slug)` / `ApiLot` in `src/lib/api.ts` → office `GET /neighborhoods/{slug}/lots`) to show two quick-facts rows: the count of **available** lots and a **"From the $X00s"** starting price bucketed off the cheapest available lot's `base_price`. Both rows self-hide when there's no data — the price needs the office public API to expose `base_price` (marketing-safe asking price; the office `LotResource` was extended for this) *and* a value actually set on a lot. This lots fetcher is JWRG-local for now; promote to `@jw/shared` if JWLC wants the same.
 
-**Lot cards + lot detail pages (homesites):** for neighborhoods that have lots, `[slug].astro` renders a **"Homesites in {name}"** grid (all lots except `common_area`, in the office's lot-number order) using **`src/components/LotCard.astro`** — a JWRG-local card that reuses the shared `.listing-card*` classes so homesites read like listings. Lots carry no photos, so the card's image area is a branded placeholder (land/plat motif over an earth→gold gradient) with a status pill and the acreage as the headline. The sidebar's "Available Lots" count links to `#homesites`. Each lot has its own SSR page at **`src/pages/neighborhoods/[slug]/lots/[lot].astro`** (`/neighborhoods/{slug}/lots/{lot_number}`) — there's no single-lot API endpoint, so it finds the lot in the same memoized `fetchNeighborhoodLots` list by `lot_number` (redirects to the neighborhood if not found or `common_area`). It shows a stat grid (price/size/type), builder block, floor-plan documents, and a lead form bound to the neighborhood. The presentation helpers (`lotStatusMeta`, `lotTitle`, `lotAcresLabel`, `lotSqftLabel`, `lotPriceLabel`, `lotTypeLabel`, `lotHref`) live in `src/lib/api.ts` alongside the expanded `ApiLot` type (now includes `builder`/`agent`/`documents`, which `LotResource` already returns). The lot status pill borrows the listing color palette via a `colorKey` (reserved/under_contract → gold, sold → dark, not_released → gray). JWRG-local; promote with the fetcher if JWLC wants it.
+**Lot cards + lot detail pages (homesites):** for neighborhoods that have lots, `[slug].astro` renders a **"Homesites in {name}"** grid (every public lot, in the office's lot-number order) using **`src/components/LotCard.astro`** — a JWRG-local card that reuses the shared `.listing-card*` classes so homesites read like listings. Lots carry no photos, so the card's image area is a branded placeholder (land/plat motif over an earth→gold gradient) with a status pill and the acreage as the headline. The sidebar's "Available Lots" count links to `#homesites`. Each lot has its own SSR page at **`src/pages/neighborhoods/[slug]/lots/[lot].astro`** (`/neighborhoods/{slug}/lots/{lot_number}`) — there's no single-lot API endpoint, so it finds the lot in the same memoized `fetchNeighborhoodLots` list by `lot_number` (redirects to the neighborhood if not found). It shows a stat grid (price/size/type), builder block, floor-plan documents, and a lead form bound to the neighborhood. The presentation helpers (`lotStatusMeta`, `lotTitle`, `lotAcresLabel`, `lotSqftLabel`, `lotPriceLabel`, `lotTypeLabel`, `lotHref`) live in `src/lib/api.ts` alongside the expanded `ApiLot` type (now includes `builder`/`agent`/`documents`, which `LotResource` already returns). `fetchNeighborhoodLots` maps each lot to its **public** status via `publicLotStatus()` — a builder-`reserved` lot is **Available**, `under_contract` is **Pending** — and drops `not_released` and `common_area` parcels, so pages never see them. `lotStatusMeta` labels Available / Pending / Sold and borrows the listing pill colors. JWRG-local; promote with the fetcher if JWLC wants it.
 
 **Index ordering:** the office `/neighborhoods` endpoint returns neighborhoods in their manual **`sort`** order (ascending; ties by name), so `index.astro` just renders in API order. `sort` is a real column editable in the back office — drag rows on the Neighborhoods list or type a number on the edit screen, and the others auto-shift (`Neighborhood::resequenceWith`). The resource also still exposes `latest_inventory_at` (newest created listing/lot `created_at`) as informational metadata.
 

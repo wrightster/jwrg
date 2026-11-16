@@ -38,7 +38,7 @@ const lots = await fetchNeighborhoodLots(n.slug);
 const nbAgents = await fetchNeighborhoodTeam(n.slug);
 const wanted = decodeURIComponent(lotParam ?? '').toLowerCase();
 const lot = lots.find(
-  (l) => l.status !== 'common_area' && String(l.lot_number).toLowerCase() === wanted,
+  (l) => String(l.lot_number).toLowerCase() === wanted,
 );
 if (!lot) {
   return Astro.redirect(`/neighborhoods/${n.slug}`);
@@ -70,7 +70,7 @@ const humanizeType = (t: string | null): string | null =>
 
 // A few other homesites to keep browsing (available first), excluding this one.
 const siblings = lots
-  .filter((l) => l.status !== 'common_area' && l.id !== lot.id)
+  .filter((l) => l.id !== lot.id)
   .sort((a, b) => Number(a.status !== 'available') - Number(b.status !== 'available'))
   .slice(0, 3);
 

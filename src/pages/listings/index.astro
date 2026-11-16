@@ -178,11 +178,13 @@ const fallbackListings = await fetchAllListings({ perPage: 50 }).catch(() => [])
     let keyword = '';
     const searchInput = document.getElementById('keyword-search') as HTMLInputElement | null;
 
+    // Public statuses only. Old links' c (coming soon) / u (under contract)
+    // land on their public bucket.
     const statusToShort: Record<string, string> = {
-      active: 'a', coming_soon: 'c', pending: 'p', under_contract: 'u', sold: 's'
+      available: 'a', pending: 'p', sold: 's'
     };
     const shortToStatus: Record<string, string> = {
-      a: 'active', c: 'coming_soon', p: 'pending', u: 'under_contract', s: 'sold'
+      a: 'available', c: 'available', p: 'pending', u: 'pending', s: 'sold'
     };
 
     function updateURL() {

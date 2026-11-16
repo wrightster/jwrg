@@ -73,14 +73,11 @@ export const GET: APIRoute = async ({ site }) => {
 
   // Homesite detail pages, one API call per neighborhood (memoized 60s in
   // fetchNeighborhoodLots, which already swallows its own errors). Common-area
-  // parcels have no page — the lot route redirects them — so they're skipped,
-  // matching the neighborhood page's own `displayLots` filter.
+  // and unreleased parcels have no page; fetchNeighborhoodLots already drops them.
   const lotPaths = (
     await Promise.all(
       neighborhoods.map(async (n) =>
-        (await fetchNeighborhoodLots(n.slug))
-          .filter((l) => l.status !== 'common_area')
-          .map((l) => lotHref(n.slug, l)),
+        (await fetchNeighborhoodLots(n.slug)).map((l) => lotHref(n.slug, l)),
       ),
     )
   ).flat();

@@ -13,7 +13,7 @@
 // so the DOM-querying controller must stay on the host page.
 import ListingCard from './ListingCard.astro';
 import ListingRow from './ListingRow.astro';
-import { fetchAllListings, type ApiListing } from '../lib/api';
+import { fetchAllListings, publicStatus, type ApiListing } from '../lib/api';
 
 let apiError = false;
 let listings: ApiListing[] = [];
@@ -111,10 +111,8 @@ const neighborhoods = [...new Map(
             </button>
             <ul class="custom-select-list" role="listbox">
               <li class="custom-select-option is-selected" data-value="all" role="option" aria-selected="true">All Statuses</li>
-              <li class="custom-select-option" data-value="active" role="option" aria-selected="false">Available</li>
-              <li class="custom-select-option" data-value="coming_soon" role="option" aria-selected="false">Coming Soon</li>
+              <li class="custom-select-option" data-value="available" role="option" aria-selected="false">Available</li>
               <li class="custom-select-option" data-value="pending" role="option" aria-selected="false">Pending</li>
-              <li class="custom-select-option" data-value="under_contract" role="option" aria-selected="false">Under Contract</li>
               <li class="custom-select-option" data-value="sold" role="option" aria-selected="false">Sold</li>
             </ul>
           </div>
@@ -208,7 +206,7 @@ const neighborhoods = [...new Map(
           data-county={listing.county}
           data-city={listing.city}
           data-neighborhood={listing.neighborhood?.slug ?? ''}
-          data-status={listing.status}
+          data-status={publicStatus(listing.status)}
           data-price={Math.round(parseFloat(listing.list_price))}
           data-sqft={listing.sqft ?? 0}
           data-search={[

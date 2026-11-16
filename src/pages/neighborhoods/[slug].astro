@@ -36,10 +36,10 @@ const [nListings, lots, nbAgents] = await Promise.all([
 const listingCount = nListings.length;
 const availableLots = lots.filter((l) => l.status === 'available');
 const availableLotCount = availableLots.length;
-// Lots to show as cards: everything except common-area parcels (roads, open
-// space) — a full inventory board, with status pills distinguishing what's
-// still for sale. Keeps the office's lot-number sort.
-const displayLots = lots.filter((l) => l.status !== 'common_area');
+// Lots to show as cards: the full public inventory board (fetchNeighborhoodLots
+// already dropped common-area and unreleased parcels), with status pills
+// distinguishing what's still for sale. Keeps the office's lot-number sort.
+const displayLots = lots;
 const availableBasePrices = availableLots
   .map((l) => Number(l.base_price))
   .filter((p) => Number.isFinite(p) && p > 0);

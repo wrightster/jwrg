@@ -20,6 +20,9 @@ import {
   type ApiPhoto,
   type ApiTeamMember,
   type ListingsQuery,
+  PUBLIC_STATUS_LABEL,
+  publicLotStatus,
+  type PublicStatus,
 } from '@jw/shared/api';
 
 export * from '@jw/shared/api';
@@ -78,13 +81,11 @@ export const fetchNeighborhood = async (slug: string) =>
 // (`GET /neighborhoods/{slug}/lots`, served by LotResource). Marketing-safe
 // fields only; `base_price` is the advertised asking price (decimal string).
 // JWRG-local for now — promote to @jw/shared if JWLC needs it too.
-export type LotStatus =
-  | 'available'
-  | 'reserved'
-  | 'under_contract'
-  | 'sold'
-  | 'not_released'
-  | 'common_area';
+//
+// `status` is the PUBLIC status: fetchNeighborhoodLots maps the office value
+// through `publicLotStatus` (builder-reserved → available, under_contract →
+// pending) and drops not_released / common_area parcels entirely.
+export type LotStatus = PublicStatus;
 
 export interface ApiLotBuilder {
   name: string;
@@ -140,21 +141,13 @@ export interface ApiLot {
 
 // ---------- Lot presentation helpers (shared by LotCard + the detail page) ----------
 
-// The lot map/card colors reuse the listing status-pill palette (keyed by
-// `data-status` in @jw/shared components.css): available→red, gold for the
-// in-between states, dark for sold, gray for coming-soon. `colorKey` is the
-// listing status whose color we borrow; `label` is the human text shown.
-const LOT_STATUS_META: Record<LotStatus, { label: string; colorKey: string }> = {
-  available: { label: 'Available', colorKey: 'available' },
-  reserved: { label: 'Reserved', colorKey: 'under_contract' },
-  under_contract: { label: 'Under Contract', colorKey: 'under_contract' },
-  sold: { label: 'Sold', colorKey: 'sold' },
-  not_released: { label: 'Coming Soon', colorKey: 'coming_soon' },
-  common_area: { label: 'Common Area', colorKey: 'coming_soon' },
-};
-
-export const lotStatusMeta = (status: LotStatus): { label: string; colorKey: string } =>
-  LOT_STATUS_META[status] ?? { label: String(status), colorKey: 'coming_soon' };
+// The lot card colors reuse the listing status-pill palette (keyed by
+// `data-status` in @jw/shared components.css). `colorKey` is the key whose
+// color we borrow; `label` is the public word (Available / Pending / Sold).
+export const lotStatusMeta = (status: LotStatus): { label: string; colorKey: string } => ({
+  label: PUBLIC_STATUS_LABEL[status],
+  colorKey: status,
+});
 
 // Office LotType enum labels (mirror App\Enums\LotType::getLabel).
 const LOT_TYPE_LABELS: Record<string, string> = {
@@ -246,7 +239,12 @@ export async function fetchNeighborhoodLots(slug: string): Promise<ApiLot[]> {
     });
     if (!res.ok) return [];
     const json = await res.json();
-    const data = (json?.data ?? []) as ApiLot[];
+    const raw = (json?.data ?? []) as Array<Omit<ApiLot, 'status'> & { status: string }>;
+    const data: ApiLot[] = [];
+    for (const lot of raw) {
+      const status = publicLotStatus(lot.status);
+      if (status) data.push({ ...lot, status });
+    }
     _lotsMemo.set(slug, { at: Date.now(), data });
     return data;
   } catch {
