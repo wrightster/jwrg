@@ -131,7 +131,7 @@ Also present but unused by the current chrome: `JWRG_Icon.svg`, `JWRG_Icon_Red.s
 **Public sites show only three statuses: Available, Pending, Sold** (2026-11
 rule, all sites). The office's own labels ("Active", "Coming Soon", "Under
 Contract") never reach a page. Both JWRG and JWLC run every listing through
-`normalizeListingLabel()` (`@jw/shared/api` ≥ v0.12.0; pinned at v0.12.1 since 2026-11-17 — v0.12.1: the lightbox shows the whole photo, never crops wide/tall shots) inside their
+`normalizeListingLabel()` (`@jw/shared/api` ≥ v0.12.0; pinned at v0.12.2 since 2026-11-18 — v0.12.1: the lightbox shows the whole photo, never crops wide/tall shots; v0.12.2: the inline 16:9 gallery hero letterboxes photos wider than 16:9 instead of cropping them) inside their
 `src/lib/api.ts` shim, which rewrites `status_label` to the public word
 (`publicStatus()`: active + coming_soon → Available, pending + under_contract →
 Pending) and nothing else. The listings filter offers the same three and
